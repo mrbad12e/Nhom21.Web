@@ -15,3 +15,12 @@ WHERE id = 1; -- Thay 1 bằng ID của danh mục cần xoá
 SELECT c1.id, c1.name, c2.name AS parent_name
 FROM categories c1
 LEFT JOIN categories c2 ON c1.parent_category_id = c2.id;
+
+-- tổng doanh thu theo danh mục
+SELECT c.name AS category_name, SUM(oi.quantity * p.price) AS total_revenue
+FROM order_items oi
+JOIN products p ON oi.product_id = p.id
+JOIN categories c ON p.category_id = c.id
+GROUP BY c.name
+ORDER BY total_revenue DESC;
+
