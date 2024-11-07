@@ -56,3 +56,77 @@ LEFT JOIN inventory i ON p.id = i.product_id
 GROUP BY p.id, p.name, p.stock
 HAVING final_stock < 10
 ORDER BY final_stock ASC;
+
+-- Cập nhật tổng số lượng tồn kho
+CREATE FUNCTION calculate_total_inventory(product_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE total_stock INT;
+    SELECT SUM(quantity) INTO total_stock
+    FROM inventory
+    WHERE product_id = product_id;
+    RETURN IFNULL(total_stock, 0);
+END;
+
+--Tự động cập nhật số lượng tồn kho
+CREATE TRIGGER after_insert_inventory
+AFTER INSERT ON inventory
+FOR EACH ROW
+BEGIN
+    DECLARE total_stock INT;
+    SET total_stock = calculate_total_inventory(NEW.product_id);
+    UPDATE products SET stock = total_stock WHERE id = NEW.product_id;
+END;
+
+CREATE TRIGGER after_update_inventory
+AFTER UPDATE ON inventory
+FOR EACH ROW
+BEGIN
+    DECLARE total_stock INT;
+    SET total_stock = calculate_total_inventory(NEW.product_id);
+    UPDATE products SET stock = total_stock WHERE id = NEW.product_id;
+END;
+
+CREATE TRIGGER after_delete_inventory
+AFTER DELETE ON inventory
+FOR EACH ROW
+BEGIN
+    DECLARE total_stock INT;
+    SET total_stock = calculate_total_inventory(OLD.product_id);
+    UPDATE products SET stock = total_stock WHERE id = OLD.product_id;
+END;
+
+--Tính số lượng tồn kho cuối cùng của một sản phẩm
+CREATE FUNCTION calculate_final_stock(product_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE final_stock INT;
+    SELECT COALESCE(SUM(quantity), 0) INTO final_stock
+    FROM inventory
+    WHERE product_id = product_id;
+    RETURN final_stock;
+END;
+
+--Kiểm tra xem một sản phẩm có tồn kho dưới ngưỡng cho phép
+CREATE FUNCTION is_stock_below_threshold(product_id INT, threshold INT)
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    DECLARE stock INT;
+    SET stock = (SELECT stock FROM products WHERE id = product_id);
+    RETURN stock < threshold;
+END;
+
+--Tính tổng số lượng thay đổi kho theo loại thay đổi
+CREATE FUNCTION calculate_total_by_change_type(product_id INT, change_type ENUM('nhập', 'xuất'))
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE total_quantity INT;
+    SELECT COALESCE(SUM(quantity), 0) INTO total_quantity
+    FROM inventory
+    WHERE product_id = product_id AND change_type = change_type;
+    RETURN total_quantity;
+END;

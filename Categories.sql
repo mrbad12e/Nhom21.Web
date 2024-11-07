@@ -58,3 +58,61 @@ JOIN products p ON c.id = p.category_id
 JOIN inventory i ON p.id = i.product_id
 GROUP BY c.name
 ORDER BY total_inventory_changes DESC;
+
+-- Tạo slug cho tên danh mục
+CREATE FUNCTION create_category_slug(category_name VARCHAR)
+RETURNS VARCHAR
+DETERMINISTIC
+BEGIN
+    DECLARE slug VARCHAR(255);
+    SET slug = LOWER(REPLACE(category_name, ' ', '-'));
+    RETURN slug;
+END;
+
+--Cập nhật slug khi thêm hoặc cập nhật danh mục
+CREATE TRIGGER before_insert_category
+BEFORE INSERT ON categories
+FOR EACH ROW
+BEGIN
+    SET NEW.slug = create_category_slug(NEW.name);
+END;
+
+CREATE TRIGGER before_update_category
+BEFORE UPDATE ON categories
+FOR EACH ROW
+BEGIN
+    SET NEW.slug = create_category_slug(NEW.name);
+END;
+
+--Lấy tên danh mục đầy đủ bao gồm cả danh mục cha
+CREATE FUNCTION get_full_category_path(category_id INT)
+RETURNS VARCHAR(255)
+DETERMINISTIC
+BEGIN
+    DECLARE category_path VARCHAR(255);
+    DECLARE parent_id INT;
+
+    SET category_path = (SELECT name FROM categories WHERE id = category_id);
+    SET parent_id = (SELECT parent_category_id FROM categories WHERE id = category_id);
+
+    WHILE parent_id IS NOT NULL DO
+        SET category_path = CONCAT(
+            (SELECT name FROM categories WHERE id = parent_id), 
+            ' > ', 
+            category_path
+        );
+        SET parent_id = (SELECT parent_category_id FROM categories WHERE id = parent_id);
+    END WHILE;
+
+    RETURN category_path;
+END;
+
+--Đếm số lượng danh mục con
+CREATE FUNCTION count_subcategories(parent_category_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE subcategory_count INT;
+    SET subcategory_count = (SELECT COUNT(*) FROM categories WHERE parent_category_id = parent_category_id);
+    RETURN subcategory_count;
+END;

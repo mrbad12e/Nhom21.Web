@@ -83,3 +83,80 @@ JOIN order_items oi ON p.id = oi.product_id
 JOIN stores s ON p.store_id = s.id
 GROUP BY p.id, p.store_id, s.name
 ORDER BY total_revenue DESC;
+
+--Tính tổng doanh thu của sản phẩm
+CREATE FUNCTION calculate_product_revenue(product_id INT)
+RETURNS DECIMAL(10, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE total_revenue DECIMAL(10, 2);
+    SELECT SUM(oi.quantity * p.price) INTO total_revenue
+    FROM order_items oi
+    JOIN products p ON oi.product_id = p.id
+    WHERE oi.product_id = product_id;
+    RETURN IFNULL(total_revenue, 0);
+END;
+
+-- Cập nhật tổng doanh thu khi có đơn hàng mới
+CREATE TRIGGER after_insert_order_item
+AFTER INSERT ON order_items
+FOR EACH ROW
+BEGIN
+    DECLARE revenue DECIMAL(10, 2);
+    SET revenue = calculate_product_revenue(NEW.product_id);
+    UPDATE products SET total_revenue = revenue WHERE id = NEW.product_id;
+END;
+
+--Kiểm tra số lượng tồn kho trước khi cập nhật
+CREATE TRIGGER before_update_product_stock
+BEFORE UPDATE ON products
+FOR EACH ROW
+BEGIN
+    IF NEW.stock < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số lượng sản phẩm không được nhỏ hơn 0';
+    END IF;
+END;
+
+--Tính giá trị tồn kho cho một sản phẩm
+CREATE FUNCTION calculate_inventory_value(product_id INT)
+RETURNS DECIMAL(10, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE inventory_value DECIMAL(10, 2);
+    SELECT stock * price INTO inventory_value
+    FROM products
+    WHERE id = product_id;
+    RETURN IFNULL(inventory_value, 0);
+END;
+
+--Lấy sản phẩm bán chạy nhất trong một danh mục
+CREATE FUNCTION get_best_selling_product(category_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE best_selling_product_id INT;
+    SELECT p.id INTO best_selling_product_id
+    FROM products p
+    JOIN order_items oi ON p.id = oi.product_id
+    WHERE p.category_id = category_id
+    GROUP BY p.id
+    ORDER BY SUM(oi.quantity) DESC
+    LIMIT 1;
+    RETURN best_selling_product_id;
+END;
+
+--Lấy sản phẩm có doanh thu cao nhất
+CREATE FUNCTION get_top_revenue_product()
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE top_revenue_product_id INT;
+    SELECT p.id INTO top_revenue_product_id
+    FROM products p
+    JOIN order_items oi ON p.id = oi.product_id
+    GROUP BY p.id
+    ORDER BY SUM(oi.quantity * p.price) DESC
+    LIMIT 1;
+    RETURN top_revenue_product_id;
+END;
