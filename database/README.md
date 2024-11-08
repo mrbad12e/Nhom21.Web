@@ -102,7 +102,7 @@ pip install -r requirements.txt
 
 ### Running backup file
     ```bash
-    psql -U [username] -d [dbname] -f store_utf8.sql
+    psql -U [username] -d [dbname] -f store.sql
     ```
 
 ## Important Notes

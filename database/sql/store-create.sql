@@ -44,7 +44,7 @@ create table public.products (
 
 create table public.orders (
     id char(16) not null,
-    customer_id char(8) not null,
+    customer_id varchar(255) not null,
     total_price decimal(10, 2) not null,
     shipping_address text not null,
     order_status public.order_status not null,
@@ -69,9 +69,20 @@ create table public.order_items (
     check (price >= 0)
 );
 
+create table public.order_status_history (
+    id serial primary key,
+    order_id char(16) not null,
+    old_status public.order_status,
+    new_status public.order_status,
+    changed_at timestamp default current_timestamp,
+    changed_by public.user_role,
+    constraint fk_order_id foreign key (order_id) references public.orders(id)
+);
+
+
 create table public.carts (
     id char(16) not null,
-    customer_id char(8) not null,
+    customer_id varchar(255) not null,
     created_at timestamp not null default now(),
     constraint pk_carts primary key (id),
     constraint fk_customer_id foreign key (customer_id) references users(id)
@@ -110,3 +121,5 @@ create table public.payments (
     constraint fk_order_id foreign key (order_id) references orders(id),
     check (amount >= 0)
 );
+
+alter table public.cart_items add unique (cart_id, product_id);
