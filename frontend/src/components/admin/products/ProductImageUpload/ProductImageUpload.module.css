@@ -1,0 +1,97 @@
+.container {
+    @apply space-y-4;
+}
+
+.label {
+    @apply flex items-center justify-between text-sm font-medium;
+}
+
+.maxFiles {
+    @apply text-muted-foreground text-sm font-normal;
+}
+
+.dropzone {
+    @apply border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors
+    hover:border-primary/50 hover:bg-muted/50
+    data-[active=true]:border-primary data-[active=true]:bg-primary/10
+    data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50;
+}
+
+.dropzoneContent {
+    @apply flex flex-col items-center justify-center space-y-4 text-center;
+}
+
+.uploadIcon {
+    @apply h-10 w-10 text-muted-foreground;
+}
+
+.dropzoneText {
+    @apply space-y-1;
+}
+
+.dropzoneSubtext {
+    @apply text-sm text-muted-foreground;
+}
+
+.error {
+    @apply mt-4;
+}
+
+.previewGrid {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6;
+}
+
+.imageCard {
+    @apply relative overflow-hidden;
+}
+
+.imageCardContent {
+    @apply p-0;
+}
+
+.imageWrapper {
+    @apply relative aspect-square overflow-hidden rounded-t-lg;
+}
+
+.preview {
+    @apply w-full h-full object-cover;
+}
+
+.placeholderWrapper {
+    @apply w-full h-full flex items-center justify-center bg-muted;
+}
+
+.placeholderIcon {
+    @apply h-12 w-12 text-muted-foreground;
+}
+
+.imageOverlay {
+    @apply absolute inset-0 bg-background/80 opacity-0 transition-opacity
+    flex items-center justify-center
+    group-hover:opacity-100;
+}
+
+.deleteButton {
+    @apply absolute top-2 right-2 opacity-0 transition-opacity
+    group-hover:opacity-100;
+}
+
+.imageInfo {
+    @apply p-3 space-y-1;
+}
+
+.imageName {
+    @apply text-sm font-medium truncate;
+}
+
+.imageSize {
+    @apply text-xs text-muted-foreground;
+}
+
+.progressWrapper {
+    @apply h-1 bg-muted overflow-hidden;
+}
+
+.progressBar {
+    @apply h-full bg-primary transition-all duration-300;
+}
