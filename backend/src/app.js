@@ -62,27 +62,6 @@ app.use(errorHandler);
 // Routes
 app.use('/api', route);
 
-// Admin route middleware
-const adminAuth = async (req, res, next) => {
-  const { email, password } = req.body;
-  
-  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-    next();
-  } else {
-    res.status(401).json({
-      status: 'error',
-      message: 'Không có quyền truy cập'
-    });
-  }
-};
-
-// Admin routes
-app.post('/api/admin/login', adminAuth, (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Đăng nhập admin thành công'
-  });
-});
 
 // Email test route (chỉ trong môi trường development)
 if (process.env.NODE_ENV === 'development') {

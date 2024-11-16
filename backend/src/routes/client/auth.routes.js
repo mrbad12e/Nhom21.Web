@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/authController');
+const authController = require('../../controllers/client/auth.controller');
 const protect = require('../middleware/auth');
 
 router.post('/register', authController.register);
@@ -14,9 +14,9 @@ router.get('/me', protect, (req, res) => {
       user: {
         id: req.user.id,
         email: req.user.email,
-        fullName: req.user.fullName
-      }
-    }
+        fullName: req.user.fullName,
+      },
+    },
   });
 });
 
