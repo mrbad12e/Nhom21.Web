@@ -18,16 +18,11 @@ module.exports = { login };
 async function register(req, res) {
   const { username, password, email, firstName, lastName, role, phone, address, image } = req.body;
 
-  // Kiểm tra nếu dữ liệu đầu vào thiếu
-  if (!username || !password || !email || !firstName || !lastName) {
-    return res.status(400).json({ message: 'Thiếu thông tin cần thiết để đăng ký' });
-  }
-
   try {
     await authService.createAccount(username, password, email, firstName, lastName, role, phone, address, image);
     res.status(201).json({ message: 'Tạo tài khoản thành công' });
   } catch (error) {
-    res.status(500).json({ message: 'Đã có lỗi xảy ra khi tạo tài khoản', error: error.message });
+    res.status(500).json({ message: 'Đã có lỗi xảy ra khi tạo tài khoản' });
   }
 }
 

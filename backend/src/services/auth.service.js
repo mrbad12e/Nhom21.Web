@@ -9,7 +9,6 @@ const client = new Client({
   password: 'AVNS_lHjfoRsc9cYDtvcka-5'
 });
 
-// Kết nối cơ sở dữ liệu
 client.connect();
 
 // Hàm đăng nhập
@@ -20,34 +19,40 @@ async function signIn(username, password) {
     if (result.rows.length > 0) {
       return true; // Đăng nhập thành công
     } else {
-      return false; // Sai tài khoản hoặc mật khẩu
+      return false; // Đăng nhập thất bại
     }
   } catch (err) {
     console.error('Lỗi khi gọi hàm đăng nhập:', err);
     return false;
+  } finally {
+    await client.end();
   }
 }
+
+module.exports = { signIn };
 
 // Hàm tạo tài khoản người dùng mới
 async function createAccount(username, password, email, firstName, lastName, role = 'CUSTOMER', phone = null, address = null, image = null) {
-  try {
-    const result = await client.query('SELECT create_account($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
-      username,
-      password,
-      email,
-      firstName,
-      lastName,
-      role,
-      phone,
-      address,
-      image
-    ]);
+    try {
+      const result = await client.query('SELECT create_account($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
+        username,
+        password,
+        email,
+        firstName,
+        lastName,
+        role,
+        phone,
+        address,
+        image
+      ]);
   
-    console.log('Tạo tài khoản thành công');
-  } catch (err) {
-    console.error('Lỗi khi gọi hàm tạo tài khoản:', err.message);
-    throw err; // Quay lại lỗi nếu có
+      console.log('Tạo tài khoản thành công');
+    } catch (err) {
+      console.error('Lỗi khi gọi hàm tạo tài khoản:', err.message);
+      throw err;
+    } finally {
+      await client.end();
+    }
   }
-}
-
-module.exports = { signIn, createAccount };
+  
+  module.exports = { createAccount };
