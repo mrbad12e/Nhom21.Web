@@ -7,9 +7,10 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const errorHandler = require('./middleware/error.middleware');
 
 const { sequelize, testConnection } = require('./config/database');
-const authRoutes = require('./routes/authRoutes');
+const route = require('./routes/index');
 
 const app = express();
 
@@ -54,30 +55,13 @@ if (process.env.NODE_ENV === 'development') {
 // Nén response
 app.use(compression());
 
+//Áp dụng middleware xử lí lỗi 
+app.use(errorHandler);
+
+
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api', route);
 
-// Admin route middleware
-const adminAuth = async (req, res, next) => {
-  const { email, password } = req.body;
-  
-  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-    next();
-  } else {
-    res.status(401).json({
-      status: 'error',
-      message: 'Không có quyền truy cập'
-    });
-  }
-};
-
-// Admin routes
-app.post('/api/admin/login', adminAuth, (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Đăng nhập admin thành công'
-  });
-});
 
 // Email test route (chỉ trong môi trường development)
 if (process.env.NODE_ENV === 'development') {
@@ -122,36 +106,6 @@ app.use('*', (req, res) => {
   });
 });
 
-// Global error handling middleware
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
-
-  if (process.env.NODE_ENV === 'development') {
-    console.error('Error:', err);
-  }
-
-  if (err.name === 'SequelizeValidationError') {
-    return res.status(400).json({
-      status: 'error',
-      message: err.errors.map(e => e.message)
-    });
-  }
-
-  if (err.name === 'SequelizeUniqueConstraintError') {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Dữ liệu đã tồn tại'
-    });
-  }
-
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Có lỗi xảy ra, vui lòng thử lại sau'
-      : err.message
-  });
-});
 
 // Khởi động server
 const startServer = async () => {

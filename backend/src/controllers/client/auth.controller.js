@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'your-secret-key'; // Trong thực tế nên đặt trong biến môi trường
@@ -12,7 +12,7 @@ exports.register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         status: 'error',
-        message: 'Email đã được sử dụng'
+        message: 'Email đã được sử dụng',
       });
     }
 
@@ -20,12 +20,12 @@ exports.register = async (req, res) => {
     const user = await User.create({
       email,
       password,
-      fullName
+      fullName,
     });
 
     // Tạo token
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: '1d'
+      expiresIn: '1d',
     });
 
     res.status(201).json({
@@ -35,15 +35,14 @@ exports.register = async (req, res) => {
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.fullName
-        }
-      }
+          fullName: user.fullName,
+        },
+      },
     });
-
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -57,7 +56,7 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         status: 'error',
-        message: 'Email hoặc mật khẩu không đúng'
+        message: 'Email hoặc mật khẩu không đúng',
       });
     }
 
@@ -66,13 +65,13 @@ exports.login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         status: 'error',
-        message: 'Email hoặc mật khẩu không đúng'
+        message: 'Email hoặc mật khẩu không đúng',
       });
     }
 
     // Tạo token
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: '1d'
+      expiresIn: '1d',
     });
 
     res.json({
@@ -82,15 +81,14 @@ exports.login = async (req, res) => {
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.fullName
-        }
-      }
+          fullName: user.fullName,
+        },
+      },
     });
-
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message: error.message
+      message: error.message,
     });
   }
 };
