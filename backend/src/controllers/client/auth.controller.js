@@ -1,96 +1,34 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+const authService = require('../services/authService');
 
-const JWT_SECRET = 'your-secret-key'; // Trong thực tế nên đặt trong biến môi trường
+async function login(req, res) {
+  const { username, password } = req.body;
 
-exports.register = async (req, res) => {
-  try {
-    const { email, password, fullName } = req.body;
+  const isAuthenticated = await authService.signIn(username, password);
 
-    // Kiểm tra email đã tồn tại
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Email đã được sử dụng'
-      });
-    }
-
-    // Tạo user mới
-    const user = await User.create({
-      email,
-      password,
-      fullName
-    });
-
-    // Tạo token
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: '1d'
-    });
-
-    res.status(201).json({
-      status: 'success',
-      data: {
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.fullName
-        }
-      }
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message
-    });
+  if (isAuthenticated) {
+    res.json({ message: 'Đăng nhập thành công' });
+  } else {
+    res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu' });
   }
-};
+}
 
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+module.exports = { login };
 
-    // Kiểm tra user tồn tại
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Email hoặc mật khẩu không đúng'
-      });
-    }
+// Controller để đăng ký tài khoản
+async function register(req, res) {
+  const { username, password, email, firstName, lastName, role, phone, address, image } = req.body;
 
-    // Kiểm tra mật khẩu
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Email hoặc mật khẩu không đúng'
-      });
-    }
-
-    // Tạo token
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: '1d'
-    });
-
-    res.json({
-      status: 'success',
-      data: {
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.fullName
-        }
-      }
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message
-    });
+  // Kiểm tra nếu dữ liệu đầu vào thiếu
+  if (!username || !password || !email || !firstName || !lastName) {
+    return res.status(400).json({ message: 'Thiếu thông tin cần thiết để đăng ký' });
   }
-};
+
+  try {
+    await authService.createAccount(username, password, email, firstName, lastName, role, phone, address, image);
+    res.status(201).json({ message: 'Tạo tài khoản thành công' });
+  } catch (error) {
+    res.status(500).json({ message: 'Đã có lỗi xảy ra khi tạo tài khoản', error: error.message });
+  }
+}
+
+module.exports = { register };
