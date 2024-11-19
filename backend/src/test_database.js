@@ -1,27 +1,19 @@
-// test-database.js
-const { sequelize, testConnection } = require('./config/database');
+const { Pool } = require('pg');
+const db = require('./config/database'); // Đường dẫn đến module bạn đã viết
 
-async function runDatabaseTest() {
-  try {
-    // Kiểm tra kết nối
-    await testConnection();
+const testConnection = async () => {
+    try {
+        // Thực hiện truy vấn đơn giản để kiểm tra kết nối
+        const result = await db.pool.query('SELECT NOW() AS current_time');
+        console.log('Database connection successful!');
+        console.log('Current Time:', result.rows[0].current_time);
+    } catch (error) {
+        console.error('Database connection failed:', error.message);
+    } finally {
+        // Đóng pool nếu không cần sử dụng thêm
+        await db.pool.end();
+    }
+};
 
-    // Thử truy vấn đơn giản
-    const [results] = await sequelize.query('SELECT NOW()');
-    console.log('Thời gian hiện tại từ database:', results);
-
-    // Kiểm tra thông tin kết nối
-    console.log('Thông tin kết nối:');
-    console.log('Host:', sequelize.config.host);
-    console.log('Port:', sequelize.config.port);
-    console.log('Database:', sequelize.config.database);
-
-  } catch (error) {
-    console.error('Lỗi kiểm tra database:', error);
-  } finally {
-    // Đóng kết nối
-    await sequelize.close();
-  }
-}
-
-runDatabaseTest();
+// Gọi hàm kiểm tra kết nối
+testConnection();

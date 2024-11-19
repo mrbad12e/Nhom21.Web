@@ -1,12 +1,13 @@
 const { Client } = require('pg');
+require('dotenv').config();
 
 // Kết nối với cơ sở dữ liệu PostgreSQL
 const client = new Client({
-  host: 'pg-27acab61-ntnghia9a7-4e14.h.aivencloud.com',
-  port: 24259,
-  database: 'store',
-  user: 'avnadmin',
-  password: 'AVNS_lHjfoRsc9cYDtvcka-5'
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD
 });
 
 client.connect();
