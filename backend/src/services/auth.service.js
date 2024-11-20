@@ -57,3 +57,31 @@ async function createAccount(username, password, email, firstName, lastName, rol
   }
   
   module.exports = { createAccount };
+
+  // Hàm cập nhật tài khoản người dùng
+  /**
+ * Cập nhật thông tin người dùng
+ * @param {string} username - Tên người dùng cần cập nhật
+ * @param {string|null} email - Email mới (nếu có)
+ * @param {string|null} firstName - Họ mới (nếu có)
+ * @param {string|null} lastName - Tên mới (nếu có)
+ * @param {string|null} phone - Số điện thoại mới (nếu có)
+ * @param {string|null} address - Địa chỉ mới (nếu có)
+ * @param {string|null} image - URL ảnh đại diện mới (nếu có)
+ */
+async function updateProfile(username, email = null, firstName = null, lastName = null, phone = null, address = null, image = null) {
+  try {
+    const query = `
+      SELECT update_profile($1, $2, $3, $4, $5, $6, $7)
+    `;
+    const values = [username, email, firstName, lastName, phone, address, image];
+
+    await client.query(query, values);
+    console.log('Cập nhật thông tin người dùng thành công.');
+  } catch (err) {
+    console.error('Lỗi khi cập nhật thông tin người dùng:', err.message);
+    throw err;
+  }
+}
+
+module.exports = { updateProfile };
