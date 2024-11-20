@@ -1,9 +1,9 @@
 const express = require('express');
-const route = express.Router();
+const routes = express.Router();
 const adminAuthController = require('../../controllers/admin/auth.controller');
 
-route.post('/login', adminAuthController.login);
-route.post('/logout', adminAuthController.logout);
-route.post('/refresh-token', adminAuthController.refreshToken);
+routes.post('/login', adminAuthController.login);
+routes.post('/logout', adminAuthController.logout);
+//routes.post('/refresh-token', adminAuthController.refreshToken);
 
-module.exports = route;
+module.exports = routes;
