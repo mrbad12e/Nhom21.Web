@@ -1,34 +1,24 @@
-const ProductModel = require('../models/product.model');
+const productService = require('../services/productService');
 
-class ProductController {
-  async getAllProducts(req, res) {
-    try {
-      const products = await ProductModel.getAllProducts();
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+// Lấy tất cả sản phẩm
+const getAllProducts = async (req, res) => {
+  try {
+    const products = await productService.getAllProducts();
+    res.status(200).json({ products });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching products', error: err.message });
   }
+};
 
-  async getProductsByCategory(req, res) {
-    try {
-      const { category } = req.params;
-      const products = await ProductModel.getProductsByCategory(category);
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+// Lấy sản phẩm theo danh mục
+const getProductsByCategory = async (req, res) => {
+  const { categoryId } = req.params;
+  try {
+    const products = await productService.getProductsByCategory(categoryId);
+    res.status(200).json({ products });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching products by category', error: err.message });
   }
+};
 
-  async searchProducts(req, res) {
-    try {
-      const { query } = req.query;
-      const products = await ProductModel.searchProducts(query);
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-}
-
-module.exports = new ProductController();
+module.exports = { getAllProducts, getProductsByCategory };
