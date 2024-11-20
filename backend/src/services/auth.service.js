@@ -1,87 +1,53 @@
-const { Client } = require('pg');
-require('dotenv').config();
-
-// Kết nối với cơ sở dữ liệu PostgreSQL
-const client = new Client({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD
-});
-
-client.connect();
+const db = require('../db');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'your_jwt_secret_key';
 
 // Hàm đăng nhập
-async function signIn(username, password) {
+const login = async (username, password) => {
   try {
-    const result = await client.query('SELECT * FROM signIn($1, $2)', [username, password]);
-    
-    if (result.rows.length > 0) {
-      return true; // Đăng nhập thành công
-    } else {
-      return false; // Đăng nhập thất bại
+    const result = await db.query('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]);
+    if (result.length === 0) {
+      throw new Error('Invalid username or password');
     }
+    const user = result[0];
+    // Tạo JWT token
+    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+    return { token, user };
   } catch (err) {
-    console.error('Lỗi khi gọi hàm đăng nhập:', err);
-    return false;
-  } finally {
-    await client.end();
+    throw new Error('Login failed: ' + err.message);
   }
-}
+};
 
-module.exports = { signIn };
-
-// Hàm tạo tài khoản người dùng mới
-async function createAccount(username, password, email, firstName, lastName, role = 'CUSTOMER', phone = null, address = null, image = null) {
-    try {
-      const result = await client.query('SELECT create_account($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
-        username,
-        password,
-        email,
-        firstName,
-        lastName,
-        role,
-        phone,
-        address,
-        image
-      ]);
-  
-      console.log('Tạo tài khoản thành công');
-    } catch (err) {
-      console.error('Lỗi khi gọi hàm tạo tài khoản:', err.message);
-      throw err;
-    } finally {
-      await client.end();
-    }
-  }
-  
-  module.exports = { createAccount };
-
-  // Hàm cập nhật tài khoản người dùng
-  /**
- * Cập nhật thông tin người dùng
- * @param {string} username - Tên người dùng cần cập nhật
- * @param {string|null} email - Email mới (nếu có)
- * @param {string|null} firstName - Họ mới (nếu có)
- * @param {string|null} lastName - Tên mới (nếu có)
- * @param {string|null} phone - Số điện thoại mới (nếu có)
- * @param {string|null} address - Địa chỉ mới (nếu có)
- * @param {string|null} image - URL ảnh đại diện mới (nếu có)
- */
-async function updateProfile(username, email = null, firstName = null, lastName = null, phone = null, address = null, image = null) {
+// Hàm đăng ký tài khoản mới
+const register = async (userData) => {
+  const { username, password, email, firstName, lastName, role = 'CUSTOMER', phone = null, address = null, image = null } = userData;
   try {
-    const query = `
-      SELECT update_profile($1, $2, $3, $4, $5, $6, $7)
-    `;
-    const values = [username, email, firstName, lastName, phone, address, image];
-
-    await client.query(query, values);
-    console.log('Cập nhật thông tin người dùng thành công.');
+    const existingUser = await db.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
+    if (existingUser.length > 0) {
+      throw new Error('Username or email already taken');
+    }
+    // Thêm tài khoản mới vào cơ sở dữ liệu
+    const result = await db.query('SELECT create_account($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
+      username, password, email, firstName, lastName, role, phone, address, image
+    ]);
+    return { username, email, firstName, lastName, role };
   } catch (err) {
-    console.error('Lỗi khi cập nhật thông tin người dùng:', err.message);
-    throw err;
+    throw new Error('Registration failed: ' + err.message);
   }
-}
+};
 
-module.exports = { updateProfile };
+// Hàm cập nhật thông tin người dùng
+const updateAccount = async (userId, userData) => {
+  const { email, firstName, lastName, phone, address, image } = userData;
+  try {
+    // Cập nhật thông tin người dùng
+    const result = await db.query('SELECT update_profile($1, $2, $3, $4, $5, $6, $7)', [
+      userId, email, firstName, lastName, phone, address, image
+    ]);
+    return { userId, email, firstName, lastName, phone, address, image };
+  } catch (err) {
+    throw new Error('Profile update failed: ' + err.message);
+  }
+};
+
+module.exports = { login, register, updateAccount };

@@ -1,53 +1,36 @@
-const authService = require('../services/authService');
+const authService = require('../services/auth');
 
-async function login(req, res) {
-  const { username, password } = req.body;
-
-  const isAuthenticated = await authService.signIn(username, password);
-
-  if (isAuthenticated) {
-    res.json({ message: 'Đăng nhập thành công' });
-  } else {
-    res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu' });
-  }
-}
-
-module.exports = { login };
-
-// Controller để đăng ký tài khoản
-async function register(req, res) {
-  const { username, password, email, firstName, lastName, role, phone, address, image } = req.body;
-
+// Hàm đăng nhập
+const login = async (req, res) => {
   try {
-    await authService.createAccount(username, password, email, firstName, lastName, role, phone, address, image);
-    res.status(201).json({ message: 'Tạo tài khoản thành công' });
-  } catch (error) {
-    res.status(500).json({ message: 'Đã có lỗi xảy ra khi tạo tài khoản' });
+    const { username, password } = req.body;
+    const { token, user } = await authService.login(username, password);
+    res.status(200).json({ token, user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
-}
+};
 
-module.exports = { register };
-
-//Controller cập nhật tài khoản
-/**
- * Controller để cập nhật thông tin người dùng
- * @param {Object} req - Yêu cầu HTTP từ client
- * @param {Object} res - Đáp ứng HTTP cho client
- */
-async function updateUserProfile(req, res) {
-  const { username, email, firstName, lastName, phone, address, image } = req.body;
-
-  // Kiểm tra nếu không cung cấp username
-  if (!username) {
-    return res.status(400).json({ message: 'Tên người dùng là bắt buộc.' });
-  }
-
+// Hàm đăng ký tài khoản mới
+const register = async (req, res) => {
   try {
-    await authService.updateProfile(username, email, firstName, lastName, phone, address, image);
-    res.status(200).json({ message: 'Cập nhật thông tin người dùng thành công.' });
-  } catch (error) {
-    res.status(500).json({ message: 'Đã có lỗi xảy ra khi cập nhật thông tin.', error: error.message });
+    const userData = req.body;
+    const user = await authService.register(userData);
+    res.status(201).json({ user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
-}
+};
 
-module.exports = { updateUserProfile };
+// Hàm cập nhật thông tin người dùng
+const updateUserProfile = async (req, res) => {
+  try {
+    const userData = req.body;
+    const updatedUser = await authService.updateAccount(req.user.id, userData);
+    res.status(200).json({ updatedUser });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+module.exports = { login, register, updateUserProfile };
