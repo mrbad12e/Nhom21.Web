@@ -1,13 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const authRoutes = require('./src/routes/authRoutes');
+const userRoutes = require('./src/routes/userroutes');
 const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
 // Middleware để parse dữ liệu JSON trong request body
 app.use(bodyParser.json());
-app.use('/auth', authRoutes);
+app.use('/auth', userRoutes);
+app.use('/api/cart', cartRoutes);
 
 
 // Dùng các routes cho yêu cầu đến /api/products

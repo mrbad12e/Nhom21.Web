@@ -1,6 +1,8 @@
 const db = require('../db');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'your_jwt_secret_key';
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
 // Hàm đăng nhập
 const login = async (username, password) => {
@@ -10,6 +12,11 @@ const login = async (username, password) => {
       throw new Error('Invalid username or password');
     }
     const user = result[0];
+    // So sánh password đã hash
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error('Invalid password');
+    }
     // Tạo JWT token
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
     return { token, user };
@@ -26,6 +33,8 @@ const register = async (userData) => {
     if (existingUser.length > 0) {
       throw new Error('Username or email already taken');
     }
+    // Hash password trước khi lưu
+    const hashedPassword = await bcrypt.hash(password, 10);
     // Thêm tài khoản mới vào cơ sở dữ liệu
     const result = await db.query('SELECT create_account($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
       username, password, email, firstName, lastName, role, phone, address, image
@@ -50,4 +59,25 @@ const updateAccount = async (userId, userData) => {
   }
 };
 
-module.exports = { login, register, updateAccount };
+// Cập nhật trạng thái người dùng
+const updateUserStatus = async (userId, isActive) => {
+    try {
+      const user = await User.updateUserStatus(userId, isActive);
+      return user;
+    } catch (err) {
+      throw new Error('Error in UserService while updating user status: ' + err.message);
+    }
+  };
+  
+  // Kiểm tra xem người dùng đã có giỏ hàng chưa
+  const checkCartExistence = async (userId) => {
+    try {
+      const exists = await User.checkCartExistence(userId);
+      return exists;
+    } catch (err) {
+      throw new Error('Error in UserService while checking cart existence: ' + err.message);
+    }
+  };
+  
+
+module.exports = { login, register, updateAccount, updateUserStatus, checkCartExistence };

@@ -12,6 +12,7 @@ class User {
     this.firstName = data.firstName;
     this.lastName = data.lastName;
     this.role = data.role;
+    this.isActive = data.isActive;
     this.createdAt = data.createdAt;
   }
 
@@ -78,6 +79,20 @@ class User {
       console.error('Lỗi khi cập nhật thông tin người dùng:', err.message);
       throw err;
     }
+  }
+
+  // Kiểm tra xem người dùng đã có giỏ hàng hay chưa
+  static async checkCartExistence(userId) {
+    const query = 'SELECT id FROM carts WHERE user_id = $1';
+    const result = await db.query(query, [userId]);
+    return result.length > 0; // Nếu có cart thì trả về true
+  }
+
+  // Cập nhật trạng thái kích hoạt của người dùng
+  static async updateUserStatus(userId, isActive) {
+    const query = 'UPDATE users SET is_active = $1 WHERE id = $2 RETURNING *';
+    const result = await db.query(query, [isActive, userId]);
+    return result[0];
   }
 }
 

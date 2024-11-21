@@ -10,8 +10,8 @@ class Product {
     this.description = data.description;
     this.price = data.price;
     this.stock = data.stock;
-    this.imageUrls = data.imageUrls || []; // Mảng URL hình ảnh sản phẩm
-    this.categoryId = data.categoryId || null; // Danh mục sản phẩm, nếu có
+    this.imageUrls = data.imageUrls || [];
+    this.categoryId = data.categoryId || null;
     this.createdAt = data.createdAt;
   }
 
