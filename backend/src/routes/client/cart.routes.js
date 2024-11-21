@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const cartController = require('../controllers/cartController');
+const cartController = require('../../controllers/client/cart.controller');
 
 // Route: Thêm sản phẩm vào giỏ hàng
 router.post('/add', cartController.addProductToCart);

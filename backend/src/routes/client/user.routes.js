@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const usercontroller = require('../controllers/usercontroller'); 
-const { authenticate } = require('../middlewares/authMiddleware');
+const usercontroller = require('../../controllers/client/user.controller'); 
+const { authenticate } = require('../../middleware/auth/authenticate');
 
 // Route đăng nhập
 router.post('/login', usercontroller.login);

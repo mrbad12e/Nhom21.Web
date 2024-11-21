@@ -1,4 +1,4 @@
-const productService = require('../services/productService');
+const productService = require('../../services/product.service');
 
 // Lấy tất cả sản phẩm
 const getAllProducts = async (req, res) => {

@@ -1,5 +1,4 @@
-const db = require('../db');
-
+const db = require('../config/database');
 class Cart {
   constructor(data) {
     this.id = data.id;
