@@ -11,12 +11,27 @@ WHERE id = 1; -- Thay 1 bằng ID của sản phẩm cần cập nhật
 DELETE FROM products
 WHERE id = 1; -- Thay 1 bằng ID của sản phẩm cần xoá
 
+-- Lấy danh sách sản phẩm
+CREATE FUNCTION GetAllProducts()
+RETURNS TABLE AS
+RETURN (
+    SELECT p.id AS product_id, p.name AS product_name, p.price, 
+           c1.name AS category_name, c2.name AS parent_category_name
+    FROM products p
+    JOIN categories c1 ON p.category_id = c1.id
+    LEFT JOIN categories c2 ON c1.parent_category_id = c2.id
+);
+
 -- Lấy danh sách sản phẩm theo danh mục
-SELECT p.id AS product_id, p.name AS product_name, p.price, 
-       c1.name AS category_name, c2.name AS parent_category_name
-FROM products p
-JOIN categories c1 ON p.category_id = c1.id
-LEFT JOIN categories c2 ON c1.parent_category_id = c2.id;
+CREATE PROCEDURE GetProductsByCategory(IN categoryId INT)
+BEGIN
+    SELECT p.id AS product_id, p.name AS product_name, p.price, 
+           c1.name AS category_name, c2.name AS parent_category_name
+    FROM products p
+    JOIN categories c1 ON p.category_id = c1.id
+    LEFT JOIN categories c2 ON c1.parent_category_id = c2.id
+    WHERE c1.id = categoryId;
+END;
 
 -- Danh sách sản phẩm cùng số lượng tồn kho cập nhật và tổng tồn kho
 SELECT p.id AS product_id, p.name AS product_name, p.stock AS current_stock,

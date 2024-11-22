@@ -25,4 +25,8 @@ const query = async (text, params) => {
 module.exports = {
     query,
     pool,
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> origin/kngan_be
