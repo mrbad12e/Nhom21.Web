@@ -4,6 +4,7 @@ import DefaultLayout from "@/components/layout/DefaultLayout";
 import Home from "@/pages/client/Home";
 import About from "@/pages/client/About";
 import Login from "@/pages/client/Login";
+import NotFound from "@/pages/client/NotFound";
 // import Register from "@/pages/Register";
 
 function App() {
@@ -13,8 +14,8 @@ function App() {
         {/* Routes bọc bởi DefaultLayout */}
         <Route path="/" element={<DefaultLayout />}>
           <Route index element={<Home />} />
-          <Route path="about" element={<About />} />
-          <Route path="*" element={<div>404 Not Found</div>} />
+          <Route path="/about" element={<About />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
 
         {/* Routes không bọc bởi DefaultLayout */}

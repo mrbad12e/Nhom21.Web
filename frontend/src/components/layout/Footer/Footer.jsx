@@ -5,7 +5,7 @@ import QRCode from '@/assets/images/HomePage/qrcode.png';
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-neutral-50 py-10">
+    <footer className="bg-gradient-to-br from-black to-neutral-700 text-neutral-50 py-10">
       <div className="container mx-auto px-4 flex flex-wrap gap-10 justify-between">
         {/* Subscription Section */}
         <div className="flex flex-col gap-4">
