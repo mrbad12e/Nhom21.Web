@@ -5,6 +5,7 @@ import Home from "@/pages/client/Home";
 import About from "@/pages/client/About";
 import Login from "@/pages/client/Login";
 import NotFound from "@/pages/client/NotFound";
+import Contact from "@/pages/client/Contact";
 // import Register from "@/pages/Register";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<DefaultLayout />}>
           <Route index element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Route>
 

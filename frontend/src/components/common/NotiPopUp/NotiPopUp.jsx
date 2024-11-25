@@ -1,5 +1,5 @@
 import React from "react";
-import { FaTimes } from "react-icons/fa"; // Icon để xóa thông báo hoặc đóng popup
+import { FaTimes } from "react-icons/fa";
 
 const NotiPopup = ({ notifications, onClose, onRemoveNotification }) => {
   return (

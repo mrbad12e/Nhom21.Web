@@ -100,10 +100,10 @@ const Header = () => {
             About
           </Link>
           <Link
-            to="/signup"
+            to="/blog"
             className="hover:text-yellow-300 transition duration-200"
           >
-            Sign Up
+            Blog
           </Link>
         </nav>
 
