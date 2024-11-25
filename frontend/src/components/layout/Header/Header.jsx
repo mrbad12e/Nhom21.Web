@@ -10,6 +10,7 @@ import {
 import ProfilePopup from "@/components/common/ProfilePopup";
 import CartPopup from "@/components/common/CartPopUp";
 import NotiPopup from "@/components/common/NotiPopUp";
+import avatar from "@/assets/images/HomePage/user.png";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,12 +44,9 @@ const Header = () => {
   };
 
   const user = {
-    isLoggedIn: true,
+    isLoggedIn: false,
     avatar: "https://via.placeholder.com/150",
   };
-
-  const defaultAvatar =
-    "https://via.placeholder.com/150/000000/FFFFFF/?text=Default";
 
   const toggleProfilePopup = () => {
     setIsProfilePopupOpen((prev) => !prev);
@@ -139,7 +137,7 @@ const Header = () => {
               onClick={toggleProfilePopup}
             >
               <img
-                src={user.isLoggedIn ? user.avatar : defaultAvatar}
+                src={user.isLoggedIn ? user.avatar : avatar}
                 alt="User Avatar"
                 className="w-full h-full object-cover"
               />
