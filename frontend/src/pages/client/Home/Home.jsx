@@ -4,47 +4,147 @@ import Guarantee from "@/assets/images/HomePage/Guarantee.png";
 import Support from "@/assets/images/HomePage/Support.png";
 
 const Home = () => {
-  return (
-    <div className="relative bg-white isolate px-6 pt-14 lg:px-8">
-      {/* Background Shape */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
-      >
-        <div
-          style={{
-            clipPath:
-              "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-          }}
-          className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
-        />
-      </div>
+  const statistics = [
+    {
+      value: "1000+",
+      label: "Products",
+    },
+    {
+      value: "500+",
+      label: "Brands",
+    },
+    {
+      value: "1000+",
+      label: "Customers",
+    },
+  ];
 
+  return (
+    <div className="relative bg-white isolate px-6 lg:px-8">
       {/* Hero Section */}
-      <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56 text-center">
-        <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl">
-          Discover Amazing Products
-        </h1>
-        <p className="mt-6 text-lg text-gray-600">
-          Shop the latest trends in fashion, electronics, and more. Elevate your
-          shopping experience with exclusive deals.
-        </p>
-        <div className="mt-10 flex justify-center gap-x-6">
-          <a
-            href="#shop-now"
-            className="rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md hover:bg-indigo-500"
-          >
-            Shop Now
-          </a>
-          <a href="#categories" className="text-sm font-semibold text-gray-900">
-            Browse Categories <span aria-hidden="true">→</span>
-          </a>
+      <section
+        id="hero"
+        className="relative flex flex-col-reverse lg:flex-row items-center justify-between w-full min-h-screen px-6 py-14 bg-gradient-to-r from-gray-50 via-white to-gray-100 lg:px-12"
+      >
+        {/* Left Content */}
+        <div className="lg:w-1/2 flex flex-col items-start justify-center text-left space-y-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-800 leading-tight">
+            <span>Discover </span>
+            <span className="text-rose-600">Amazing Products</span>
+          </h1>
+          <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
+            Shop the latest trends in fashion, electronics, and more. Elevate
+            your shopping experience with exclusive deals.
+          </p>
+          <div className="flex flex-wrap gap-4 mt-4">
+            <a
+              href="#shop-now"
+              className="bg-rose-500 text-white px-6 py-3 rounded-md shadow hover:bg-rose-600 transition duration-300"
+            >
+              Shop Now
+            </a>
+            <a
+              href="#categories"
+              className="border border-rose-500 text-rose-500 px-6 py-3 rounded-md shadow hover:bg-rose-500 hover:text-white transition duration-300"
+            >
+              Browse Categories
+            </a>
+          </div>
+          <div className="flex items-center justify-start space-x-12 mt-10">
+            {statistics.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-gray-800">
+                  {stat.value}
+                </p>
+                <p className="text-gray-600">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+
+        {/* Right Content */}
+        <div className="flex h-[90vh] w-full items-center justify-center">
+          <div className="grid h-full w-full gap-4 bg-gray-200 p-2 grid-cols-4 grid-rows-6 rounded-lg shadow-md">
+            {/* Cosmetics */}
+            <div className="col-span-2 row-span-2 bg-pink-200 rounded-lg shadow-md relative">
+              <img
+                src="https://i.pinimg.com/736x/e4/09/72/e40972a9213f64e24c2097b753e051cd.jpg"
+                alt="Cosmetics"
+                className="h-full w-full object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center rounded-lg">
+                <p className="text-white text-lg font-bold">Cosmetics</p>
+              </div>
+            </div>
+
+            {/* Fashions */}
+            <div className="col-span-2 row-span-2 bg-lime-200 rounded-lg shadow-md relative">
+              <img
+                src="https://i.pinimg.com/1200x/16/e5/37/16e5371c7fc5b7e4c85f9661c0c2f466.jpg"
+                alt="Fashions"
+                className="h-full w-full object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center rounded-lg">
+                <p className="text-white text-lg font-bold">Fashions</p>
+              </div>
+            </div>
+
+            {/* Electronics */}
+            <div className="col-span-1 row-span-4 bg-yellow-200 rounded-lg shadow-md relative">
+              <img
+                src="https://i.pinimg.com/736x/43/9e/e3/439ee3c344dbd4af31ae9f17015c4195.jpg"
+                alt="Electronics"
+                className="h-full w-full object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center rounded-lg">
+                <p className="text-white text-lg font-bold">Electronics</p>
+              </div>
+            </div>
+
+            {/* Books & Stationery */}
+            <div className="col-span-2 row-span-2 bg-tan-200 rounded-lg shadow-md relative">
+              <img
+                src="https://i.pinimg.com/1200x/33/86/d4/3386d43ac6f00a71bff9961c8e55d12f.jpg"
+                alt="Books & Stationery"
+                className="h-full w-full object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center rounded-lg">
+                <p className="text-white text-lg font-bold">
+                  Books & Stationery
+                </p>
+              </div>
+            </div>
+
+            {/* Furniture */}
+            <div className="col-span-1 row-span-2 bg-green-200 rounded-lg shadow-md relative">
+              <img
+                src="https://i.pinimg.com/1200x/72/51/d9/7251d92cc058ab65bcd2b68a22d65ea7.jpg"
+                alt="Furniture"
+                className="h-full w-full object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center rounded-lg">
+                <p className="text-white text-lg font-bold">Furniture</p>
+              </div>
+            </div>
+
+            {/* Food */}
+            <div className="col-span-3 row-span-2 bg-red-200 rounded-lg shadow-md relative">
+              <img
+                src="https://i.pinimg.com/736x/b0/e7/47/b0e747a8e32385349f1e10f0dbfdcabd.jpg"
+                alt="Food"
+                className="h-full w-full object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center rounded-lg">
+                <p className="text-white text-lg font-bold">Food</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Browse by Categories */}
       <section id="browse-categories" className="py-16 bg-gray-50">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-semibold text-gray-900 text-center">
             Browse by Categories
           </h2>
@@ -54,7 +154,7 @@ const Home = () => {
           </p>
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {/* Category 1 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition">
+            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
               <img
                 src="https://via.placeholder.com/300"
                 alt="Fashion"
@@ -73,8 +173,9 @@ const Home = () => {
                 Shop Now →
               </a>
             </div>
+
             {/* Category 2 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition">
+            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
               <img
                 src="https://via.placeholder.com/300"
                 alt="Electronics"
@@ -94,7 +195,7 @@ const Home = () => {
               </a>
             </div>
             {/* Category 3 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition">
+            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
               <img
                 src="https://via.placeholder.com/300"
                 alt="Home Appliances"
@@ -114,7 +215,7 @@ const Home = () => {
               </a>
             </div>
             {/* Category 4 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition">
+            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
               <img
                 src="https://via.placeholder.com/300"
                 alt="Accessories"

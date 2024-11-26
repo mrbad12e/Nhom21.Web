@@ -1,6 +1,12 @@
 import React from "react";
-import { TextField, Button } from "@mui/material";
-import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaEnvelope } from "react-icons/fa";
+import { TextField, Button, Stack } from "@mui/material";
+import {
+  FaMapMarkerAlt,
+  FaPhoneAlt,
+  FaClock,
+  FaEnvelope,
+} from "react-icons/fa";
+import SendIcon from "@mui/icons-material/Send";
 
 const Contact = () => {
   return (
@@ -8,14 +14,18 @@ const Contact = () => {
       <div className="max-w-6xl w-full bg-white shadow-lg rounded-lg p-8 flex">
         {/* Left Column - Store Information */}
         <div className="w-full md:w-1/2 pr-8 mb-8 md:mb-0">
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Our Store</h1>
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+            Our Store
+          </h1>
 
           <div className="text-gray-600 mb-4">
             <p className="flex items-center">
               <FaMapMarkerAlt className="text-indigo-600 mr-2" />
               <strong>Address:</strong>
             </p>
-            <p className="ml-6">1 Đ. Đại Cồ Việt, Bách Khoa, Hai Bà Trưng, Hà Nội</p>
+            <p className="ml-6">
+              1 Đ. Đại Cồ Việt, Bách Khoa, Hai Bà Trưng, Hà Nội
+            </p>
           </div>
 
           <div className="text-gray-600 mb-4">
@@ -44,7 +54,9 @@ const Contact = () => {
 
           {/* Map (with iframe) */}
           <div className="mt-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Find Us Here</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Find Us Here
+            </h2>
             <div className="mapswrapper">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.6341764178947!2d105.84264359999999!3d21.007296399999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac71294bf0ab%3A0xc7e2d20e5e04a9da!2zxJDhuqFpIEjhu41jIELDoWNoIEtob2EgSMOgIE7hu5lp!5e0!3m2!1svi!2s!4v1732546488941!5m2!1svi!2s"
@@ -65,8 +77,9 @@ const Contact = () => {
             Get In Touch With Us
           </h1>
           <p className="text-gray-600 text-center md:text-left mb-8 text-lg">
-            For more information about our products & services, please feel free to drop us an email.
-            Our staff is always here to help you out. Do not hesitate!
+            For more information about our products & services, please feel free
+            to drop us an email. Our staff is always here to help you out. Do
+            not hesitate!
           </p>
 
           <form
@@ -124,12 +137,8 @@ const Contact = () => {
 
             {/* Submit Button */}
             <div className="text-center md:text-left">
-              <Button
-                type="submit"
-                variant="contained"
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg shadow-md transition duration-200"
-              >
-                Send Message
+              <Button variant="contained" endIcon={<SendIcon />}>
+                Send
               </Button>
             </div>
           </form>
