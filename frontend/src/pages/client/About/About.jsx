@@ -39,37 +39,27 @@ const About = () => {
             </p>
           </div>
 
-          <div className="flex-1 grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <img
-              className="h-auto w-full rounded-lg object-cover"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image.jpg"
-              alt="Gallery Image 1"
-            />
-            <img
-              className="h-auto w-full rounded-lg object-cover"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-1.jpg"
-              alt="Gallery Image 2"
-            />
-            <img
-              className="h-auto w-full rounded-lg object-cover"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-2.jpg"
-              alt="Gallery Image 3"
-            />
-            <img
-              className="h-auto w-full rounded-lg object-cover"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-3.jpg"
-              alt="Gallery Image 4"
-            />
-            <img
-              className="h-auto w-full rounded-lg object-cover"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-4.jpg"
-              alt="Gallery Image 5"
-            />
-            <img
-              className="h-auto w-full rounded-lg object-cover"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-5.jpg"
-              alt="Gallery Image 6"
-            />
+          <div className="flex-1 flex h-full w-full items-center justify-center">
+            <div className="grid h-[550px] w-full gap-4 p-2 grid-cols-9 grid-rows-10 rounded-lg shadow-md">
+              <div className="col-span-3 row-span-7 bg-pink-200 rounded-lg shadow-md flex items-center justify-center">
+                <p>Salmon</p>
+              </div>
+              <div className="col-span-6 row-span-3 bg-lime-200 rounded-lg shadow-md flex items-center justify-center">
+                <p>Broccoli</p>
+              </div>
+              <div className="col-span-3 row-span-4 bg-yellow-200 rounded-lg shadow-md flex items-center justify-center">
+                <p>Tamago</p>
+              </div>
+              <div className="col-span-3 row-span-4 bg-tan-200 rounded-lg shadow-md flex items-center justify-center">
+                <p>Pork</p>
+              </div>
+              <div className="col-span-6 row-span-4 bg-green-200 rounded-lg shadow-md flex items-center justify-center">
+                <p>Edamame</p>
+              </div>
+              <div className="col-span-3 row-span-4 bg-red-200 rounded-lg shadow-md flex items-center justify-center">
+                <p>Tomato</p>
+              </div>
+            </div>
           </div>
         </div>
 
