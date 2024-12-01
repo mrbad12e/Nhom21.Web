@@ -11,12 +11,11 @@ exports.login = async (req, res) => {
     }
 
     const accessToken = authService.generateAccessToken(admin);
-    const refreshToken = authService.generateRefreshToken(admin);
-    
+    res.cookie('accessToken',accessToken,{
+      httpOnly:true,
+    })
      return res.status(200).json({
        message: 'Login successful',
-       accessToken,
-       refreshToken,
      });
 
     }catch (err){

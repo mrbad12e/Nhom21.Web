@@ -1,59 +1,42 @@
-const { Client } = require('pg');
-require('dotenv').config();
+const jwt = require('jsonwebtoken');
+const pool = require('../config/database'); 
 
-// Kết nối với cơ sở dữ liệu PostgreSQL
-const client = new Client({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD
-});
-
-client.connect();
-
-// Hàm đăng nhập
-async function signIn(username, password) {
+exports.validateAdminCredentials = async (username, password, next) => {
   try {
-    const result = await client.query('SELECT * FROM signIn($1, $2)', [username, password]);
-    
-    if (result.rows.length > 0) {
-      return true; // Đăng nhập thành công
-    } else {
-      return false; // Đăng nhập thất bại
+    // Query to validate user credentials using raw SQL (keeping the same query structure)
+    const result = await pool.query(
+      'SELECT signIn($1, $2) AS is_valid',
+      [username, password] 
+    );
+
+    const isValid = result.rows[0]?.is_valid;
+
+    if (isValid) {
+      const userResult = await pool.query(
+        'SELECT id, username, role FROM users WHERE username = $1',
+        [username]
+      );
+
+      const user = userResult.rows[0];
+
+      if (user.role !== 'ADMIN') {
+        const error = new Error('Unauthorized. User is not an admin.');
+        error.statusCode = 403;
+        return next(error); // Pass error to your error handler middleware
+      }
+
+      return user; // Return admin user info
     }
   } catch (err) {
-    console.error('Lỗi khi gọi hàm đăng nhập:', err);
-    return false;
-  } finally {
-    await client.end();
+    console.log('Error during admin authentication:', err);
+    return next(err); // Pass the error to the middleware
   }
-}
+};
 
-module.exports = { signIn };
-
-// Hàm tạo tài khoản người dùng mới
-async function createAccount(username, password, email, firstName, lastName, role = 'CUSTOMER', phone = null, address = null, image = null) {
-    try {
-      const result = await client.query('SELECT create_account($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
-        username,
-        password,
-        email,
-        firstName,
-        lastName,
-        role,
-        phone,
-        address,
-        image
-      ]);
-  
-      console.log('Tạo tài khoản thành công');
-    } catch (err) {
-      console.error('Lỗi khi gọi hàm tạo tài khoản:', err.message);
-      throw err;
-    } finally {
-      await client.end();
-    }
-  }
-  
-  module.exports = { createAccount };
+exports.generateAccessToken = (user) => {
+  return jwt.sign(
+    { id: user.id, username: user.username, role: user.role },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: '1d' }
+  );
+};
