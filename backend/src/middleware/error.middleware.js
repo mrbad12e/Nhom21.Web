@@ -1,27 +1,32 @@
-
-// Middleware xử lý lỗi
 const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err);
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
 
-  // Xác định mã trạng thái HTTP
-  const statusCode = err.status || 500;
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error:', err);
+  }
 
-  // Trả về phản hồi JSON chứa thông tin lỗi
-  res.status(statusCode).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
-    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack, // Ẩn stack trace trong môi trường production
+  if (err.name === 'SequelizeValidationError') {
+    return res.status(400).json({
+      status: 'error',
+      message: err.errors.map((e) => e.message),
+    });
+  }
+
+  if (err.name === 'SequelizeUniqueConstraintError') {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Dữ liệu đã tồn tại',
+    });
+  }
+
+  res.status(err.statusCode).json({
+    status: err.status,
+    message:
+      process.env.NODE_ENV === 'production'
+        ? 'Có lỗi xảy ra, vui lòng thử lại sau'
+        : err.message,
   });
 };
 
-
-// Middleware cho các route không xác định
-const notFoundHandler = (req, res, next) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-  });
-};
-
-
-module.exports = { errorHandler, notFoundHandler };
+module.exports = errorHandler;
