@@ -1,5 +1,5 @@
 import React from "react";
-import { TextField, Button, Stack } from "@mui/material";
+import { TextField, Button } from "@mui/material";
 import {
   FaMapMarkerAlt,
   FaPhoneAlt,
@@ -20,7 +20,7 @@ const Contact = () => {
 
           <div className="text-gray-600 mb-4">
             <p className="flex items-center">
-              <FaMapMarkerAlt className="text-indigo-600 mr-2" />
+              <FaMapMarkerAlt className="text-rose-500 mr-2" />
               <strong>Address:</strong>
             </p>
             <p className="ml-6">
@@ -30,7 +30,7 @@ const Contact = () => {
 
           <div className="text-gray-600 mb-4">
             <p className="flex items-center">
-              <FaPhoneAlt className="text-indigo-600 mr-2" />
+              <FaPhoneAlt className="text-rose-500 mr-2" />
               <strong>Phone:</strong>
             </p>
             <p className="ml-6">(+84) 987-654-321</p>
@@ -38,7 +38,7 @@ const Contact = () => {
 
           <div className="text-gray-600 mb-4">
             <p className="flex items-center">
-              <FaClock className="text-indigo-600 mr-2" />
+              <FaClock className="text-rose-500 mr-2" />
               <strong>Hours:</strong>
             </p>
             <p className="ml-6">Mon - Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM</p>
@@ -46,7 +46,7 @@ const Contact = () => {
 
           <div className="text-gray-600 mb-4">
             <p className="flex items-center">
-              <FaEnvelope className="text-indigo-600 mr-2" />
+              <FaEnvelope className="text-rose-500 mr-2" />
               <strong>Email:</strong>
             </p>
             <p className="ml-6">ecommerce@gmail.com</p>

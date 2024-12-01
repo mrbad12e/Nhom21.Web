@@ -1,30 +1,22 @@
 import React from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, EffectCoverflow } from "swiper/modules";
+import { useHomeLogic } from "@/pages/client/Home/index";
+
 import Shipping from "@/assets/images/HomePage/Shipping.png";
 import Guarantee from "@/assets/images/HomePage/Guarantee.png";
 import Support from "@/assets/images/HomePage/Support.png";
 
 const Home = () => {
-  const statistics = [
-    {
-      value: "1000+",
-      label: "Products",
-    },
-    {
-      value: "500+",
-      label: "Brands",
-    },
-    {
-      value: "1000+",
-      label: "Customers",
-    },
-  ];
+  const { handleExploreMore, statistics, categories, products } =
+    useHomeLogic();
 
   return (
-    <div className="relative bg-white isolate px-6 lg:px-8">
+    <div className="relative bg-gray-50 px-6 lg:px-8">
       {/* Hero Section */}
       <section
         id="hero"
-        className="relative flex flex-col-reverse lg:flex-row items-center justify-between w-full min-h-screen px-6 py-14 bg-gradient-to-r from-gray-50 via-white to-gray-100 lg:px-12"
+        className="relative flex flex-col-reverse lg:flex-row items-center justify-between w-full min-h-screen px-6 py-14 lg:px-12"
       >
         {/* Left Content */}
         <div className="lg:w-1/2 flex flex-col items-start justify-center text-left space-y-6">
@@ -37,18 +29,21 @@ const Home = () => {
             your shopping experience with exclusive deals.
           </p>
           <div className="flex flex-wrap gap-4 mt-4">
-            <a
-              href="#shop-now"
+            <button
+              onClick={handleExploreMore}
               className="bg-rose-500 text-white px-6 py-3 rounded-md shadow hover:bg-rose-600 transition duration-300"
             >
               Shop Now
-            </a>
-            <a
-              href="#categories"
+            </button>
+            <button
+              onClick={() => {
+                const element = document.querySelector("#browse-categories");
+                element?.scrollIntoView({ behavior: "smooth" });
+              }}
               className="border border-rose-500 text-rose-500 px-6 py-3 rounded-md shadow hover:bg-rose-500 hover:text-white transition duration-300"
             >
               Browse Categories
-            </a>
+            </button>
           </div>
           <div className="flex items-center justify-start space-x-12 mt-10">
             {statistics.map((stat) => (
@@ -143,7 +138,7 @@ const Home = () => {
       </section>
 
       {/* Browse by Categories */}
-      <section id="browse-categories" className="py-16 bg-gray-50">
+      <section id="browse-categories" className="py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-semibold text-gray-900 text-center">
             Browse by Categories
@@ -152,88 +147,57 @@ const Home = () => {
             Explore our diverse collection of products across multiple
             categories. Find what you need with ease!
           </p>
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Category 1 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
-              <img
-                src="https://via.placeholder.com/300"
-                alt="Fashion"
-                className="w-full h-48 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600">
-                Fashion
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Stylish clothing and accessories for every season.
-              </p>
-              <a
-                href="#fashion"
-                className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline"
-              >
-                Shop Now →
-              </a>
-            </div>
 
-            {/* Category 2 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
-              <img
-                src="https://via.placeholder.com/300"
-                alt="Electronics"
-                className="w-full h-48 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600">
-                Electronics
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Latest gadgets and devices to keep you connected.
-              </p>
-              <a
-                href="#electronics"
-                className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline"
-              >
-                Shop Now →
-              </a>
-            </div>
-            {/* Category 3 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
-              <img
-                src="https://via.placeholder.com/300"
-                alt="Home Appliances"
-                className="w-full h-48 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600">
-                Home Appliances
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Upgrade your home with our premium appliances.
-              </p>
-              <a
-                href="#home-appliances"
-                className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline"
-              >
-                Shop Now →
-              </a>
-            </div>
-            {/* Category 4 */}
-            <div className="group p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
-              <img
-                src="https://via.placeholder.com/300"
-                alt="Accessories"
-                className="w-full h-48 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600">
-                Accessories
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Perfect additions to complement your style.
-              </p>
-              <a
-                href="#accessories"
-                className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline"
-              >
-                Shop Now →
-              </a>
-            </div>
+          {/* Swiper */}
+          <div className="mt-8">
+            <Swiper
+              effect="coverflow"
+              grabCursor={true}
+              centeredSlides={true}
+              slidesPerView="3"
+              breakpoints={{
+                640: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+              }}
+              coverflowEffect={{
+                rotate: 30,
+                stretch: 0,
+                depth: 100,
+                modifier: 1,
+                slideShadows: true,
+              }}
+              pagination={{ clickable: true }}
+              modules={[EffectCoverflow, Pagination]}
+              className="mySwiper"
+            >
+              {categories.map((category, index) => (
+                <SwiperSlide
+                  key={index}
+                  className="group bg-white rounded-lg shadow-md p-6"
+                >
+                  <img
+                    src={category.image} // Use the correct image path or import
+                    alt={category.name}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-rose-500">
+                    {category.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-gray-600">
+                    {category.description}
+                  </p>
+                  <a
+                    href={`#${category.name
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    className="mt-4 inline-block text-sm font-medium text-rose-500 hover:underline"
+                  >
+                    Shop Now →
+                  </a>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
         </div>
       </section>
@@ -244,108 +208,102 @@ const Home = () => {
           <h2 className="text-3xl font-semibold text-gray-900">
             Explore Our Products
           </h2>
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/200"
-                alt="Fashion"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Fashion
-              </h3>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/200"
-                alt="Electronics"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Electronics
-              </h3>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/200"
-                alt="Home Appliances"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Home Appliances
-              </h3>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/200"
-                alt="Accessories"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Accessories
-              </h3>
-            </div>
+          <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {products.slice(0, 8).map((product) => (
+              <div
+                key={product.id}
+                className="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg"
+              >
+                <div className="relative p-2.5 h-96 overflow-hidden rounded-xl bg-clip-border">
+                  <img
+                    src={product.image || "https://via.placeholder.com/200"}
+                    alt={product.name}
+                    className="h-full w-full object-cover rounded-md"
+                  />
+                </div>
+                <div className="p-4 ">
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <p className="text-slate-800 text-xl font-semibold leading-tight text-left break-words max-w-[70%]">
+                      {product.name}
+                    </p>
+                    <p className="text-rose-600 text-xl font-semibold text-right whitespace-nowrap">
+                      ${product.price}
+                    </p>
+                  </div>
+
+                  <p className="text-slate-600 leading-normal text-left font-light">
+                    {product.description || "No description available."}
+                  </p>
+                  <button
+                    className="rounded-md w-full mt-6 bg-rose-500 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-rose-600 focus:shadow-none active:bg-rose-600 hover:bg-rose-600 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                    type="button"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
+          <button
+            className="mt-8 px-6 py-2 bg-rose-500 text-white font-semibold rounded-lg hover:bg-rose-600"
+            onClick={handleExploreMore}
+          >
+            Explore More
+          </button>
         </div>
       </section>
 
       {/* Best Selling Products */}
-      <section id="best-sellers" className="py-16 bg-gray-50">
+      <section id="best-sellers" className="py-16">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-semibold text-gray-900">
             Best Selling Products
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/300x200"
-                alt="Product 1"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Product 1
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">$49.99</p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/300x200"
-                alt="Product 2"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Product 2
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">$89.99</p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/300x200"
-                alt="Product 3"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Product 3
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">$29.99</p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md">
-              <img
-                src="https://via.placeholder.com/300x200"
-                alt="Product 4"
-                className="w-full h-40 object-cover rounded-lg"
-              />
-              <h3 className="mt-4 text-xl font-medium text-gray-900">
-                Product 4
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">$59.99</p>
-            </div>
+            {products.slice(0, 4).map((product) => (
+              <div
+                key={product.id}
+                className="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg"
+              >
+                <div className="relative p-2.5 h-96 overflow-hidden rounded-xl bg-clip-border">
+                  <img
+                    src={product.image || "https://via.placeholder.com/300x200"}
+                    alt={product.name}
+                    className="h-full w-full object-cover rounded-md"
+                  />
+                </div>
+                <div className="p-2">
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <p className="text-slate-800 text-xl font-semibold leading-tight break-words max-w-[70%]">
+                      {product.name}
+                    </p>
+                    <p className="text-rose-600 text-xl font-semibold whitespace-nowrap">
+                      ${product.price}
+                    </p>
+                  </div>
+
+                  <p className="text-slate-600 leading-normal font-light">
+                    {product.description || "No description available."}
+                  </p>
+                  <button
+                    className="rounded-md w-full mt-6 bg-rose-500 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-rose-700 focus:shadow-none active:bg-rose-700 hover:bg-rose-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                    type="button"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
+          <button className="mt-8 px-6 py-2 bg-rose-500 text-white font-semibold rounded-lg hover:bg-rose-600"
+          onClick={handleExploreMore}>
+            Explore More
+          </button>
         </div>
       </section>
 
       {/* Why Shop With Us */}
-      <section id="highlights" className="py-16 bg-gray-50">
+      <section id="highlights" className="py-16">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-semibold text-gray-900">
             Why Shop With Us?

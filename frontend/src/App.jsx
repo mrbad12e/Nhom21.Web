@@ -6,6 +6,7 @@ import About from "@/pages/client/About";
 import Login from "@/pages/client/Login";
 import NotFound from "@/pages/client/NotFound";
 import Contact from "@/pages/client/Contact";
+import Shop from "./pages/client/Shop";
 // import Register from "@/pages/Register";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/shop" element={<Shop />} />
         </Route>
 
         {/* Routes không bọc bởi DefaultLayout */}

@@ -81,27 +81,27 @@ const Header = () => {
         >
           <Link
             to="/"
-            className="hover:text-yellow-300 transition duration-200"
+            className="hover:text-rose-500 transition duration-200"
           >
             Home
           </Link>
           <Link
+            to="/shop"
+            className="hover:text-rose-500 transition duration-200"
+          >
+            Shop
+          </Link>
+          <Link
             to="/contact"
-            className="hover:text-yellow-300 transition duration-200"
+            className="hover:text-rose-500 transition duration-200"
           >
             Contact
           </Link>
           <Link
             to="/about"
-            className="hover:text-yellow-300 transition duration-200"
+            className="hover:text-rose-500 transition duration-200"
           >
             About
-          </Link>
-          <Link
-            to="/blog"
-            className="hover:text-yellow-300 transition duration-200"
-          >
-            Blog
           </Link>
         </nav>
 
