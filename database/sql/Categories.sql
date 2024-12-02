@@ -16,9 +16,22 @@ WHERE id = 1 AND NOT EXISTS (
 );
 
 -- Lấy danh sách các danh mục
-SELECT c1.id, c1.name, c2.name AS parent_name
-FROM categories c1
-LEFT JOIN categories c2 ON c1.parent_category_id = c2.id;
+CREATE OR REPLACE FUNCTION get_categories_with_parents()
+RETURNS TABLE (
+    category_id INT,
+    category_name VARCHAR,
+    parent_name VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c1.id AS category_id,
+        c1.name AS category_name,
+        c2.name AS parent_name
+    FROM categories c1
+    LEFT JOIN categories c2 ON c1.parent_category_id = c2.id;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Tổng doanh thu theo danh mục
 SELECT c.name AS category_name, 
