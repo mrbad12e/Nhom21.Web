@@ -4,6 +4,8 @@ const cookieParser = require('cookie-parser');
 const userRoutes = require('./routes/client/user.routes');
 const productRoutes = require('./routes/client/product.routes');
 const cartRoutes = require('./routes/client/cart.routes');
+const orderRoutes = require('./routes/OrderRoutes');
+const reviewRoutes = require('./routes/reviewRoutes'); 
 const app = express();
 
 app.use(cookieParser());
@@ -14,8 +16,6 @@ app.use('/auth', userRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/cart', cartRoutes);
 
-// Dùng các routes cho yêu cầu đến /api/products
-app.use('/api/products', productRoutes);
 
 // Khởi động server
 const port = process.env.PORT || 5000;

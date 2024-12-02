@@ -2,57 +2,76 @@ const db = require('../config/database');
 
 class Product {
   constructor(data) {
-    if (!Product.validate(data)) {
-      throw new Error("Invalid product data");
-    }
     this.id = data.id;
     this.name = data.name;
     this.description = data.description;
-    this.price = data.price;
-    this.stock = data.stock;
-    this.imageUrls = data.imageUrls || [];
-    this.categoryId = data.categoryId || null;
-    this.createdAt = data.createdAt;
+    this.price = parseFloat(data.price);
+    this.stock = parseInt(data.stock);
+    this.categoryId = data.category_id || data.categoryId;
+    this.imageUrls = data.image_urls || data.imageUrls || [];
+    this.isActive = data.is_active !== undefined ? data.is_active : true;
   }
 
   static validate(product) {
-    // Kiểm tra tính hợp lệ của dữ liệu sản phẩm
     return !!(
       product.name &&
       product.description &&
-      product.price >= 0 &&
-      product.stock >= 0
+      parseFloat(product.price) >= 0 &&
+      parseInt(product.stock) >= 0 &&
+      product.categoryId
     );
   }
 
-  // Hàm kiểm tra nếu sản phẩm còn hàng
   isInStock() {
-    return this.stock > 0;
+    return this.stock > 0 && this.isActive;
   }
 
-  // Gọi hàm GetAllProducts từ PostgreSQL
-  static async getAllProducts() {
-    const query = 'SELECT * FROM GetAllProducts();'; // Gọi hàm GetAllProducts
+  static async get({
+    search = null,
+    categoryId = null,
+    minPrice = null,
+    maxPrice = null,
+    includeInactive = false,
+    page = 1,
+    pageSize = 10,
+    sortBy = 'id',
+    sortOrder = 'asc'
+  } = {}) {
     try {
-      const result = await db.query(query);
-      return result;
+      const result = await db.query(
+        'SELECT * FROM get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        [
+          search, 
+          categoryId, 
+          minPrice, 
+          maxPrice, 
+          includeInactive, 
+          page, 
+          pageSize, 
+          sortBy, 
+          sortOrder
+        ]
+      );
+      return {
+        products: result.rows.map(product => new Product(product)),
+        totalCount: result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0
+      };
     } catch (err) {
-      console.error('Error fetching all products:', err.message);
+      console.error('Fetch products error:', err);
       throw err;
     }
   }
 
-  // Gọi thủ tục GetProductsByCategory từ PostgreSQL
-  static async getProductsByCategory(categoryId) {
-    const query = 'CALL GetProductsByCategory($1);'; // Gọi thủ tục GetProductsByCategory
+  static async getById(productId) {
     try {
-      const result = await db.query(query, [categoryId]);
-      return result;
+      const result = await this.get({ search: null, page: 1, pageSize: 1, includeInactive: true });
+      return result.products[0] || null;
     } catch (err) {
-      console.error('Error fetching products by category:', err.message);
+      console.error('Fetch product by ID error:', err);
       throw err;
     }
   }
+  
 }
 
 module.exports = Product;

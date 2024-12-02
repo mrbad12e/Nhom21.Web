@@ -1,28 +1,52 @@
-const Cart = require('../../models/Cart');
+const CartService = require('../../services/cart.service');
 
-const addProductToCart = async (req, res) => {
-    const { userId, productId, quantity } = req.body;
-
+class CartController {
+  // Lấy danh sách sản phẩm trong giỏ hàng
+  static async getCart(req, res) {
     try {
-        await Cart.addProductToCart(userId, productId, quantity);
-        res.status(200).json({ message: 'Product added to cart successfully' });
+      const customerId = req.params.customerId;
+      const cart = await CartService.getCart(customerId);
+      res.status(200).json(cart);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+      res.status(500).json({ message: err.message });
     }
-};
+  }
 
-const getCartItems = async (req, res) => {
-    const userId = req.params.userId;
-
+  // Thêm sản phẩm vào giỏ hàng
+  static async addProduct(req, res) {
     try {
-        const cartItems = await Cart.getCartItems(userId);
-        res.status(200).json(cartItems);
+      const { userId, productId, quantity } = req.body;
+      await CartService.addProduct(userId, productId, quantity);
+      res.status(200).json({ message: 'Product added to cart successfully' });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+      res.status(400).json({ message: err.message });
     }
-};
+  }
+
+  // Cập nhật số lượng sản phẩm trong giỏ hàng
+  static async updateCartItem(req, res) {
+    try {
+      const { cartId, productId, quantity } = req.body;
+      await CartService.updateCartItem(cartId, productId, quantity);
+      res.status(200).json({ message: 'Cart item updated successfully' });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  // Xóa sản phẩm khỏi giỏ hàng
+  static async removeProduct(req, res) {
+    try {
+      const { cartId, productId } = req.body;
+      await CartService.removeProduct(cartId, productId);
+      res.status(200).json({ message: 'Product removed from cart successfully' });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+}
 
 module.exports = {
-    addProductToCart,
-    getCartItems,
+  addProductToCart,
+  getCartItems,
 };
