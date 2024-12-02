@@ -1,162 +1,212 @@
--- Thêm 1 sản phẩm mới
-INSERT INTO products (name, description, price, stock, category_id, store_id, created_at)
-VALUES ('Tên sản phẩm', 'Mô tả sản phẩm', 100000, 50, 1, 1, CURRENT_TIMESTAMP);
+-- Add column is_active to products table for soft delete
+alter table products 
+add column is_active boolean default true;
 
--- Cập nhật thông tin sản phẩm
-UPDATE products
-SET name = 'Tên sản phẩm mới', price = 120000
-WHERE id = 1; -- Thay 1 bằng ID của sản phẩm cần cập nhật
+-- CREATE (Insert) product with proper validation
+drop function if exists create_product(varchar, text, decimal, integer, integer, text[]);
+create or replace function create_product(
+    p_name varchar,
+    p_description text,
+    p_price decimal(10,2),
+    p_stock integer,
+    p_category_id integer,
+    p_image_urls text[] default null
+) returns table (
+    id integer,
+    name varchar,
+    price decimal(10,2)
+) as $$
+begin
+    -- validate inputs
+    if p_price < 0 then
+        raise exception 'Price cannot be negative';
+    end if;
+    
+    if p_stock < 0 then
+        raise exception 'Stock cannot be negative';
+    end if;
 
--- Xóa một sản phẩm
-DELETE FROM products
-WHERE id = 1; -- Thay 1 bằng ID của sản phẩm cần xoá
+    if not exists (select 1 from categories c where c.id = p_category_id) then
+        raise exception 'Invalid category_id';
+    end if;
 
--- Lấy danh sách sản phẩm theo danh mục
-SELECT p.id AS product_id, p.name AS product_name, p.price, 
-       c1.name AS category_name, c2.name AS parent_category_name
-FROM products p
-JOIN categories c1 ON p.category_id = c1.id
-LEFT JOIN categories c2 ON c1.parent_category_id = c2.id;
+    return query
+    insert into products (name, description, price, stock, category_id, image_urls)
+    values (p_name, p_description, p_price, p_stock, p_category_id, p_image_urls)
+    returning products.id AS product_id, products.name AS product_name, products.price AS product_price;
+end;
+$$ language plpgsql;
 
--- Danh sách sản phẩm cùng số lượng tồn kho cập nhật và tổng tồn kho
-SELECT p.id AS product_id, p.name AS product_name, p.stock AS current_stock,
-       COALESCE(SUM(i.quantity), 0) AS total_inventory_changes
-FROM products p
-LEFT JOIN inventory i ON p.id = i.product_id
-GROUP BY p.id, p.name, p.stock
-ORDER BY p.name;
+-- READ product(s) with flexible filtering and sorting
+drop function if exists get_products(text, integer, decimal, decimal, boolean, integer, integer, text, text);
+create or replace function get_products(
+    -- Search params
+    p_search text default null,
+    p_category_id integer default null,
+    p_min_price decimal default null,
+    p_max_price decimal default null,
+    p_include_inactive boolean default false,
+    -- Pagination params
+    p_page integer default 1,
+    p_page_size integer default 10,
+    -- Sorting params
+    p_sort_by text default 'id',
+    p_sort_order text default 'asc'
+) returns table (
+    product_id integer,
+    product_name varchar,
+    product_description text,
+    product_price decimal(10,2),
+    product_stock integer,
+    category_name varchar,
+    is_active boolean,
+    total_count bigint
+) as $$
+declare
+    v_offset integer;
+    v_sort_sql text;
+begin
+    -- calculate offset
+    v_offset := (p_page - 1) * p_page_size;
+    
+    -- validate and construct sort sql
+    if p_sort_by not in ('id', 'name', 'price', 'stock') then
+        raise exception 'Invalid sort column: %', p_sort_by;
+    end if;
+    
+    if p_sort_order not in ('asc', 'desc') then
+        raise exception 'Invalid sort order: %', p_sort_order;
+    end if;
+    
+    v_sort_sql := format('p.%I %s', p_sort_by, p_sort_order);
 
--- Danh sách sản phẩm có doanh thu cao nhất
-SELECT c.name AS category_name, p.name AS product_name, 
-       SUM(oi.quantity * p.price) AS total_revenue
-FROM order_items oi
-JOIN products p ON oi.product_id = p.id
-JOIN categories c ON p.category_id = c.id
-GROUP BY c.name, p.name
-HAVING SUM(oi.quantity * p.price) = (
-    SELECT MAX(SUM(oi2.quantity * p2.price))
-    FROM order_items oi2
-    JOIN products p2 ON oi2.product_id = p2.id
-    WHERE p2.category_id = c.id
-    GROUP BY p2.id
-)
-ORDER BY category_name;
+    return query
+    with filtered_products as (
+        select 
+            p.id,
+            p.name,
+            p.description,
+            p.price,
+            p.stock,
+            c.name as category_name,
+            p.is_active,
+            count(*) over() as total_count
+        from products p
+        join categories c on p.category_id = c.id
+        where (
+            p_search is null 
+            or p.name ilike '%' || p_search || '%' 
+            or p.description ilike '%' || p_search || '%'
+        )
+        and (p_category_id is null or p.category_id = p_category_id)
+        and (p_min_price is null or p.price >= p_min_price)
+        and (p_max_price is null or p.price <= p_max_price)
+        and (p_include_inactive or p.is_active = true)
+    )
+    select *
+    from filtered_products
+    order by 
+        case when v_sort_sql = 'p.id asc' then id end asc,
+        case when v_sort_sql = 'p.id desc' then id end desc,
+        case when v_sort_sql = 'p.name asc' then name end asc,
+        case when v_sort_sql = 'p.name desc' then name end desc,
+        case when v_sort_sql = 'p.price asc' then price end asc,
+        case when v_sort_sql = 'p.price desc' then price end desc,
+        case when v_sort_sql = 'p.stock asc' then stock end asc,
+        case when v_sort_sql = 'p.stock desc' then stock end desc
+    limit p_page_size
+    offset v_offset;
+end;
+$$ language plpgsql;
 
--- Danh sách sản phẩm chưa bao giờ được bán
-SELECT p.id AS product_id, p.name AS product_name
-FROM products p
-LEFT JOIN order_items oi ON p.id = oi.product_id
-WHERE oi.product_id IS NULL;
+-- UPDATE product with validation
+drop function if exists update_product(integer, varchar, text, decimal, integer, integer);
+create or replace function update_product(
+    p_product_id integer,
+    p_name varchar default null,
+    p_description text default null,
+    p_price decimal(10,2) default null,
+    p_stock integer default null,
+    p_category_id integer default null
+) returns table (
+    product_id integer,
+    product_name varchar,
+    product_price decimal(10,2)
+) as $$
+begin
+    -- Validate inputs
+    if p_price is not null and p_price < 0 then
+        raise exception 'Price cannot be negative';
+    end if;
+    
+    if p_stock is not null and p_stock < 0 then
+        raise exception 'Stock cannot be negative';
+    end if;
 
--- Top 3 sản phẩm có sự biến động tồn kho lớn nhất
-SELECT p.id AS product_id, p.name AS product_name, 
-       SUM(ABS(i.quantity)) AS total_inventory_changes
-FROM products p
-JOIN inventory i ON p.id = i.product_id
-GROUP BY p.id, p.name
-ORDER BY total_inventory_changes DESC
-LIMIT 3;
+    if p_category_id is not null and not exists (select 1 from categories where id = p_category_id) then
+        raise exception 'Invalid category_id';
+    end if;
 
--- Tính số lượng tồn kho thực tế sau khi áp dụng các thay đổi từ bảng inventory
-SELECT p.id AS product_id, p.name AS product_name, 
-       p.stock AS initial_stock,
-       COALESCE(SUM(i.quantity), 0) AS total_inventory_changes,
-       (p.stock + COALESCE(SUM(i.quantity), 0)) AS final_stock
-FROM products p
-LEFT JOIN inventory i ON p.id = i.product_id
-GROUP BY p.id, p.name, p.stock
-ORDER BY final_stock DESC;
+    return query
+    update products 
+    set name = coalesce(p_name, name),
+        description = coalesce(p_description, description),
+        price = coalesce(p_price, price),
+        stock = coalesce(p_stock, stock),
+        category_id = coalesce(p_category_id, category_id)
+    where id = p_product_id
+    returning products.id as product_id, products.name as product_name, products.price as product_price;
+end;
+$$ language plpgsql;
 
--- Danh sách các sản phẩm đã được thêm vào giỏ hàng nhưng chưa được mua
-SELECT DISTINCT p.id AS product_id, p.name AS product_name
-FROM products p
-JOIN cart_items ci ON p.id = ci.product_id
-LEFT JOIN order_items oi ON p.id = oi.product_id
-WHERE oi.product_id IS NULL;
+-- DELETE product with soft delete
+drop function if exists delete_product(integer, boolean);
+create or replace function delete_product(
+    p_product_id integer,
+    p_hard_delete boolean default false
+) returns table (
+    deleted_id integer,
+    deleted_name varchar,
+    deletion_type text
+) as $$
+begin
+    if p_hard_delete then
+        -- Hard delete - only if no orders exist
+        if exists (select 1 from order_items where product_id = p_product_id) then
+            raise exception 'Cannot hard delete product: exists in orders';
+        end if;
+        
+        -- Remove from cart_items first
+        delete from cart_items where product_id = p_product_id;
+        
+        -- Then delete product
+        return query
+        delete from products 
+        where id = p_product_id
+        returning id, name, 'HARD_DELETE'::text;
+    else
+        -- Soft delete - just mark as inactive
+        return query
+        update products 
+        set is_active = false
+        where id = p_product_id
+        returning id, name, 'SOFT_DELETE'::text;
+    end if;
+end;
+$$ language plpgsql;
 
--- Tính tổng doanh thu theo từng cửa hàng cho từng sản phẩm
-SELECT p.id AS product_id, p.name AS product_name, 
-       p.store_id, s.name AS store_name,
-       SUM(oi.quantity * p.price) AS total_revenue
-FROM products p
-JOIN order_items oi ON p.id = oi.product_id
-JOIN stores s ON p.store_id = s.id
-GROUP BY p.id, p.store_id, s.name
-ORDER BY total_revenue DESC;
-
---Tính tổng doanh thu của sản phẩm
-CREATE FUNCTION calculate_product_revenue(product_id INT)
-RETURNS DECIMAL(10, 2)
-DETERMINISTIC
-BEGIN
-    DECLARE total_revenue DECIMAL(10, 2);
-    SELECT SUM(oi.quantity * p.price) INTO total_revenue
-    FROM order_items oi
-    JOIN products p ON oi.product_id = p.id
-    WHERE oi.product_id = product_id;
-    RETURN IFNULL(total_revenue, 0);
-END;
-
--- Cập nhật tổng doanh thu khi có đơn hàng mới
-CREATE TRIGGER after_insert_order_item
-AFTER INSERT ON order_items
-FOR EACH ROW
-BEGIN
-    DECLARE revenue DECIMAL(10, 2);
-    SET revenue = calculate_product_revenue(NEW.product_id);
-    UPDATE products SET total_revenue = revenue WHERE id = NEW.product_id;
-END;
-
---Kiểm tra số lượng tồn kho trước khi cập nhật
-CREATE TRIGGER before_update_product_stock
-BEFORE UPDATE ON products
-FOR EACH ROW
-BEGIN
-    IF NEW.stock < 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số lượng sản phẩm không được nhỏ hơn 0';
-    END IF;
-END;
-
---Tính giá trị tồn kho cho một sản phẩm
-CREATE FUNCTION calculate_inventory_value(product_id INT)
-RETURNS DECIMAL(10, 2)
-DETERMINISTIC
-BEGIN
-    DECLARE inventory_value DECIMAL(10, 2);
-    SELECT stock * price INTO inventory_value
-    FROM products
-    WHERE id = product_id;
-    RETURN IFNULL(inventory_value, 0);
-END;
-
---Lấy sản phẩm bán chạy nhất trong một danh mục
-CREATE FUNCTION get_best_selling_product(category_id INT)
-RETURNS INT
-DETERMINISTIC
-BEGIN
-    DECLARE best_selling_product_id INT;
-    SELECT p.id INTO best_selling_product_id
-    FROM products p
-    JOIN order_items oi ON p.id = oi.product_id
-    WHERE p.category_id = category_id
-    GROUP BY p.id
-    ORDER BY SUM(oi.quantity) DESC
-    LIMIT 1;
-    RETURN best_selling_product_id;
-END;
-
---Lấy sản phẩm có doanh thu cao nhất
-CREATE FUNCTION get_top_revenue_product()
-RETURNS INT
-DETERMINISTIC
-BEGIN
-    DECLARE top_revenue_product_id INT;
-    SELECT p.id INTO top_revenue_product_id
-    FROM products p
-    JOIN order_items oi ON p.id = oi.product_id
-    GROUP BY p.id
-    ORDER BY SUM(oi.quantity * p.price) DESC
-    LIMIT 1;
-    RETURN top_revenue_product_id;
-END;
+-- Helper function to restore soft-deleted product
+drop function if exists restore_product(integer);
+create or replace function restore_product(p_product_id integer)
+returns table (
+    restored_id integer,
+    restored_name varchar
+) as $$
+begin
+    return query
+    update products 
+    set is_active = true
+    where id = p_product_id
+    returning id, name;
+end;
+$$ language plpgsql;
