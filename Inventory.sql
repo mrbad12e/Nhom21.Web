@@ -1,132 +1,312 @@
--- Thêm 1 thay đổi trong kho
-INSERT INTO inventory (product_id, quantity, change_type, change_date)
-VALUES (1, 20, 'nhập', CURRENT_TIMESTAMP); -- Thay các giá trị phù hợp
+alter table inventory add column updated_at timestamp;
 
--- Cập nhật số lượng trong kho
-UPDATE inventory
-SET quantity = 30
-WHERE id = 1; -- Thay 1 bằng ID của thay đổi trong kho cần cập nhật
+-- Trigger function to CREATE initial inventory entry
+drop function if exists create_initial_inventory cascade;
+create or replace function create_initial_inventory()
+returns trigger as $$
+begin
+    -- Only create inventory entry if initial stock > 0
+    if new.stock > 0 then
+        insert into inventory (
+            id,
+            product_id,
+            quantity,
+            change_type,
+            change_date
+        ) values (
+            substring(md5(random()::text) from 1 for 8),
+            new.id,
+            new.stock,
+            'RESTOCK',
+            current_timestamp
+        );
+    end if;
+    
+    return new;
+end;
+$$ language plpgsql;
 
--- Xóa 1 bản ghi thay đổi trong kho
-DELETE FROM inventory
-WHERE id = 1; -- Thay 1 bằng ID của bản ghi cần xoá
+-- Create the trigger
+drop trigger if exists after_product_create on products;
+create or replace trigger after_product_create
+    after insert on products
+    for each row
+    execute function create_initial_inventory();
 
--- Lấy lịch sử thay đổi kho cho sản phẩm
-SELECT * 
-FROM inventory
-WHERE product_id = 1; -- Thay 1 bằng ID của sản phẩm
+-- READ inventory with flexible filtering and pagination
+drop function if exists get_inventory_entries;
+create or replace function get_inventory_entries(
+    -- search params
+    p_product_id integer default null,
+    p_change_type public.inventory_change_type default null,
+    p_start_date timestamp default null,
+    p_end_date timestamp default null,
+    -- pagination params
+    p_page integer default 1,
+    p_page_size integer default 10,
+    -- sorting params
+    p_sort_by text default 'change_date',
+    p_sort_order text default 'desc'
+) returns table (
+    inventory_id char(8),
+    product_id integer,
+    product_name varchar,
+    quantity integer,
+    change_type public.inventory_change_type,
+    change_date timestamp,
+    total_count bigint
+) as $$
+declare
+    v_offset integer;
+    v_sort_sql text;
+begin
+    -- Calculate offset
+    v_offset := (p_page - 1) * p_page_size;
+    
+    -- Validate sort parameters
+    if p_sort_by not in ('change_date', 'quantity', 'product_id') then
+        raise exception 'invalid sort column: %', p_sort_by;
+    end if;
+    
+    if p_sort_order not in ('asc', 'desc') then
+        raise exception 'invalid sort order: %', p_sort_order;
+    end if;
+    
+    v_sort_sql := format('i.%I %s', p_sort_by, p_sort_order);
 
--- Tổng số sản phẩm trong kho theo danh mục
-SELECT c.name AS category_name, SUM(i.quantity) AS total_quantity
-FROM products p
-JOIN inventory i ON p.id = i.product_id
-JOIN categories c ON p.category_id = c.id
-GROUP BY c.name
-ORDER BY total_quantity DESC;
+    return query
+    with filtered_inventory as (
+        select 
+            i.id,
+            i.product_id,
+            p.name as product_name,
+            i.quantity,
+            i.change_type,
+            i.change_date,
+            count(*) over() as total_count
+        from inventory i
+        join products p on i.product_id = p.id
+        where (p_product_id is null or i.product_id = p_product_id)
+        and (p_change_type is null or i.change_type = p_change_type)
+        and (p_start_date is null or i.change_date >= p_start_date)
+        and (p_end_date is null or i.change_date <= p_end_date)
+    )
+    select *
+    from filtered_inventory fi
+    order by 
+        case when v_sort_sql = 'i.change_date asc' then fi.change_date end asc,
+        case when v_sort_sql = 'i.change_date desc' then fi.change_date end desc,
+        case when v_sort_sql = 'i.quantity asc' then fi.quantity end asc,
+        case when v_sort_sql = 'i.quantity desc' then fi.quantity end desc,
+        case when v_sort_sql = 'i.product_id asc' then fi.product_id end asc,
+        case when v_sort_sql = 'i.product_id desc' then fi.product_id end desc
+    limit p_page_size
+    offset v_offset;
+end;
+$$ language plpgsql;
 
--- Danh sách sản phẩm sắp hết hàng (dưới 10 sản phẩm)
-SELECT p.id AS product_id, p.name AS product_name, p.stock, c.name AS category_name
-FROM products p
-JOIN categories c ON p.category_id = c.id
-WHERE p.stock < 10
-ORDER BY p.stock ASC;
+-- UPDATE inventory entry with validation and history tracking
+drop function if exists update_inventory_entry;
+create or replace function update_inventory_entry(
+    p_inventory_id char(8),
+    p_quantity integer default null,
+    p_change_type public.inventory_change_type default null
+) returns table (
+    inventory_id char(8),
+    product_name varchar,
+    old_quantity integer,
+    new_quantity integer,
+    old_change_type public.inventory_change_type,
+    new_change_type public.inventory_change_type
+) as $$
+declare
+    v_old_quantity integer;
+    v_old_change_type public.inventory_change_type;
+    v_product_id integer;
+begin
+    -- Get current values
+    select quantity, change_type, product_id 
+    into v_old_quantity, v_old_change_type, v_product_id
+    from inventory 
+    where id = p_inventory_id;
+    
+    if not found then
+        raise exception 'Inventory entry not found';
+    end if;
 
--- Lịch sử thay đổi kho cho sản phẩm trong khoảng thời gian nhất định
-SELECT p.name AS product_name, i.quantity, i.change_type, i.change_date
-FROM inventory i
-JOIN products p ON i.product_id = p.id
-WHERE i.change_date BETWEEN '2024-01-01' AND '2024-12-31'
-ORDER BY p.name, i.change_date;
+    -- Validate new quantity if provided
+    if p_quantity is not null and p_quantity <= 0 then
+        raise exception 'Quantity must be positive';
+    end if;
 
--- Tính tổng số lượng thay đổi của từng sản phẩm trong kho
-SELECT p.id AS product_id, p.name AS product_name, 
-       COALESCE(SUM(i.quantity), 0) AS total_quantity_changes
-FROM products p
-LEFT JOIN inventory i ON p.id = i.product_id
-GROUP BY p.id, p.name
-ORDER BY total_quantity_changes DESC;
+    -- For sale type, check stock
+    if (p_change_type = 'SALE' or (p_change_type is null and v_old_change_type = 'SALE'))
+    and exists (
+        select 1 from products
+        where id = v_product_id 
+        and stock < coalesce(p_quantity, v_old_quantity)
+    ) then
+        raise exception 'Insufficient stock for sale';
+    end if;
 
--- Tìm sản phẩm có lượng tồn kho thực tế (sau thay đổi) thấp nhất
-SELECT p.id AS product_id, p.name AS product_name, 
-       p.stock AS initial_stock,
-       COALESCE(SUM(i.quantity), 0) AS total_inventory_changes,
-       (p.stock + COALESCE(SUM(i.quantity), 0)) AS final_stock
-FROM products p
-LEFT JOIN inventory i ON p.id = i.product_id
-GROUP BY p.id, p.name, p.stock
-HAVING final_stock < 10
-ORDER BY final_stock ASC;
+    return query
+    update inventory 
+    set quantity = coalesce(p_quantity, quantity),
+        change_type = coalesce(p_change_type, change_type),
+        updated_at = current_timestamp
+    where id = p_inventory_id
+    returning 
+        inventory.id,
+        (select name from products where id = v_product_id),
+        v_old_quantity,
+        inventory.quantity,
+        v_old_change_type,
+        inventory.change_type;
+end;
+$$ language plpgsql;
 
--- Cập nhật tổng số lượng tồn kho
-CREATE FUNCTION calculate_total_inventory(product_id INT)
-RETURNS INT
-DETERMINISTIC
-BEGIN
-    DECLARE total_stock INT;
-    SELECT SUM(quantity) INTO total_stock
-    FROM inventory
-    WHERE product_id = product_id;
-    RETURN IFNULL(total_stock, 0);
-END;
+-- Function to add stock to existing product
+drop function if exists add_product_stock;
+create or replace function add_product_stock(
+    p_product_id integer,
+    p_quantity integer
+) returns table (
+    product_id integer,
+    product_name varchar,
+    old_stock integer,
+    new_stock integer,
+    inventory_id char(8)
+) as $$
+declare
+    v_old_stock integer;
+    v_inventory_id char(8);
+begin
+    -- Validate inputs
+    if p_quantity <= 0 then
+        raise exception 'Quantity must be positive';
+    end if;
 
---Tự động cập nhật số lượng tồn kho
-CREATE TRIGGER after_insert_inventory
-AFTER INSERT ON inventory
-FOR EACH ROW
-BEGIN
-    DECLARE total_stock INT;
-    SET total_stock = calculate_total_inventory(NEW.product_id);
-    UPDATE products SET stock = total_stock WHERE id = NEW.product_id;
-END;
+    -- Get current stock
+    select stock into v_old_stock
+    from products
+    where id = p_product_id and is_active = true;
+    
+    if not found then
+        raise exception 'Invalid or inactive product_id';
+    end if;
 
-CREATE TRIGGER after_update_inventory
-AFTER UPDATE ON inventory
-FOR EACH ROW
-BEGIN
-    DECLARE total_stock INT;
-    SET total_stock = calculate_total_inventory(NEW.product_id);
-    UPDATE products SET stock = total_stock WHERE id = NEW.product_id;
-END;
+    -- Generate inventory id
+    v_inventory_id := substring(md5(random()::text) from 1 for 8);
 
-CREATE TRIGGER after_delete_inventory
-AFTER DELETE ON inventory
-FOR EACH ROW
-BEGIN
-    DECLARE total_stock INT;
-    SET total_stock = calculate_total_inventory(OLD.product_id);
-    UPDATE products SET stock = total_stock WHERE id = OLD.product_id;
-END;
+    -- Create inventory entry and update product stock
+    insert into inventory (
+        id,
+        product_id,
+        quantity,
+        change_type,
+        change_date
+    ) values (
+        v_inventory_id,
+        p_product_id,
+        p_quantity,
+        'RESTOCK',
+        current_timestamp
+    );
 
---Tính số lượng tồn kho cuối cùng của một sản phẩm
-CREATE FUNCTION calculate_final_stock(product_id INT)
-RETURNS INT
-DETERMINISTIC
-BEGIN
-    DECLARE final_stock INT;
-    SELECT COALESCE(SUM(quantity), 0) INTO final_stock
-    FROM inventory
-    WHERE product_id = product_id;
-    RETURN final_stock;
-END;
+    return query
+    update products
+    set stock = stock + p_quantity
+    where id = p_product_id
+    returning 
+        id,
+        name,
+        v_old_stock,
+        stock,
+        v_inventory_id;
+end;
+$$ language plpgsql;
 
---Kiểm tra xem một sản phẩm có tồn kho dưới ngưỡng cho phép
-CREATE FUNCTION is_stock_below_threshold(product_id INT, threshold INT)
-RETURNS BOOLEAN
-DETERMINISTIC
-BEGIN
-    DECLARE stock INT;
-    SET stock = (SELECT stock FROM products WHERE id = product_id);
-    RETURN stock < threshold;
-END;
+-- Function to reduce stock (for sales)
+drop function if exists reduce_product_stock;
+create or replace function reduce_product_stock(
+    p_product_id integer,
+    p_quantity integer
+) returns table (
+    product_id integer,
+    product_name varchar,
+    old_stock integer,
+    new_stock integer,
+    inventory_id char(8)
+) as $$
+declare
+    v_old_stock integer;
+    v_inventory_id char(8);
+begin
+    -- Validate inputs
+    if p_quantity <= 0 then
+        raise exception 'Quantity must be positive';
+    end if;
 
---Tính tổng số lượng thay đổi kho theo loại thay đổi
-CREATE FUNCTION calculate_total_by_change_type(product_id INT, change_type ENUM('nhập', 'xuất'))
-RETURNS INT
-DETERMINISTIC
-BEGIN
-    DECLARE total_quantity INT;
-    SELECT COALESCE(SUM(quantity), 0) INTO total_quantity
-    FROM inventory
-    WHERE product_id = product_id AND change_type = change_type;
-    RETURN total_quantity;
-END;
+    -- Get and check current stock
+    select stock into v_old_stock
+    from products
+    where id = p_product_id and is_active = true;
+    
+    if not found then
+        raise exception 'Invalid or inactive product_id';
+    end if;
+
+    if v_old_stock < p_quantity then
+        raise exception 'Insufficient stock. Available: %, requested: %', v_old_stock, p_quantity;
+    end if;
+
+    -- Generate inventory id
+    v_inventory_id := substring(md5(random()::text) from 1 for 8);
+
+    -- Create inventory entry and update product stock
+    insert into inventory (
+        id,
+        product_id,
+        quantity,
+        change_type,
+        change_date
+    ) values (
+        v_inventory_id,
+        p_product_id,
+        p_quantity,
+        'SALE',
+        current_timestamp
+    );
+
+    return query
+    update products
+    set stock = stock - p_quantity
+    where id = p_product_id
+    returning 
+        id,
+        name,
+        v_old_stock,
+        stock,
+        v_inventory_id;
+end;
+$$ language plpgsql;
+
+-- DELETE inventory
+drop function if exists delete_inventory_entry;
+create or replace function delete_product_inventory()
+returns trigger as $$
+begin
+    -- Delete related inventory entries
+    delete from inventory 
+    where product_id = old.id;
+    
+    return old;
+end;
+$$ language plpgsql;
+
+-- Create the trigger for hard deletes
+drop trigger if exists before_product_hard_delete on products;
+create trigger before_product_hard_delete
+    before delete on products
+    for each row
+    execute function delete_product_inventory();
