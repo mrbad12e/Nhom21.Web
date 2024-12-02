@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const authRoutes = require('./src/routes/authRoutes');
+const authRoutes = require('./routes/index');
 
 const app = express();
 app.use(cookieParser());
@@ -10,3 +10,4 @@ app.use(bodyParser.json());
 app.use('/auth', authRoutes);
 
 
+app.listen()
