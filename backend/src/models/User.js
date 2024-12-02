@@ -9,11 +9,10 @@ class User {
     this.username = data.username;
     this.password = data.password;
     this.email = data.email;
-    this.firstName = data.firstName;
-    this.lastName = data.lastName;
+    this.firstName = data.first_name || data.firstName;
+    this.lastName = data.last_name || data.lastName;
     this.role = data.role;
-    this.isActive = data.isActive;
-    this.createdAt = data.createdAt;
+    this.createdAt = data.created_at || data.createdAt;
   }
 
   static validate(user) {
@@ -22,77 +21,72 @@ class User {
       user.username &&
       user.email &&
       user.password &&
-      user.firstName &&
-      user.lastName
+      user.first_name &&
+      user.last_name &&
+      ['ADMIN', 'CUSTOMER'].includes(user.role)
     );
   }
 
-  // Hàm đăng nhập
   static async signIn(username, password) {
     try {
-      const result = await db.query('SELECT * FROM signIn($1, $2)', [username, password]);
+      const query = 'SELECT * FROM users WHERE username = $1 AND password = $2';
+      const result = await db.query(query, [username, password]);
       
-      if (result.length > 0) {
-        return true; // Đăng nhập thành công
-      } else {
-        return false; // Đăng nhập thất bại
-      }
+      return result.rows.length > 0 ? result.rows[0] : null;
     } catch (err) {
-      console.error('Lỗi khi gọi hàm đăng nhập:', err);
-      return false;
+      console.error('Login error:', err);
+      throw new Error('Login failed');
     }
   }
 
-  // Hàm tạo tài khoản
-  static async createAccount(username, password, email, firstName, lastName, role = 'CUSTOMER', phone = null, address = null, image = null) {
-    try {
-      const result = await db.query('SELECT create_account($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
-        username,
-        password,
-        email,
-        firstName,
-        lastName,
-        role,
-        phone,
-        address,
-        image
-      ]);
-  
-      console.log('Tạo tài khoản thành công');
-    } catch (err) {
-      console.error('Lỗi khi gọi hàm tạo tài khoản:', err.message);
-      throw err;
-    }
-  }
-
-  // Hàm cập nhật thông tin người dùng
-  static async updateProfile(username, email = null, firstName = null, lastName = null, phone = null, address = null, image = null) {
+  static async createAccount(data) {
     try {
       const query = `
-        SELECT update_profile($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO users 
+        (id, username, password, email, first_name, last_name, role) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        RETURNING *
       `;
-      const values = [username, email, firstName, lastName, phone, address, image];
-  
-      await db.query(query, values);
-      console.log('Cập nhật thông tin người dùng thành công.');
+      const values = [
+        data.id,
+        data.username,
+        data.password,
+        data.email,
+        data.firstName,
+        data.lastName,
+        data.role || 'CUSTOMER'
+      ];
+      const result = await db.query(query, values);
+      return result.rows[0];
     } catch (err) {
-      console.error('Lỗi khi cập nhật thông tin người dùng:', err.message);
-      throw err;
+      console.error('Account creation error:', err);
+      throw new Error('Failed to create account');
     }
   }
 
-  // Kiểm tra xem người dùng đã có giỏ hàng hay chưa
-  static async checkCartExistence(userId) {
-    const query = 'SELECT id FROM carts WHERE user_id = $1';
-    const result = await db.query(query, [userId]);
-    return result.length > 0; // Nếu có cart thì trả về true
-  }
-
-  // Cập nhật trạng thái kích hoạt của người dùng
-  static async updateUserStatus(userId, isActive) {
-    const query = 'UPDATE users SET is_active = $1 WHERE id = $2 RETURNING *';
-    const result = await db.query(query, [isActive, userId]);
-    return result[0];
+  static async updateProfile(userId, updateData) {
+    try {
+      const query = `
+        UPDATE users 
+        SET 
+          email = COALESCE($2, email),
+          first_name = COALESCE($3, first_name),
+          last_name = COALESCE($4, last_name)
+        WHERE id = $1
+        RETURNING *
+      `;
+      const values = [
+        userId, 
+        updateData.email, 
+        updateData.firstName, 
+        updateData.lastName
+      ];
+      const result = await db.query(query, values);
+      return result.rows[0];
+    } catch (err) {
+      console.error('Profile update error:', err);
+      throw new Error('Failed to update profile');
+    }
   }
 }
 
