@@ -1,23 +1,24 @@
 const Cart = require('../models/Cart');
 
-const addProductToCart = async (userId, productId, quantity) => {
-  try {
+class CartService {
+  static async getCart(customerId) {
+    return await Cart.getCartItems(customerId);
+  }
+
+  static async addProduct(userId, productId, quantity) {
+    // Thêm sản phẩm vào giỏ hàng
     await Cart.addProductToCart(userId, productId, quantity);
-    return { message: 'Product added to cart successfully' };
-  } catch (err) {
-    throw new Error(err.message);
   }
-};
 
-const getCartItems = async (userId) => {
-  try {
-    return await Cart.getCartItems(userId);
-  } catch (err) {
-    throw new Error(err.message);
+  static async updateCartItem(cartId, productId, quantity) {
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
+    await Cart.updateCartItemQuantity(cartId, productId, quantity);
   }
-};
 
-module.exports = {
-  addProductToCart,
-  getCartItems,
-};
+  static async removeProduct(cartId, productId) {
+    // Xóa sản phẩm khỏi giỏ hàng
+    await Cart.removeProductFromCart(cartId, productId);
+  }
+}
+
+module.exports = CartService;

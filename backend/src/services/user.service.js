@@ -16,6 +16,11 @@ class UserService {
   static async updatePassword(username, newPassword) {
     await User.updatePassword(username, newPassword);
   }
+
+  static async getCart(userId) {
+    return await User.getCartByUserId(userId);
+  }
+  
 }
 
 module.exports = UserService;

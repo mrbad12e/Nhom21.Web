@@ -8,39 +8,36 @@ class Cart {
     this.items = data.items || [];
   }
 
-  static async createCart(customerId) {
-    try {
-      const query = 'INSERT INTO carts (id, customer_id) VALUES ($1, $2) RETURNING *';
-      const id = this.generateCartId(); // Implement cart ID generation
-      const result = await db.query(query, [id, customerId]);
-      return result.rows[0];
-    } catch (err) {
-      console.error('Cart creation error:', err);
-      throw new Error('Failed to create cart');
-    }
-  }
-
-  static async addProductToCart(cartId, productId, quantity = 1) {
+  // Thêm sản phẩm vào giỏ hàng
+  static async addProductToCart(userId, productId, quantity) {
     if (quantity <= 0) {
       throw new Error('Quantity must be greater than 0');
     }
     try {
       const query = `
-        INSERT INTO cart_items (id, cart_id, product_id, quantity) 
-        VALUES ($1, $2, $3, $4) 
-        ON CONFLICT (cart_id, product_id) 
-        DO UPDATE SET quantity = cart_items.quantity + $4
-        RETURNING *
+        CALL public.add_product_to_cart($1, $2, $3);
       `;
-      const id = this.generateCartItemId(); // Implement cart item ID generation
-      const result = await db.query(query, [id, cartId, productId, quantity]);
-      return result.rows[0];
+      await db.query(query, [userId, productId, quantity]);
     } catch (err) {
       console.error('Add to cart error:', err);
-      throw new Error('Failed to add product to cart');
+      throw new Error(err.message); // Sử dụng lỗi từ procedure
     }
   }
 
+  // Cập nhật số lượng sản phẩm trong giỏ hàng
+  static async updateCartItemQuantity(cartId, productId, quantity) {
+    try {
+      const query = `
+        CALL public.update_cart_item_quantity($1, $2, $3);
+      `;
+      await db.query(query, [cartId, productId, quantity]);
+    } catch (err) {
+      console.error('Update cart item quantity error:', err);
+      throw new Error(err.message); // Trả về thông báo lỗi từ procedure
+    }
+  }
+
+  // Lấy danh sách sản phẩm trong giỏ hàng
   static async getCartItems(customerId) {
     try {
       const query = `
@@ -60,22 +57,18 @@ class Cart {
     }
   }
 
+  // Xóa sản phẩm khỏi giỏ hàng
   static async removeProductFromCart(cartId, productId) {
     try {
-      const query = 'DELETE FROM cart_items WHERE cart_id = $1 AND product_id = $2';
+      const query = `
+        DELETE FROM cart_items 
+        WHERE cart_id = $1 AND product_id = $2
+      `;
       await db.query(query, [cartId, productId]);
     } catch (err) {
       console.error('Remove from cart error:', err);
       throw new Error('Failed to remove product from cart');
     }
-  }
-
-  static generateCartId() {
-    return Math.random().toString(36).substr(2, 16).toUpperCase();
-  }
-
-  static generateCartItemId() {
-    return Math.random().toString(36).substr(2, 24).toUpperCase();
   }
 }
 

@@ -44,6 +44,21 @@ class UserController {
     }
   }
 
+  static async getCart(req, res) {
+    try {
+      const userId = req.params.id;
+      const cart = await UserService.getCart(userId);
+      if (cart) {
+        res.status(200).json(cart);
+      } else {
+        res.status(404).json({ message: 'Cart not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+  
+
 }
 
 module.exports = UserController;

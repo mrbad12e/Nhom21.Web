@@ -146,6 +146,17 @@ class User {
     }
   }
 
+  static async getCartByUserId(userId) {
+    try {
+      const query = 'SELECT * FROM carts WHERE customer_id = $1';
+      const result = await db.query(query, [userId]);
+      return result.rows.length > 0 ? result.rows[0] : null;
+    } catch (err) {
+      console.error('Get cart error:', err);
+      throw new Error('Failed to fetch cart');
+    }
+  }  
+
 }
 
 module.exports = User;
