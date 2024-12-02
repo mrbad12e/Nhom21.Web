@@ -1,23 +1,38 @@
 const Product = require('../models/Product');
 
-// Lấy toàn bộ sản phẩm
-const getAllProducts = async () => {
+// Lấy danh sách toàn bộ sản phẩm (bao gồm các tiêu chí tìm kiếm, phân trang, sắp xếp)
+const getAllProducts = async (options = {}) => {
   try {
-    const products = await Product.getAllProducts();
-    return products;
+    const { products, totalCount } = await Product.get(options);
+    return { products, totalCount };
   } catch (err) {
     throw new Error('Error fetching all products: ' + err.message);
   }
 };
 
 // Lấy sản phẩm theo danh mục
-const getProductsByCategory = async (categoryId) => {
+const getProductsByCategory = async (categoryId, options = {}) => {
   try {
-    const products = await Product.getProductsByCategory(categoryId);
-    return products;
+    const { products, totalCount } = await Product.get({ ...options, categoryId });
+    return { products, totalCount };
   } catch (err) {
     throw new Error('Error fetching products by category: ' + err.message);
   }
 };
 
-module.exports = { getAllProducts, getProductsByCategory };
+// Lấy thông tin chi tiết của một sản phẩm theo ID
+const getProductById = async (productId) => {
+  try {
+    const product = await Product.getById(productId);
+    if (!product) throw new Error('Product not found');
+    return product;
+  } catch (err) {
+    throw new Error('Error fetching product by ID: ' + err.message);
+  }
+};
+
+module.exports = {
+  getAllProducts,
+  getProductsByCategory,
+  getProductById
+};
