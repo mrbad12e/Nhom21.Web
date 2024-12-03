@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
-const pool = require('../config/database'); 
+const pool = require('../config/database');
 
-exports.validateAdminCredentials = async (username, password, next) => {
+exports.validateAdminCredentials = async (username, password) => {
   try {
     // Query to validate user credentials using raw SQL (keeping the same query structure)
-    const result = await pool.query(
-      'SELECT signIn($1, $2) AS is_valid',
-      [username, password] 
-    );
-
+    const result = await pool.query('SELECT signIn($1, $2) AS is_valid', [
+      username,
+      password,
+    ]);
+    
     const isValid = result.rows[0]?.is_valid;
 
     if (isValid) {
@@ -22,14 +22,14 @@ exports.validateAdminCredentials = async (username, password, next) => {
       if (user.role !== 'ADMIN') {
         const error = new Error('Unauthorized. User is not an admin.');
         error.statusCode = 403;
-        return next(error); // Pass error to your error handler middleware
+        throw error; // Pass error to your error handler middleware
       }
 
       return user; // Return admin user info
     }
   } catch (err) {
     console.log('Error during admin authentication:', err);
-    return next(err); // Pass the error to the middleware
+    throw err; // Pass the error to the middleware
   }
 };
 
