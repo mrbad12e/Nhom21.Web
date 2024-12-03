@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 // Middleware to check if the user is an admin
-function isAdmin(req, res, next) {
+function authorizeAdmin(req, res, next) {
   // Get the token from cookies (or headers)
   const token = req.cookies.accessToken;
 
@@ -25,3 +25,5 @@ function isAdmin(req, res, next) {
     next();
   });
 }
+
+module.exports = authorizeAdmin;
