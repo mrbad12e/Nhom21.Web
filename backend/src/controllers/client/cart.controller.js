@@ -46,7 +46,4 @@ class CartController {
   }
 }
 
-module.exports = {
-  addProductToCart,
-  getCartItems,
-};
+module.exports = CartController;

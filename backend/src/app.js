@@ -4,8 +4,8 @@ const cookieParser = require('cookie-parser');
 const userRoutes = require('./routes/client/user.routes');
 const productRoutes = require('./routes/client/product.routes');
 const cartRoutes = require('./routes/client/cart.routes');
-const orderRoutes = require('./routes/OrderRoutes');
-const reviewRoutes = require('./routes/reviewRoutes'); 
+const orderRoutes = require('./routes/client/order.routes');
+// const reviewRoutes = require('./routes/review.routes');
 const app = express();
 
 app.use(cookieParser());
