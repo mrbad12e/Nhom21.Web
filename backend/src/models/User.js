@@ -36,11 +36,29 @@ class User {
     }
 
     static async updatePassword(userData) {
-        try {            
+        try {
             const query = 'select update_password($1, $2, $3)';
             await db.query(query, [userData.user, userData.oldPassword, userData.newPassword]);
         } catch (err) {
             throw new Error(err.message);
+        }
+    }
+
+    static async getUserDetailByID(id) {
+        try {
+            const result = await db.query('SELECT view_profile(select username from users where id = $1)', [id]);
+            return result.rows[0]; // Can be use flexible with specific userid or just * for all user
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getAllUser() {
+        try {
+            const result = await db.query('SELECT view_all_profiles()');
+            return result.rows;
+        } catch (error) {
+            throw error;
         }
     }
 }

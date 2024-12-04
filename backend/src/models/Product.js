@@ -1,74 +1,51 @@
 const db = require('../config/database');
 
 class Product {
-  
-  static validate(product) {
-    return !!(
-      product.name &&
-      product.description &&
-      parseFloat(product.price) >= 0 &&
-      parseInt(product.stock) >= 0 &&
-      product.categoryId
-    );
-  }
-
-  isInStock() {
-    return this.stock > 0 && this.isActive;
-  }
-
-  static async get({
-    search = null,
-    categoryId = null,
-    minPrice = null,
-    maxPrice = null,
-    includeInactive = false,
-    page = 1,
-    pageSize = 10,
-    sortBy = 'id',
-    sortOrder = 'asc',
-  } = {}) {
-    try {
-      const result = await db.query(
-        'SELECT * FROM get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-        [
-          search,
-          categoryId,
-          minPrice,
-          maxPrice,
-          includeInactive,
-          page,
-          pageSize,
-          sortBy,
-          sortOrder,
-        ]
-      );
-      return {
-        products: result.rows.map((product) => new Product(product)),
-        totalCount:
-          result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0,
-      };
-    } catch (err) {
-      console.error('Fetch products error:', err);
-      throw err;
+    static validate(product) {
+        return !!(
+            product.name &&
+            product.description &&
+            parseFloat(product.price) >= 0 &&
+            parseInt(product.stock) >= 0 &&
+            product.categoryId
+        );
     }
-  }
-    static async get(req) {
-        try {
-            if (req.query.id) {
-                const result = await db.query('select * from get_product_details($1)', [req.query.id]);
-                return result;
-            }
 
-            const result = await db.query('select * from get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
-                req.query.search || null,
-                req.query.categoryId || null,
-                req.query.minPrice || null,
-                req.query.maxPrice || null,
-                req.query.includeInactive || false,
-                req.query.page || 1,
-                req.query.pageSize || 10,
-                req.query.sortBy || 'id',
-                req.query.sortOrder || 'asc',
+    isInStock() {
+        return this.stock > 0 && this.isActive;
+    }
+
+    static async getById(id) {
+        try {
+            const result = db.query('SELECT * FROM get_product_details($1)', [id]);
+            return result.rows; //the return from query is result= {rows:{data}}
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async get({
+        search = null,
+        categoryId = null,
+        minPrice = null,
+        maxPrice = null,
+        includeInactive = false,
+        page = 1,
+        pageSize = 10,
+        sortBy = 'id',
+        sortOrder = 'asc',
+    } = {}) {
+        try {
+            const result = await db.query('SELECT * FROM get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
+                search,
+                categoryId,
+                minPrice,
+                maxPrice,
+                includeInactive,
+                page,
+                pageSize,
+                sortBy,
+                sortOrder,
             ]);
             return {
                 products: result,
@@ -80,6 +57,7 @@ class Product {
                 },
             };
         } catch (err) {
+            console.error('Fetch products error:', err);
             throw err;
         }
     }
@@ -115,10 +93,10 @@ class Product {
         }
     }
 
-    static async updateProduct(req) {
+    static async updateProduct(data) {
         try {
-            const { id } = req.params;
-            const { name, description, price, stock, categoryId } = req.body;
+            const id = data.id;
+            const { name, description, price, stock, categoryId } = data.body;
 
             if (!id) {
                 throw new Error('Product ID is required');
@@ -130,7 +108,7 @@ class Product {
                 description || null,
                 price || null,
                 stock || null,
-                categoryId || null
+                categoryId || null,
             ]);
 
             if (!result || !result[0]) {
@@ -140,7 +118,7 @@ class Product {
             return {
                 id: result[0].product_id,
                 name: result[0].product_name,
-                price: result[0].product_price
+                price: result[0].product_price,
             };
         } catch (err) {
             throw new Error(err.message);
@@ -149,4 +127,3 @@ class Product {
 }
 
 module.exports = Product;
-

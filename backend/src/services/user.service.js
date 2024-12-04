@@ -6,10 +6,9 @@ const JWT_SECRET = process.env.JWT_SECRET;
 class UserService {
     static async signIn(username, password) {
         try {
-            const userId = await User.signIn(username, password);            
+            const userId = await User.signIn(username, password);
             const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1d' });
             return token;
-            
         } catch (err) {
             throw new Error('Login failed: ' + err.message);
         }
@@ -20,6 +19,20 @@ class UserService {
             await User.createAccount(userData);
         } catch (err) {
             throw new Error('Registration failed: ' + err.message);
+        }
+    }
+    static async getUserByIdService(id) {
+        try {
+            return (result = await User.getUserDetailByID(id));
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async getAllUserService() {
+        try {
+            return (result = await User.getAllUser());
+        } catch (error) {
+            throw error;
         }
     }
 }
