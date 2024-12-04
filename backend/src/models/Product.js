@@ -81,9 +81,31 @@ class Product {
         console.error('Fetch product by ID error:', err);
         throw err;
     }
-}
-
-  
+  }
+  async addNewProduct(data) {
+    try {
+      const result = await db.query('SELECT create_product($1, $2, $3 ,$4 ,$5, $6) AS new_product',[
+        data.name,
+        data.description,
+        data.price,
+        data.stock,
+        data.categoryId,
+        data.imageUrl
+      ])
+      if (result.rows.length > 0){
+        const { product_id, product_name, product_price } = result.rows[0];
+        console.log(
+          `Product created: ID=${product_id}, Name=${product_name}, Price=${product_price}`
+        );
+        return result.rows[0];
+      }else throw new Error("Failed to add new product!"); //throw to controller to handle
+    }catch(err){
+      throw(err);
+    }
+  }
+  async updateProduct(data) {
+    
+  }
 }
 
 module.exports = Product;

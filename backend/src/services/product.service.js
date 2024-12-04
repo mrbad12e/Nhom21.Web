@@ -13,7 +13,10 @@ const getAllProducts = async (options = {}) => {
 // Lấy sản phẩm theo danh mục
 const getProductsByCategory = async (categoryId, options = {}) => {
   try {
-    const { products, totalCount } = await Product.get({ ...options, categoryId });
+    const { products, totalCount } = await Product.get({
+      ...options,
+      categoryId,
+    });
     return { products, totalCount };
   } catch (err) {
     throw new Error('Error fetching products by category: ' + err.message);
@@ -30,9 +33,27 @@ const getProductById = async (productId) => {
     throw new Error('Error fetching product by ID: ' + err.message);
   }
 };
+const addNewProductService = async (productData) => {
+  try {
+    const result = await Product.addNewProduct(productData);
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const editProductService = async (updatedProductData) => {
+  try {
+    const result = await Product.editProduct(updatedProductData);
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
 
 module.exports = {
   getAllProducts,
   getProductsByCategory,
-  getProductById
+  getProductById,
+  addNewProductService,
 };
