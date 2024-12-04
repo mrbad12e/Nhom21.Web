@@ -22,6 +22,7 @@ app.use('/api/products', productRoutes);  // Route sản phẩm
 app.use('/api/orders', orderRoutes);  // Route đơn hàng
 app.use('/api/reviews', reviewRoutes);  // Route  review
 
+///////////////////////////////////KIỂM TRA FILE INDEX.JS TRONG ROUTES, CÓ THỂ ĐẶT GỌN CÁC ROUTE VÀO TRONG ĐÓ/////////////
 
 
 app.use(cookieParser());

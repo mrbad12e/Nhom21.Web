@@ -18,9 +18,15 @@ route.post(
 );
 
 route.put(
-  '/edit-product',
+  '/edit-product/:id',
   protect,
   authorizeAdmin,
- adminProductController.editProduct(req,res,next)
-  
+  adminProductController.editProduct()
+);
+
+route.get(
+  '/product/:id',
+  protect,
+  authorizeAdmin,
+  adminProductController.getProductList()
 );
