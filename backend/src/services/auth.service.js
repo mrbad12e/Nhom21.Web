@@ -8,8 +8,10 @@ exports.validateAdminCredentials = async (username, password) => {
       username,
       password,
     ]);
-    
-    const isValid = result.rows[0]?.is_valid;
+    console.log(result);
+    if (result.rows[0].is_valid == false) {
+      const isValid = false;
+    }
 
     if (isValid) {
       const userResult = await pool.query(
