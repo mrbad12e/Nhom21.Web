@@ -17,7 +17,7 @@ exports.login = async (req, res, next) => {
             message: 'Login successful',
         });
     } catch (err) {
-        throw new Error(err.message);
+        next(new Error(err.message));
     }
 };
 
@@ -28,26 +28,8 @@ exports.logout = async (req, res, next) => {
             message: 'Logout successful',
         });
     } catch (err) {
-        throw new Error(err.message);
+        next(new Error(err.message));
     }
 };
 
-exports.refreshToken = (req, res) => {
-    const { refreshToken } = req.body;
 
-    if (!refreshToken) {
-        return res.status(400).json({ error: 'Refresh token is required.' });
-    }
-
-    try {
-        const newAccessToken = authService.refreshAccessToken(refreshToken);
-        res.json({
-            message: 'Token refreshed successfully.',
-            accessToken: newAccessToken,
-        });
-    } catch (err) {
-        console.error(err.message);
-        next(err);
-    }
-};
-``;

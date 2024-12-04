@@ -1,32 +1,56 @@
-const Product = require('../../models/Product');
+const {
+  getAllProducts,
+  addNewProductService,
+  editProductService,
+  getProductById
+} = require('../../services/product.service');
 
-class ProductController {
-    static async getProducts(req, res) {
-        try {
-            const result = await Product.get(req);
-            res.status(200).json(result);
-        } catch (err) {
-            res.status(500).json({ message: 'Error fetching products', error: err.message });
-        }
+exports.getProductList = async (req, res, next) => {
+  //logic idk
+  try {
+    const productList = await getAllProducts();
+    res.status(200).json({
+      message: productList,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.addProduct = async (req, res, next) => {
+  try {
+    const productData = req.body;
+    const { id, name, price } = await addNewProductService(productData);
+    return res.status(200).json({
+      message: 'Added new product!',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.editProduct = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const updatedProduct = req.body;
+    if (updatedProduct.id != id)
+      throw new Error('Updating wrong product,aborting...');
+    else {
+      const result = editProductService(updatedProduct);
     }
+  } catch (err) {
+    next(err);
+  }
+};
 
-    static async addProduct(req, res) {
-        try {
-            const result = await Product.addNewProduct(req);
-            res.status(200).json(result);
-        } catch (err) {
-            res.status(500).json({ message: 'Error adding product', error: err.message });
-        }
-    }
-
-    static async updateProduct(req, res) {
-        try {
-            const result = await Product.updateProduct(req);
-            res.status(200).json(result);
-        } catch (err) {
-            res.status(500).json({ message: 'Error updating product', error: err.message });
-        }
-    }
-}
-
-module.exports = ProductController;
+exports.getProduct = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const result = await getProductById(id);
+    res.status(200).json({
+      message: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

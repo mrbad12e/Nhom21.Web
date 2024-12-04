@@ -1,14 +1,19 @@
 const jwt = require('jsonwebtoken');
-const db = require('../../config/database');
-require('dotenv').config();
 
-const authorizeAdmin = async (req, res, next) => {
-    try {
-        const token = req.cookies.auth || req.headers.authorization?.split(' ')[1];        
-        
-        if (!token) {
-            return res.status(401).json({ message: 'Authentication required' });
-        }
+// Middleware to check if the user is an admin
+async function authorizeAdmin(req, res, next) {
+  // Get the token from cookies (or headers)
+  try{
+  const token =
+    req.cookies.auth ||
+    (req.header('Authorization') &&
+    req.header('Authorization').startsWith('Bearer ')
+      ? req.header('Authorization').replace('Bearer ', '')
+      : '');
+
+  if (!token) {
+    return res.status(401).send('No token provided');
+  }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);        
         

@@ -1,6 +1,57 @@
 const db = require('../config/database');
 
 class Product {
+  
+  static validate(product) {
+    return !!(
+      product.name &&
+      product.description &&
+      parseFloat(product.price) >= 0 &&
+      parseInt(product.stock) >= 0 &&
+      product.categoryId
+    );
+  }
+
+  isInStock() {
+    return this.stock > 0 && this.isActive;
+  }
+
+  static async get({
+    search = null,
+    categoryId = null,
+    minPrice = null,
+    maxPrice = null,
+    includeInactive = false,
+    page = 1,
+    pageSize = 10,
+    sortBy = 'id',
+    sortOrder = 'asc',
+  } = {}) {
+    try {
+      const result = await db.query(
+        'SELECT * FROM get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        [
+          search,
+          categoryId,
+          minPrice,
+          maxPrice,
+          includeInactive,
+          page,
+          pageSize,
+          sortBy,
+          sortOrder,
+        ]
+      );
+      return {
+        products: result.rows.map((product) => new Product(product)),
+        totalCount:
+          result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0,
+      };
+    } catch (err) {
+      console.error('Fetch products error:', err);
+      throw err;
+    }
+  }
     static async get(req) {
         try {
             if (req.query.id) {
@@ -98,3 +149,4 @@ class Product {
 }
 
 module.exports = Product;
+
