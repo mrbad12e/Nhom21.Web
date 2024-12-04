@@ -62,15 +62,6 @@ class Product {
     }
   }
 
-  static async getById(productId) {
-    try {
-      const result = await this.get({ search: null, page: 1, pageSize: 1, includeInactive: true });
-      return result.products[0] || null;
-    } catch (err) {
-      console.error('Fetch product by ID error:', err);
-      throw err;
-    }
-  }
   async addNewProduct(data) {
     try {
       const result = await db.query('SELECT create_product($1, $2, $3 ,$4 ,$5, $6) AS new_product',[

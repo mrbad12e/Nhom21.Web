@@ -27,34 +27,31 @@ ALTER TABLE public.users
 CREATE OR REPLACE FUNCTION signIn(
     input_username varchar,
     input_password varchar
-) RETURNS BOOLEAN AS $$
+) RETURNS VARCHAR AS $$
 DECLARE
     stored_password varchar;
+    user_id varchar;
     encrypted_input_password varchar;
 BEGIN
-    -- Tìm mật khẩu đã lưu cho username tương ứng
-    SELECT password INTO stored_password
+    -- Find stored password and user id for the username
+    SELECT password, id INTO stored_password, user_id
     FROM public.users
     WHERE username = input_username;
 
-    -- Kiểm tra nếu không tìm thấy username
     IF stored_password IS NULL THEN
         RAISE NOTICE 'Email bạn nhập không kết nối với tài khoản nào.';
-        RETURN FALSE;
+        RETURN NULL;
     END IF;
 
-    -- Mã hóa mật khẩu nhập vào bằng MD5
     encrypted_input_password := md5(input_password);
 
-    -- Kiểm tra nếu mật khẩu không khớp
     IF stored_password != encrypted_input_password THEN
         RAISE NOTICE 'Sai mật khẩu';
-        RETURN FALSE;
+        RETURN NULL;
     END IF;
 
-    -- Nếu cả username và password đều đúng
-	RAISE NOTICE 'Đăng nhập thành công';
-    RETURN TRUE;
+    RAISE NOTICE 'Đăng nhập thành công';
+    RETURN user_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -205,7 +202,7 @@ SELECT * FROM view_all_profiles()
 
 -- Hàm update_profile đơn giản chỉ cập nhật thông tin người dùng
 CREATE OR REPLACE FUNCTION update_profile(
-    input_username varchar,
+    input_user_id varchar,
     v_email varchar DEFAULT NULL,
     v_first_name varchar DEFAULT NULL,
     v_last_name varchar DEFAULT NULL,
@@ -214,17 +211,14 @@ CREATE OR REPLACE FUNCTION update_profile(
     v_image varchar DEFAULT NULL
 ) RETURNS void AS $$
 BEGIN
-	-- Kiểm tra định dạng email (abc@def.xyz)
     IF v_email IS NOT NULL AND v_email !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' THEN
         RAISE EXCEPTION 'Invalid email format: %', v_email;
     END IF;
 
-    -- Kiểm tra định dạng phone (10 chữ số, bắt đầu bằng 0)
     IF v_phone IS NOT NULL AND (v_phone !~ '^[0-9]{10}$' OR v_phone !~ '^0') THEN
         RAISE EXCEPTION 'Invalid phone format: %', v_phone;
     END IF;
-	
-    -- Cập nhật thông tin người dùng theo tên người dùng (username)
+    
     UPDATE public.users
     SET 
         email = COALESCE(v_email, email),
@@ -233,7 +227,7 @@ BEGIN
         phone = COALESCE(v_phone, phone),
         address = COALESCE(v_address, address),
         image = COALESCE(v_image, image)
-    WHERE username = input_username;
+    WHERE id = input_user_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -317,22 +311,32 @@ SELECT * FROM public.users where username ='nghia2003';
 
 -- Tạo hàm đổi password
 CREATE OR REPLACE FUNCTION update_password(
-    input_username varchar,
+    input_user_id varchar,
+    old_password varchar,
     new_password varchar
 ) RETURNS void AS $$
 DECLARE
-    hashed_password varchar;
+    stored_password varchar;
+    encrypted_old_password varchar;
 BEGIN
-    -- Mã hóa mật khẩu mới trước khi lưu
-    hashed_password := generate_password(new_password);
-        UPDATE public.users
-        SET password = hashed_password
-        WHERE username = input_username;
+    SELECT password INTO stored_password 
+    FROM public.users 
+    WHERE id = input_user_id;
+
+    encrypted_old_password := md5(old_password);
+    
+    IF stored_password != encrypted_old_password THEN
+        RAISE NOTICE 'Old password is incorrect';
+    END IF;
+    
+    UPDATE public.users
+    SET password = md5(new_password)
+    WHERE id = input_user_id;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Test hàm đổi password
-SELECT update_password('nghia2003', '123456');
+-- SELECT update_password('nghia2003', '123456');
 
 -- Tự động tạo cho người dùng một cart khi tài khoản được kích hoạt (setActive = false -> true)
 -- Bước 1: Tạo hàm trigger để tự động tạo cart khi is_active chuyển từ FALSE thành TRUE
