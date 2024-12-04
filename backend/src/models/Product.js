@@ -64,13 +64,25 @@ class Product {
 
   static async getById(productId) {
     try {
-      const result = await this.get({ search: null, page: 1, pageSize: 1, includeInactive: true });
-      return result.products[0] || null;
+        // Sử dụng phương thức get để lấy sản phẩm theo productId
+        const result = await this.get({
+            search: null,              // Không tìm kiếm theo tên sản phẩm
+            categoryId: null,          // Không lọc theo danh mục
+            minPrice: null,            // Không lọc theo giá tối thiểu
+            maxPrice: null,            // Không lọc theo giá tối đa
+            includeInactive: true,     // Có thể bao gồm sản phẩm không hoạt động
+            page: 1,                   // Lấy 1 sản phẩm duy nhất
+            pageSize: 1,               // Chỉ lấy 1 sản phẩm
+            sortBy: 'id',              // Sắp xếp theo id
+            sortOrder: 'asc'           // Sắp xếp theo thứ tự tăng dần
+        });
+        return result.products.find(product => product.id === productId) || null;
     } catch (err) {
-      console.error('Fetch product by ID error:', err);
-      throw err;
+        console.error('Fetch product by ID error:', err);
+        throw err;
     }
-  }
+}
+
   
 }
 

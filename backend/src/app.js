@@ -1,10 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser'); 
-const userRoutes = require('./routes/client/user.routes');
-const productRoutes = require('./routes/client/product.routes');
-const cartRoutes = require('./routes/client/cart.routes');
-const orderRoutes = require('./routes/OrderRoutes');
-const reviewRoutes = require('./routes/reviewRoutes'); 
+const userRoutes = require('../src/routes/client/user.routes');
+const productRoutes = require('../src/routes/client/product.routes');
+const cartRoutes = require('../src/routes/client/cart.routes');
+const orderRoutes = require('../src/routes/client/order.routes');
+const reviewRoutes = require('../src/routes/client/review.routes'); 
 const app = express();
 
 // Middleware để parse dữ liệu JSON trong request body (tích hợp sẵn trong express)

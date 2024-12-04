@@ -9,7 +9,7 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     ssl: {
         rejectUnauthorized: false,
-    },
+    }
 });
 
 const query = async (text, params) => {
