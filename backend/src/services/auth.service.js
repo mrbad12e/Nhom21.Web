@@ -2,43 +2,33 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
 
 exports.validateAdminCredentials = async (username, password) => {
-  try {
-    // Query to validate user credentials using raw SQL (keeping the same query structure)
-    const result = await pool.query('SELECT signIn($1, $2) AS is_valid', [
-      username,
-      password,
-    ]);
-    console.log(result);
-    if (result.rows[0].is_valid == false) {
-      const isValid = false;
+    try {
+        // Query to validate user credentials using raw SQL (keeping the same query structure)
+        const result = await pool.query('SELECT * from signIn($1, $2)', [username, password]);
+
+        if (!result[0].signin) throw new Error('Wrong username or password');
+
+        const role = await pool.query('SELECT role FROM users WHERE id = $1', [result[0].signin]);
+        if (role[0].role !== 'ADMIN') {
+            const error = new Error('Unauthorized. User is not an admin.');
+            error.statusCode = 403;
+            throw error;
+        }
+
+        return {
+            id: result[0].signin,
+            username: username,
+            role: role[0].role,
+        }
+        
+    } catch (err) {
+        console.log('Error during admin authentication:', err);
+        throw err; // Pass the error to the middleware
     }
-
-    if (isValid) {
-      const userResult = await pool.query(
-        'SELECT id, username, role FROM users WHERE username = $1',
-        [username]
-      );
-
-      const user = userResult.rows[0];
-
-      if (user.role !== 'ADMIN') {
-        const error = new Error('Unauthorized. User is not an admin.');
-        error.statusCode = 403;
-        throw error; // Pass error to your error handler middleware
-      }
-
-      return user; // Return admin user info
-    }
-  } catch (err) {
-    console.log('Error during admin authentication:', err);
-    throw err; // Pass the error to the middleware
-  }
 };
 
 exports.generateAccessToken = (user) => {
-  return jwt.sign(
-    { id: user.id, username: user.username, role: user.role },
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: '1d' }
-  );
+    return jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET, {
+        expiresIn: '1d',
+    });
 };

@@ -3,7 +3,6 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/index');
-const errorHandler = require('./middleware/error.middleware');
 const userRoutes = require('./routes/client/user.routes');
 const productRoutes = require('./routes/client/product.routes');
 const cartRoutes = require('./routes/client/cart.routes');
