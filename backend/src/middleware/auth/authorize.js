@@ -3,7 +3,12 @@ const jwt = require('jsonwebtoken');
 // Middleware to check if the user is an admin
 function authorizeAdmin(req, res, next) {
   // Get the token from cookies (or headers)
-  const token = req.cookies.accessToken;
+  const token =
+    req.cookies.accessToken ||
+    (req.header('Authorization') &&
+    req.header('Authorization').startsWith('Bearer ')
+      ? req.header('Authorization').replace('Bearer ', '')
+      : '');
 
   if (!token) {
     return res.status(401).send('No token provided');

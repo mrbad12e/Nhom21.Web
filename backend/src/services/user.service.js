@@ -20,7 +20,14 @@ class UserService {
   static async getCart(userId) {
     return await User.getCartByUserId(userId);
   }
-  
+
+  static async getUserService(id) {
+    return await User.getUserDetailByID(id);
+  }
+
+  static async getAllUser() {
+    return await User.getAllUser();
+  }
 }
 
 module.exports = UserService;

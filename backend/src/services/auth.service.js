@@ -9,8 +9,10 @@ exports.validateAdminCredentials = async (username, password) => {
       password,
     ]);
     console.log(result);
+    const isValid = true;
     if (result.rows[0].is_valid == false) {
-      const isValid = false;
+      isValid = false;
+      return;
     }
 
     if (isValid) {

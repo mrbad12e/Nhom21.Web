@@ -4,7 +4,7 @@ const crypto = require('crypto');
 class User {
   constructor(data) {
     if (!User.validate(data)) {
-      throw new Error("Invalid user data");
+      throw new Error('Invalid user data');
     }
     this.id = data.id;
     this.username = data.username;
@@ -52,7 +52,7 @@ class User {
       const hashedPassword = this.hashPassword(password);
       const query = 'SELECT * FROM users WHERE username = $1 AND password = $2';
       const result = await db.query(query, [username, hashedPassword]);
-      
+
       return result.rows.length > 0 ? new User(result.rows[0]) : null;
     } catch (err) {
       console.error('Login error:', err);
@@ -64,7 +64,7 @@ class User {
     try {
       // Generate a UUID for the user ID
       const id = crypto.randomBytes(16).toString('hex').toLowerCase();
-      
+
       // Hash the password
       const hashedPassword = this.hashPassword(data.password);
 
@@ -86,7 +86,7 @@ class User {
         data.phone || null,
         data.address || null,
         data.image || null,
-        false // is_active defaults to false
+        false, // is_active defaults to false
       ];
       const result = await db.query(query, values);
       return new User(result.rows[0]);
@@ -119,13 +119,13 @@ class User {
         RETURNING *
       `;
       const values = [
-        userId, 
-        updateData.email, 
-        updateData.firstName, 
+        userId,
+        updateData.email,
+        updateData.firstName,
         updateData.lastName,
         updateData.phone,
         updateData.address,
-        updateData.image
+        updateData.image,
       ];
       const result = await db.query(query, values);
       return new User(result.rows[0]);
@@ -155,8 +155,30 @@ class User {
       console.error('Get cart error:', err);
       throw new Error('Failed to fetch cart');
     }
-  }  
+  }
 
+  static async getUserDetailByID(id) {
+    try {
+      const result = await db.query(
+        'SELECT view_profile(select username from users where id = $1)',
+        [id]
+      );
+      return result.rows[0]; // Can be use flexible with specific userid or just * for all user
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getAllUser() {
+    try {
+      const result = await db.query(
+        'SELECT id,username,email,first_name,last_name,role FROM users'
+      );
+      return result.rows;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = User;

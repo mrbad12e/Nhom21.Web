@@ -35,26 +35,27 @@ class Product {
     page = 1,
     pageSize = 10,
     sortBy = 'id',
-    sortOrder = 'asc'
+    sortOrder = 'asc',
   } = {}) {
     try {
       const result = await db.query(
         'SELECT * FROM get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)',
         [
-          search, 
-          categoryId, 
-          minPrice, 
-          maxPrice, 
-          includeInactive, 
-          page, 
-          pageSize, 
-          sortBy, 
-          sortOrder
+          search,
+          categoryId,
+          minPrice,
+          maxPrice,
+          includeInactive,
+          page,
+          pageSize,
+          sortBy,
+          sortOrder,
         ]
       );
       return {
-        products: result.rows.map(product => new Product(product)),
-        totalCount: result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0
+        products: result.rows.map((product) => new Product(product)),
+        totalCount:
+          result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0,
       };
     } catch (err) {
       console.error('Fetch products error:', err);
@@ -64,36 +65,65 @@ class Product {
 
   static async getById(productId) {
     try {
-      const result = await this.get({ search: null, page: 1, pageSize: 1, includeInactive: true });
+      const result = await this.get({
+        search: null,
+        page: 1,
+        pageSize: 1,
+        includeInactive: true,
+      });
       return result.products[0] || null;
     } catch (err) {
       console.error('Fetch product by ID error:', err);
       throw err;
     }
   }
-  async addNewProduct(data) {
+  static async addNewProduct(data) {
     try {
-      const result = await db.query('SELECT create_product($1, $2, $3 ,$4 ,$5, $6) AS new_product',[
-        data.name,
-        data.description,
-        data.price,
-        data.stock,
-        data.categoryId,
-        data.imageUrl
-      ])
-      if (result.rows.length > 0){
+      const result = await db.query(
+        'SELECT create_product($1, $2, $3 ,$4 ,$5, $6) AS new_product',
+        [
+          data.name,
+          data.description,
+          data.price,
+          data.stock,
+          data.categoryId,
+          data.imageUrl,
+        ]
+      );
+      if (result.rows.length > 0) {
         const { product_id, product_name, product_price } = result.rows[0];
         console.log(
           `Product created: ID=${product_id}, Name=${product_name}, Price=${product_price}`
         );
         return result.rows[0];
-      }else throw new Error("Failed to add new product!"); //throw to controller to handle
-    }catch(err){
-      throw(err);
+      } else throw new Error('Failed to add new product!'); //throw to controller to handle
+    } catch (err) {
+      throw err;
     }
   }
-  async updateProduct(data) {
-    
+  static async editProduct(data) {
+    try {
+      const result = await db.query(
+        'SELECT update_product($1, $2, $3 ,$4 ,$5, $6) AS updated_product',
+        [
+          data.name,
+          data.description,
+          data.price,
+          data.stock,
+          data.categoryId,
+          data.imageUrl,
+        ]
+      );
+      if (result.rows.length > 0) {
+        const { product_id, product_name, product_price } = result.rows[0];
+        console.log(
+          `Product updated: ID=${product_id}, Name=${product_name}, Price=${product_price}`
+        );
+        return result.rows[0];
+      } else throw new Error('Failed to add new product!'); //throw to controller to handle
+    } catch (error) {
+      throw(error)
+    }
   }
 }
 
