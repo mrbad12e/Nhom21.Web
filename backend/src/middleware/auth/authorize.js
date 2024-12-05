@@ -4,22 +4,14 @@ const jwt = require('jsonwebtoken');
 async function authorizeAdmin(req, res, next) {
   // Get the token from cookies (or headers)
   try{
-  const token =
-    req.cookies.auth ||
-    (req.header('Authorization') &&
-    req.header('Authorization').startsWith('Bearer ')
-      ? req.header('Authorization').replace('Bearer ', '')
-      : '');
+  const user = req.user;
 
-  if (!token) {
+  if (!user) {
     return res.status(401).send('No token provided');
-  }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);        
-        
+  }        
         const result = await db.query(
             'SELECT role FROM users WHERE id = $1',
-            [decoded.id]
+            [user.id]
         );        
 
         if (result.length === 0) {
@@ -29,8 +21,8 @@ async function authorizeAdmin(req, res, next) {
         if (result[0].role !== 'ADMIN') {
             return res.status(403).json({ message: 'Admin access required' });
         }
-
-        req.user = decoded;
+        
+        req.user = user;
         next();
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
