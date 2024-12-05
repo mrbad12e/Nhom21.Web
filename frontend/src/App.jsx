@@ -6,8 +6,8 @@ import About from "@/pages/client/About";
 import Login from "@/pages/client/Login";
 import NotFound from "@/pages/client/NotFound";
 import Contact from "@/pages/client/Contact";
-import Shop from "./pages/client/Shop";
-// import Register from "@/pages/Register";
+import Shop from "@/pages/client/Shop";
+import Products from "@/pages/client/Products";
 
 function App() {
   return (
@@ -18,13 +18,13 @@ function App() {
           <Route index element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/products/:id" element={<Products />} />
           <Route path="*" element={<NotFound />} />
           <Route path="/shop" element={<Shop />} />
         </Route>
 
         {/* Routes không bọc bởi DefaultLayout */}
         <Route path="/login" element={<Login />} />
-        {/* <Route path="/register" element={<Register />} /> */}
       </Routes>
     </Router>
   );
