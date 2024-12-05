@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaTimes } from "react-icons/fa";
 import Slider from "@mui/material/Slider";
 import Accordion from "@mui/material/Accordion";
@@ -9,11 +9,17 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ToggleButton from "@mui/material/ToggleButton";
 import CheckIcon from "@mui/icons-material/Check";
 
-const FilterBar = ({ onClose }) => {
-  const [priceRange, setPriceRange] = useState([50, 200]);
-  const [selectedColors, setSelectedColors] = useState([]);
-  const [selectedSizes, setSelectedSizes] = useState([]);
-
+const FilterBar = ({
+  priceRange,
+  setPriceRange,
+  selectedColors,
+  setSelectedColors,
+  selectedSizes,
+  setSelectedSizes,
+  selectedCategory,
+  setSelectedCategory,
+  onClose,
+}) => {
   const categories = [
     "Fashion and apparel",
     "Electronics",
@@ -66,6 +72,12 @@ const FilterBar = ({ onClose }) => {
     );
   };
 
+  const toggleCategory = (category) => {
+    setSelectedCategory((prev) =>
+      prev === category ? null : category
+    );
+  };
+
   return (
     <div className="w-full md:w-96 h-auto max-h-screen px-6 py-5 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-y-auto">
       {/* Header */}
@@ -93,6 +105,9 @@ const FilterBar = ({ onClose }) => {
                 <input
                   type="checkbox"
                   id={`category-${index}`}
+                  name="category"
+                  checked={selectedCategory === category}
+                  onChange={() => toggleCategory(category)}
                   className="mr-2"
                 />
                 <label htmlFor={`category-${index}`} className="text-gray-700">
@@ -118,9 +133,9 @@ const FilterBar = ({ onClose }) => {
               onChange={handlePriceChange}
               valueLabelDisplay="auto"
               min={0}
-              max={500}
+              max={10000}
               disableSwap
-              color="black"
+              color="primary"
             />
             <div className="flex justify-between mt-2 text-sm text-gray-700">
               <span>${priceRange[0]}</span>
@@ -148,7 +163,9 @@ const FilterBar = ({ onClose }) => {
               >
                 {selectedColors.includes(color) && (
                   <CheckIcon
-                    className={`absolute ${color === "white" ? "text-black" : "text-white"}  w-5 h-5"`}
+                    className={`absolute ${
+                      color === "white" ? "text-black" : "text-white"
+                    } w-5 h-5`}
                     style={{
                       top: "50%",
                       left: "50%",

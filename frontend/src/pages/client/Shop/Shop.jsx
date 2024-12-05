@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import Banner from "@/assets/shoppage/banner.jpg";
-import { FaFilter, FaTh, FaBars } from "react-icons/fa";
 import FilterBar from "@/components/common/FilterBar";
 import { Pagination } from "@mui/material";
+import { useState } from "react";
+import { FaBars, FaFilter, FaTh } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const Shop = () => {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
@@ -12,7 +12,7 @@ const Shop = () => {
   const [sortOption, setSortOption] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [priceRange, setPriceRange] = useState([50, 200]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
 
@@ -100,20 +100,46 @@ const Shop = () => {
     // Add more products as needed
   ];
 
-  const totalProducts = products.length;
-  const totalPages = Math.ceil(totalProducts / itemsPerPage);
+  // **Lọc sản phẩm dựa trên tiêu chí**
+  const filteredProducts = products.filter((product) => {
+    const inCategory =
+      !selectedCategory || product.category === selectedCategory;
 
+    const inPriceRange =
+      product.basePrice >= priceRange[0] && product.basePrice <= priceRange[1];
+
+    const inColor = selectedColors.length
+      ? selectedColors.some((color) =>
+          product.colors ? product.colors.includes(color) : false
+        )
+      : true;
+
+    const inSize = selectedSizes.length
+      ? selectedSizes.some((size) =>
+          product.sizes ? product.sizes.includes(size) : false
+        )
+      : true;
+
+    return inCategory && inPriceRange && inColor && inSize;
+  });
+
+  const totalProducts = filteredProducts.length;
+  const totalPages = Math.ceil(totalProducts / itemsPerPage);
   const startResult = (currentPage - 1) * itemsPerPage;
-  const endResult = Math.min(startResult + itemsPerPage, totalProducts);
-  const visibleProducts = products.slice(startResult, endResult);
+  const endResult =
+    startResult + itemsPerPage > totalProducts
+      ? totalProducts
+      : startResult + itemsPerPage;
+
+  const visibleProducts = filteredProducts.slice(
+    startResult,
+    startResult + itemsPerPage
+  );
+
+  console.log(visibleProducts);
+  console.log(totalProducts);
 
   const toggleFilterVisibility = () => setIsFilterVisible(!isFilterVisible);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
 
   return (
     <div className="text-white min-h-screen">
@@ -183,14 +209,24 @@ const Shop = () => {
       <div className="flex py-6">
         {/* Filter Sidebar */}
         {isFilterVisible && (
-          <div className="">
-            <FilterBar onClose={() => setIsFilterVisible(false)} />
+          <div className="mr-6">
+            <FilterBar
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              selectedColors={selectedColors}
+              setSelectedColors={setSelectedColors}
+              selectedSizes={selectedSizes}
+              setSelectedSizes={setSelectedSizes}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              onClose={() => setIsFilterVisible(false)}
+            />
           </div>
         )}
 
         {/* Product Grid */}
         <div className="flex-1 container mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {visibleProducts.map((product) => (
+          {visibleProducts.map((product, index) => (
             <div
               key={product._id}
               className="bg-white shadow-sm border rounded-lg p-4 max-h-96 hover:shadow-lg transition-shadow duration-300"
