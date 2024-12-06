@@ -1,0 +1,47 @@
+.container {
+    @apply w-full max-w-7xl mx-auto;
+}
+
+.header {
+    @apply flex justify-between items-center mb-6;
+}
+
+.title {
+    @apply text-2xl font-bold;
+}
+
+.filters {
+    @apply flex gap-4 mb-6;
+}
+
+.searchContainer {
+    @apply relative flex-1;
+}
+
+.searchIcon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground;
+}
+
+.searchInput {
+    @apply pl-10;
+}
+
+.statusFilter {
+    @apply w-[180px];
+}
+
+.tableContainer {
+    @apply bg-card rounded-lg border shadow-sm;
+}
+
+.customerInfo {
+    @apply flex flex-col;
+}
+
+.customerName {
+    @apply font-medium;
+}
+
+.customerEmail {
+    @apply text-sm text-muted-foreground;
+}

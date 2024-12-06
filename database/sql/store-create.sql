@@ -20,12 +20,10 @@ create table public.users (
     constraint pk_users primary key (id)
 );
 
-create table public.categories (
-    id integer not null,
+create table categories (
+    id serial primary key,
     name varchar(255) not null unique,
-    parent_category_id integer,
-    constraint pk_categories primary key (id),
-    constraint fk_parent_category_id foreign key (parent_category_id) references categories(id)
+    parent_category_id integer references categories(id)
 );
 
 create table public.products (

@@ -1,8 +1,8 @@
-const { getById } = require('../../models/Product');
 const {
   getAllProducts,
   addNewProductService,
-  editProductService
+  editProductService,
+  getProductById
 } = require('../../services/product.service');
 
 exports.getProductList = async (req, res, next) => {
@@ -46,7 +46,7 @@ exports.editProduct = async (req, res, next) => {
 exports.getProduct = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const result = await getById(id);
+    const result = await getProductById(id);
     res.status(200).json({
       message: result,
     });

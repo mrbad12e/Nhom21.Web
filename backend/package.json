@@ -8,24 +8,15 @@
     "dev": "nodemon src/app.js"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "ecommerce-backend": "file:../backend",
-    "express": "^4.21.1",
-    "express-rate-limit": "^7.4.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
     "express-validator": "^7.0.1",
-    "helmet": "^8.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.0",
-    "morgan": "^1.10.0",
+    "jsonwebtoken": "^9.0.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.16",
-    "pg": "^8.13.1",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.5"
+    "nodemailer": "^6.9.1",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "jest": "^29.7.0",

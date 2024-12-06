@@ -40,16 +40,13 @@ $$ language plpgsql;
 -- READ product(s) with flexible filtering and sorting
 drop function if exists get_products(text, integer, decimal, decimal, boolean, integer, integer, text, text);
 create or replace function get_products(
-    -- Search params
     p_search text default null,
     p_category_id integer default null,
     p_min_price decimal default null,
     p_max_price decimal default null,
     p_include_inactive boolean default false,
-    -- Pagination params
     p_page integer default 1,
     p_page_size integer default 10,
-    -- Sorting params
     p_sort_by text default 'id',
     p_sort_order text default 'asc'
 ) returns table (
@@ -62,60 +59,76 @@ create or replace function get_products(
     is_active boolean,
     total_count bigint
 ) as $$
-declare
-    v_offset integer;
-    v_sort_sql text;
 begin
-    -- calculate offset
-    v_offset := (p_page - 1) * p_page_size;
-    
-    -- validate and construct sort sql
     if p_sort_by not in ('id', 'name', 'price', 'stock') then
-        raise exception 'Invalid sort column: %', p_sort_by;
+        raise exception 'Invalid sort_by parameter';
     end if;
     
     if p_sort_order not in ('asc', 'desc') then
-        raise exception 'Invalid sort order: %', p_sort_order;
+        raise exception 'Invalid sort_order parameter';
     end if;
-    
-    v_sort_sql := format('p.%I %s', p_sort_by, p_sort_order);
 
     return query
-    with filtered_products as (
-        select 
-            p.id,
-            p.name,
-            p.description,
-            p.price,
-            p.stock,
-            c.name as category_name,
-            p.is_active,
-            count(*) over() as total_count
-        from products p
-        join categories c on p.category_id = c.id
-        where (
-            p_search is null 
-            or p.name ilike '%' || p_search || '%' 
-            or p.description ilike '%' || p_search || '%'
-        )
-        and (p_category_id is null or p.category_id = p_category_id)
-        and (p_min_price is null or p.price >= p_min_price)
-        and (p_max_price is null or p.price <= p_max_price)
-        and (p_include_inactive or p.is_active = true)
-    )
-    select *
-    from filtered_products
+    select 
+        p.id as product_id,
+        p.name as product_name,
+        p.description as product_description,
+        p.price as product_price,
+        p.stock as product_stock,
+        c.name as category_name,
+        p.is_active,
+        count(*) over() as total_count
+    from products p
+    left join categories c on p.category_id = c.id
+    where (p_search is null or (
+        p.name ilike '%' || p_search || '%' or 
+        p.description ilike '%' || p_search || '%'
+    ))
+    and (p_category_id is null or p.category_id = p_category_id)
+    and (p_min_price is null or p.price >= p_min_price)
+    and (p_max_price is null or p.price <= p_max_price)
+    and (p_include_inactive = true or p.is_active = true)
     order by 
-        case when v_sort_sql = 'p.id asc' then id end asc,
-        case when v_sort_sql = 'p.id desc' then id end desc,
-        case when v_sort_sql = 'p.name asc' then name end asc,
-        case when v_sort_sql = 'p.name desc' then name end desc,
-        case when v_sort_sql = 'p.price asc' then price end asc,
-        case when v_sort_sql = 'p.price desc' then price end desc,
-        case when v_sort_sql = 'p.stock asc' then stock end asc,
-        case when v_sort_sql = 'p.stock desc' then stock end desc
+        case when p_sort_by = 'id' and p_sort_order = 'asc' then p.id end asc,
+        case when p_sort_by = 'id' and p_sort_order = 'desc' then p.id end desc,
+        case when p_sort_by = 'name' and p_sort_order = 'asc' then p.name end asc,
+        case when p_sort_by = 'name' and p_sort_order = 'desc' then p.name end desc,
+        case when p_sort_by = 'price' and p_sort_order = 'asc' then p.price end asc,
+        case when p_sort_by = 'price' and p_sort_order = 'desc' then p.price end desc,
+        case when p_sort_by = 'stock' and p_sort_order = 'asc' then p.stock end asc,
+        case when p_sort_by = 'stock' and p_sort_order = 'desc' then p.stock end desc
     limit p_page_size
-    offset v_offset;
+    offset (p_page - 1) * p_page_size;
+end;
+$$ language plpgsql;
+
+create or replace function get_product_details(p_product_id integer)
+returns table (
+    product_id integer,
+    product_name varchar,
+    product_description text,
+    product_price decimal(10,2),
+    product_stock integer,
+    product_image_urls text[],
+    category_id integer,
+    category_name varchar,
+    is_active boolean
+) as $$
+begin
+    return query
+    select 
+        p.id,
+        p.name,
+        p.description,
+        p.price,
+        p.stock,
+        p.image_urls,
+        c.id as category_id,
+        c.name as category_name,
+        p.is_active
+    from products p
+    left join categories c on p.category_id = c.id
+    where p.id = p_product_id;
 end;
 $$ language plpgsql;
 

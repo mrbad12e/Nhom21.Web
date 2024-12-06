@@ -1,0 +1,55 @@
+.filters {
+    @apply flex flex-col md:flex-row justify-between gap-4 mb-6;
+}
+
+.searchContainer {
+    @apply relative flex-1;
+}
+
+.searchIcon {
+    @apply absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground;
+}
+
+.searchInput {
+    @apply pl-9;
+}
+
+.filterContainer {
+    @apply flex items-center gap-2;
+}
+
+.tableContainer {
+    @apply relative overflow-x-auto;
+}
+
+.tableRow {
+    @apply hover:bg-muted/50;
+}
+
+.customerInfo {
+    @apply flex flex-col;
+}
+
+.customerEmail {
+    @apply text-sm text-muted-foreground;
+}
+
+.actionButton {
+    @apply hover:bg-muted;
+}
+
+.pagination {
+    @apply flex flex-col md:flex-row items-center justify-between gap-4 mt-4;
+}
+
+.paginationInfo {
+    @apply text-sm text-muted-foreground;
+}
+
+.paginationControls {
+    @apply flex items-center gap-2;
+}
+
+.pageNumbers {
+    @apply text-sm mx-2;
+}
