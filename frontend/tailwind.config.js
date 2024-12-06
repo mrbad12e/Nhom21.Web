@@ -59,6 +59,9 @@ export default {
             animation: {
                 'fade-in': 'fade-in 0.5s ease-out',
             },
+            fontFamily: {
+                'Poppins': ['poppins', 'sans-serif'],
+            }
         },
     },
     plugins: ['tailwindcss-animate', require('tailwind-scrollbar'),],
