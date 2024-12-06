@@ -40,20 +40,11 @@ class Cart {
   // Lấy danh sách sản phẩm trong giỏ hàng
   static async getCartItems(customerId) {
     try {
-      const query = `
-        SELECT ci.id AS cart_item_id, ci.quantity, 
-               p.id AS product_id, p.name AS product_name, 
-               p.price, p.stock, p.image_urls
-        FROM cart_items ci
-        JOIN carts c ON ci.cart_id = c.id
-        JOIN products p ON ci.product_id = p.id
-        WHERE c.customer_id = $1
-      `;
+      const query = `select * from get_cart_contents($1)`;
       const result = await db.query(query, [customerId]);
       return result.rows;
     } catch (err) {
-      console.error('Fetch cart items error:', err);
-      throw new Error('Failed to fetch cart items');
+      throw new Error(err.message);
     }
   }
 

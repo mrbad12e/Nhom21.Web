@@ -4,7 +4,7 @@ class CartController {
   // Lấy danh sách sản phẩm trong giỏ hàng
   static async getCart(req, res) {
     try {
-      const customerId = req.params.customerId;
+      const customerId = req.user.userId[0].signin;      
       const cart = await CartService.getCart(customerId);
       res.status(200).json(cart);
     } catch (err) {

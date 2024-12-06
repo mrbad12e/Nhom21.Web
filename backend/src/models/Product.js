@@ -1,51 +1,23 @@
 const db = require('../config/database');
 
 class Product {
-    static validate(product) {
-        return !!(
-            product.name &&
-            product.description &&
-            parseFloat(product.price) >= 0 &&
-            parseInt(product.stock) >= 0 &&
-            product.categoryId
-        );
-    }
-
-    isInStock() {
-        return this.stock > 0 && this.isActive;
-    }
-
-    static async getById(id) {
+    static async get(req) {
         try {
-            const result = db.query('SELECT * FROM get_product_details($1)', [id]);
-            return result.rows; //the return from query is result= {rows:{data}}
-        } catch (error) {
-            throw error;
-        }
-    }
+            if (req.query.id) {
+                const result = await db.query('select * from get_product_details($1)', [req.query.id]);
+                return result;
+            }            
 
-    static async get({
-        search = null,
-        categoryId = null,
-        minPrice = null,
-        maxPrice = null,
-        includeInactive = false,
-        page = 1,
-        pageSize = 10,
-        sortBy = 'id',
-        sortOrder = 'asc',
-    } = {}) {
-        try {
-            const result = await db.query('SELECT * FROM get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
-                search,
-                categoryId,
-                minPrice,
-                maxPrice,
-                includeInactive,
-                page,
-                pageSize,
-                sortBy,
-                sortOrder,
+            const result = await db.query('select * from get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
+                req.query.search || null,
+                req.query.categoryId || null,
+                req.query.minPrice || null,
+                req.query.maxPrice || null,
+                req.query.includeInactive || false,
+                req.query.page || 1,
+                req.query.pageSize || 10,
+                req.query.sortBy || 'id',
+                req.query.sortOrder || 'asc',
             ]);
             return {
                 products: result,
@@ -57,8 +29,7 @@ class Product {
                 },
             };
         } catch (err) {
-            console.error('Fetch products error:', err);
-            throw err;
+            throw new Error(err.message);
         }
     }
 
