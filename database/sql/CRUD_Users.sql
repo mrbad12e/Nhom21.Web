@@ -24,6 +24,7 @@ ALTER TABLE public.users
 -- SET is_active = TRUE;
 
 -- Hàm đăng nhập
+-- Hàm đăng nhập sử dụng bcrypt
 CREATE OR REPLACE FUNCTION signIn(
     input_username varchar,
     input_password varchar
@@ -31,9 +32,8 @@ CREATE OR REPLACE FUNCTION signIn(
 DECLARE
     stored_password varchar;
     user_id varchar;
-    encrypted_input_password varchar;
 BEGIN
-    -- Find stored password and user id for the username
+    -- Lấy mật khẩu đã mã hóa và ID người dùng từ cơ sở dữ liệu
     SELECT password, id INTO stored_password, user_id
     FROM public.users
     WHERE username = input_username;
@@ -43,9 +43,8 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    encrypted_input_password := md5(input_password);
-
-    IF stored_password != encrypted_input_password THEN
+    -- So sánh mật khẩu nhập vào với mật khẩu đã mã hóa trong cơ sở dữ liệu
+    IF NOT crypt(input_password, stored_password) = stored_password THEN
         RAISE NOTICE 'Sai mật khẩu';
         RETURN NULL;
     END IF;
