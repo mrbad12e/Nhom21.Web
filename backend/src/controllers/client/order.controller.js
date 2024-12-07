@@ -4,38 +4,73 @@ class OrderController {
   // Tạo đơn hàng từ giỏ hàng
   static async createOrder(req, res) {
     try {
-      const { userId, shippingAddress } = req.body;
+      const userId = req.user.userId[0].signin;
+      const shippingAddress= req.body;
+      
+      // Validate required fields
+      if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+      }
+      if (!shippingAddress) {
+        return res.status(400).json({ message: 'Shipping address is required' });
+      }
+
       const orderId = await OrderService.createOrderFromCart(userId, shippingAddress);
-      res.status(200).json({ message: 'Order created successfully', orderId });
+      res.status(201).json({ 
+        message: 'Order created successfully', 
+        orderId 
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      console.error('Create order error:', err);
+      res.status(400).json({ 
+        message: err.message || 'Failed to create order' 
+      });
     }
   }
 
-  // Lấy thông tin đơn hàng theo ID
   static async getOrderById(req, res) {
     try {
-      const { orderId } = req.params;
-      const order = await OrderService.getOrderById(orderId);
-      if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
+      const orderId= req.body;
+      const userId = req.user.userId[0].signin;
+      if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
       }
-      res.status(200).json(order);
+      if (!orderId) {
+        return res.status(400).json({ message: 'Order ID is required' });
+      }
+      const result = await OrderService.getOrderById(orderId, userId);
+      res.status(200).json({result});
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      console.error('Get order error:', err.message);
+      res.status(404).json({ message: err.message || 'Order not found' });
     }
   }
-
-  // Lấy các sản phẩm trong đơn hàng
-  static async getOrderItems(req, res) {
+  
+  // Tạo thanh toán cho đơn hàng
+  static async createPayment(req, res) {
     try {
-      const { orderId } = req.params;
-      const items = await OrderService.getOrderItems(orderId);
-      res.status(200).json(items);
+      const userId = req.user.userId[0].signin;
+      const {orderId, amount, paymentMethod } = req.body;
+      if (!orderId) {
+        return res.status(400).json({ message: 'Order ID is required' });
+      }
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: 'Invalid payment amount' });
+      }
+      if (!paymentMethod) {
+        return res.status(400).json({ message: 'Payment method is required' });
+      }
+      const paymentId = await OrderService.createPayment(orderId, amount, paymentMethod);
+      res.status(201).json({ 
+        message: 'Payment created successfully', 
+        paymentId 
+      });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      console.error('Create payment error:', err);
+      res.status(400).json({ 
+        message: err.message || 'Failed to create payment' 
+      });
     }
   }
 }
-
 module.exports = OrderController;

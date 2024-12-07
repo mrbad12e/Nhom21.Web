@@ -3,17 +3,17 @@ const Order = require('../models/Order');
 class OrderService {
   // Tạo đơn hàng từ giỏ hàng
   static async createOrderFromCart(userId, shippingAddress) {
-    return await Order.createOrderFromCart(userId, shippingAddress);
+      return await Order.createOrderFromCart(userId, shippingAddress);
+    }
+
+  static async getOrderById(orderId, userId) {
+      return await Order.getOrderById(orderId, userId);
   }
 
-  // Lấy thông tin đơn hàng theo ID
-  static async getOrderById(orderId) {
-    return await Order.getOrderById(orderId);
-  }
+  // Tạo thanh toán cho đơn hàng
+  static async createPayment(orderId, amount, paymentMethod) {
+      return await Order.createPayment(orderId, amount, paymentMethod);
 
-  // Lấy các sản phẩm trong đơn hàng
-  static async getOrderItems(orderId) {
-    return await Order.getOrderItems(orderId);
   }
 }
 
