@@ -1,5 +1,4 @@
 const CartService = require('../../services/cart.service');
-
 class CartController {
   // Lấy danh sách sản phẩm trong giỏ hàng
   static async getCart(req, res) {

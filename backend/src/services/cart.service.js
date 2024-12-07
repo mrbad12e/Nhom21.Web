@@ -1,5 +1,4 @@
 const Cart = require('../models/Cart');
-
 class CartService {
     static async getCart(userId) {
         return await Cart.getCartItems(userId);

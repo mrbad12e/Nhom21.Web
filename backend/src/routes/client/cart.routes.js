@@ -1,7 +1,6 @@
 const express = require('express');
 const CartController = require('../../controllers/client/cart.controller');
 const authenticate = require('../../middleware/auth/authenticate');
-
 const router = express.Router();
 
 // Lấy danh sách sản phẩm trong giỏ hàng

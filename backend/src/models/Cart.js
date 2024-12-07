@@ -27,22 +27,18 @@ class Cart {
   // Cập nhật số lượng sản phẩm trong giỏ hàng
   static async updateCartItemQuantity(userId, productId, quantity) {
     try {
-      // Câu lệnh SQL gọi thủ tục
       const query = `
         CALL public.update_cart_item_quantity($1, $2, $3);
       `;
       
-      // Thực hiện truy vấn với các tham số
       const result = await db.query(query, [userId, productId, quantity]);
       
-      // Kiểm tra kết quả trả về (nếu cần)
       if (result.rowCount === 0) {
         throw new Error('No rows affected. Please check the input data or procedure.');
       }
   
       console.log('Cart item quantity updated successfully.');
     } catch (err) {
-      // In ra lỗi chi tiết để dễ dàng xử lý khi debug
       console.error('Update cart item quantity error:', err.message);
       throw new Error('Failed to update cart item quantity: ${err.message}');
     }
@@ -72,7 +68,6 @@ class Cart {
   // Xóa sản phẩm khỏi giỏ hàng
   static async removeProductFromCart(userId, productId) {
     try {
-      // Lấy cart_id từ bảng carts dựa trên userId
       const query = `
         DELETE FROM public.cart_items 
         WHERE cart_id = (
