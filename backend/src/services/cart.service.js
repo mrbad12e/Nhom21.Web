@@ -1,8 +1,8 @@
 const Cart = require('../models/Cart');
 
 class CartService {
-    static async getCart(customerId) {
-        return await Cart.getCartItems(customerId);
+    static async getCart(userId) {
+        return await Cart.getCartItems(userId);
     }
 
     static async addProduct(userId, productId, quantity) {

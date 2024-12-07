@@ -3,7 +3,7 @@ const db = require('../config/database');
 class Cart {
   constructor(data) {
     this.id = data.id;
-    this.customerId = data.customer_id || data.customerId;
+    this.userId = data.customer_id || data.userId;
     this.createdAt = data.created_at || data.createdAt;
     this.items = data.items || [];
   }
@@ -25,20 +25,32 @@ class Cart {
   }
 
   // Cập nhật số lượng sản phẩm trong giỏ hàng
-  static async updateCartItemQuantity(cartId, productId, quantity) {
+  static async updateCartItemQuantity(userId, productId, quantity) {
     try {
+      // Câu lệnh SQL gọi thủ tục
       const query = `
         CALL public.update_cart_item_quantity($1, $2, $3);
       `;
-      await db.query(query, [cartId, productId, quantity]);
+      
+      // Thực hiện truy vấn với các tham số
+      const result = await db.query(query, [userId, productId, quantity]);
+      
+      // Kiểm tra kết quả trả về (nếu cần)
+      if (result.rowCount === 0) {
+        throw new Error('No rows affected. Please check the input data or procedure.');
+      }
+  
+      console.log('Cart item quantity updated successfully.');
     } catch (err) {
-      console.error('Update cart item quantity error:', err);
-      throw new Error(err.message); // Trả về thông báo lỗi từ procedure
+      // In ra lỗi chi tiết để dễ dàng xử lý khi debug
+      console.error('Update cart item quantity error:', err.message);
+      throw new Error('Failed to update cart item quantity: ${err.message}');
     }
   }
+  
 
   // Lấy danh sách sản phẩm trong giỏ hàng
-  static async getCartItems(customerId) {
+  static async getCartItems(userId) {
     try {
       const query = `
         SELECT ci.id AS cart_item_id, ci.quantity, 
@@ -49,7 +61,7 @@ class Cart {
         JOIN products p ON ci.product_id = p.id
         WHERE c.customer_id = $1
       `;
-      const result = await db.query(query, [customerId]);
+      const result = await db.query(query, [userId]);
       return result.rows;
     } catch (err) {
       console.error('Fetch cart items error:', err);
@@ -58,18 +70,29 @@ class Cart {
   }
 
   // Xóa sản phẩm khỏi giỏ hàng
-  static async removeProductFromCart(cartId, productId) {
+  static async removeProductFromCart(userId, productId) {
     try {
+      // Lấy cart_id từ bảng carts dựa trên userId
       const query = `
-        DELETE FROM cart_items 
-        WHERE cart_id = $1 AND product_id = $2
+        DELETE FROM public.cart_items 
+        WHERE cart_id = (
+          SELECT id FROM public.carts WHERE customer_id = $1 LIMIT 1
+        ) 
+        AND product_id = $2;
       `;
-      await db.query(query, [cartId, productId]);
+      
+      const result = await db.query(query, [userId, productId]);
+  
+      // Kiểm tra nếu không có dòng nào bị xóa (giỏ hàng hoặc sản phẩm không tồn tại)
+      if (result.rowCount === 0) {
+        throw new Error('No matching cart or product found');
+      }
     } catch (err) {
       console.error('Remove from cart error:', err);
       throw new Error('Failed to remove product from cart');
     }
   }
+  
 }
 
 module.exports = Cart;

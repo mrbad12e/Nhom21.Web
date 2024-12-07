@@ -7,7 +7,7 @@ const errorHandler = require('./middleware/error.middleware');
 
 const userRoutes = require('./routes/client/user.routes');
 const productRoutes = require('./routes/client/product.routes');
-//const cartRoutes = require('./routes/client/cart.routes');
+const cartRoutes = require('./routes/client/cart.routes');
 //const orderRoutes = require('./routes/client/order.routes');
 const app = express();
 
@@ -21,7 +21,7 @@ app.use('/', authRoutes);
 app.use('/user',userRoutes);
 //app.use('/order',orderRoutes);
 app.use('/product',productRoutes);
-//app.use('/cart',cartRoutes);
+app.use('/cart',cartRoutes);
 app.use(errorHandler);
 
 const port = process.env.PORT || 3000;
