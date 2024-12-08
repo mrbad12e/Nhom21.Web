@@ -72,5 +72,23 @@ class OrderController {
       });
     }
   }
+
+  static async getCustomerPayments(req, res) {
+    const userId = req.user.userId[0].signin;
+    const { limit = 50, offset = 0 } = req.query;
+
+    try {
+        const payments = await CustomerPaymentService.getCustomerPayments(userId, limit, offset);
+        res.status(200).json({
+            success: true,
+            data: payments,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
 }
 module.exports = OrderController;

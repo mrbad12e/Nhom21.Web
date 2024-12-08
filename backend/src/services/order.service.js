@@ -15,6 +15,12 @@ class OrderService {
       return await Order.createPayment(orderId, amount, paymentMethod);
 
   }
+
+  static async getCustomerPayments(userId, limit, offset) {
+    return await CustomerPaymentModel.getCustomerPayments(userId, limit, offset);
+  
+  }
+
 }
 
 module.exports = OrderService;

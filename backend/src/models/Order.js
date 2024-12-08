@@ -105,6 +105,20 @@ class Order {
     }
   }
 
+  static async getCustomerPayments(userId, limit = 50, offset = 0) {
+    try {
+      const query = `
+        SELECT * 
+        FROM public.get_customer_payments($1, $2, $3);
+    `;
+        const result = await db.query(query, [userId, limit, offset]);
+        console.log(result);
+        return result[0].getCustomerPayments;
+    } catch (error) {
+        throw new Error(`Error fetching customer payments: ${error.message}`);
+    }
+}
+
   static generateOrderId() {
     return Math.random().toString(36).substr(2, 16).toUpperCase();
   }
