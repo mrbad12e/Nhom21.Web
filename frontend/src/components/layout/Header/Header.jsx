@@ -10,16 +10,14 @@ import {
 import ProfilePopup from "@/components/common/ProfilePopup";
 import CartPopup from "@/components/common/CartPopUp";
 import NotiPopup from "@/components/common/NotiPopUp";
+import { useCart } from "@/components/features/cart/CartContext/CartContext"; // Import useCart
 import avatar from "@/assets/images/HomePage/user.png";
 
 const Header = () => {
+  const { cartItems } = useCart(); // Lấy cartItems từ CartContext
   const [menuOpen, setMenuOpen] = useState(false);
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
   const [isCartPopupOpen, setIsCartPopupOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([
-    { id: 1, name: "Product 1", image: "image1.jpg", quantity: 2, price: 20 },
-    { id: 2, name: "Product 2", image: "image2.jpg", quantity: 1, price: 15 },
-  ]);
   const [notifications, setNotifications] = useState([
     { id: 1, title: "Order Shipped", message: "Your order has been shipped!" },
     {
@@ -28,7 +26,6 @@ const Header = () => {
       message: "You have a new message from John.",
     },
   ]);
-
   const [isNotiPopupOpen, setIsNotiPopupOpen] = useState(false);
 
   const toggleNotiPopup = () => {
@@ -37,10 +34,6 @@ const Header = () => {
 
   const removeNotification = (id) => {
     setNotifications(notifications.filter((noti) => noti.id !== id));
-  };
-
-  const removeCartItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
   };
 
   const user = {
@@ -116,13 +109,17 @@ const Header = () => {
           </div>
 
           <div className="flex items-center gap-6">
+            {/* Cart Icon */}
             <div className="relative cursor-pointer" onClick={toggleCartPopup}>
               <FaShoppingCart className="text-2xl" />
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
-                {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-              </span>
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                  {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+                </span>
+              )}
             </div>
 
+            {/* Notifications */}
             <div className="relative cursor-pointer" onClick={toggleNotiPopup}>
               <FaBell className="text-2xl" />
               {notifications.length > 0 && (
@@ -132,6 +129,7 @@ const Header = () => {
               )}
             </div>
 
+            {/* Profile Icon */}
             <div
               className="relative w-10 h-10 rounded-full cursor-pointer overflow-hidden border-2 border-white"
               onClick={toggleProfilePopup}
@@ -152,11 +150,7 @@ const Header = () => {
             className="fixed inset-0 bg-black bg-opacity-50 z-40"
             onClick={toggleCartPopup}
           ></div>
-          <CartPopup
-            cartItems={cartItems}
-            onClose={toggleCartPopup}
-            onRemoveItem={removeCartItem}
-          />
+          <CartPopup onClose={toggleCartPopup} />
         </>
       )}
 

@@ -1,3 +1,5 @@
+import React from "react";
+import { useCart } from "@/components/features/cart/CartContext/CartContext";
 import {
   FaHeart,
   FaTimes,
@@ -7,6 +9,9 @@ import {
   FaLongArrowAltRight,
 } from "react-icons/fa";
 const Cart = () => {
+  const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } =
+    useCart();
+
   return (
     <section class="bg-white py-8 antialiased md:py-16">
       <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
@@ -16,233 +21,84 @@ const Cart = () => {
 
         <div class="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
           <div class="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
-            <div class="space-y-6">
-              <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6">
-                <div class="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
-                  <a href="#" class="w-20 shrink-0 md:order-1">
-                    <img
-                      class="h-20 w-20"
-                      src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"
-                      alt="imac image"
-                    />
-                  </a>
-
-                  <label for="counter-input" class="sr-only">
-                    Choose quantity:
-                  </label>
-                  <div class="flex items-center justify-between md:order-3 md:justify-end">
-                    <div class="flex items-center">
-                      <button
-                        type="button"
-                        id="decrement-button"
-                        data-input-counter-decrement="counter-input"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
-                      >
-                        <FaMinus className="h-2.5 w-2.5 text-gray-900" />
-                      </button>
-                      <input
-                        type="text"
-                        id="counter-input"
-                        data-input-counter
-                        class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0"
-                        placeholder=""
-                        value="2"
-                        required
+            <div className="space-y-6">
+              
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6"
+                >
+                  <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
+                    {/* Hình ảnh */}
+                    <a href="#" className="w-20 shrink-0 md:order-1">
+                      <img
+                        className="h-20 w-20"
+                        src={item.image}
+                        alt={item.name}
                       />
-                      <button
-                        type="button"
-                        id="increment-button"
-                        data-input-counter-increment="counter-input"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
-                      >
-                        <FaPlus className="h-2.5 w-2.5 text-gray-900" />
-                      </button>
-                    </div>
-                    <div class="text-end md:order-4 md:w-32">
-                      <p class="text-base font-bold text-gray-900">$1,499</p>
-                    </div>
-                  </div>
-
-                  <div class="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
-                    <a
-                      href="#"
-                      class="text-base font-medium text-gray-900 hover:underline"
-                    >
-                      PC system All in One APPLE iMac (2023) mqrq3ro/a, Apple
-                      M3, 24" Retina 4.5K, 8GB, SSD 256GB, 10-core GPU, Keyboard
-                      layout INT
                     </a>
 
-                    <div class="flex items-center gap-4">
-                      <button
-                        type="button"
-                        class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 hover:underline"
-                      >
-                        <FaHeart className="me-1.5 h-4 w-4" />
-                        Add to Favorites
-                      </button>
+                    {/* Thao tác số lượng */}
+                    <div className="flex items-center justify-between md:order-3 md:justify-end">
+                      <div className="flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => decreaseQuantity(item.id)}
+                          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
+                        >
+                          <FaMinus className="h-2.5 w-2.5 text-gray-900" />
+                        </button>
+                        <input
+                          type="text"
+                          readOnly
+                          className="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0"
+                          value={item.quantity}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => increaseQuantity(item.id)}
+                          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
+                        >
+                          <FaPlus className="h-2.5 w-2.5 text-gray-900" />
+                        </button>
+                      </div>
+                      <div className="text-end md:order-4 md:w-32">
+                        <p className="text-base font-bold text-gray-900">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
 
-                      <button
-                        type="button"
-                        class="inline-flex items-center text-sm font-medium text-red-600 hover:underline"
+                    {/* Tên sản phẩm và thao tác */}
+                    <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
+                      <a
+                        href="#"
+                        className="text-base font-medium text-gray-900 hover:underline"
                       >
-                        <FaTimes className="me-1.5 h-4 w-4" />
-                        Remove
-                      </button>
+                        {item.name}
+                      </a>
+
+                      <div className="flex items-center gap-4">
+                        <button
+                          type="button"
+                          className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 hover:underline"
+                        >
+                          <FaHeart className="me-1.5 h-4 w-4" />
+                          Add to Favorites
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.id)}
+                          className="inline-flex items-center text-sm font-medium text-red-600 hover:underline"
+                        >
+                          <FaTimes className="me-1.5 h-4 w-4" />
+                          Remove
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6">
-                <div class="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
-                  <a href="#" class="w-20 shrink-0 md:order-1">
-                    <img
-                      class="h-20 w-20"
-                      src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/apple-watch-light.svg"
-                      alt="imac image"
-                    />
-                  </a>
-
-                  <label for="counter-input-2" class="sr-only">
-                    Choose quantity:
-                  </label>
-                  <div class="flex items-center justify-between md:order-3 md:justify-end">
-                    <div class="flex items-center">
-                      <button
-                        type="button"
-                        id="decrement-button-2"
-                        data-input-counter-decrement="counter-input-2"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
-                      >
-                        <FaMinus className="h-2.5 w-2.5 text-gray-900" />
-                      </button>
-                      <input
-                        type="text"
-                        id="counter-input-2"
-                        data-input-counter
-                        class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0"
-                        placeholder=""
-                        value="2"
-                        required
-                      />
-                      <button
-                        type="button"
-                        id="increment-button-2"
-                        data-input-counter-increment="counter-input-2"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
-                      >
-                        <FaPlus className="h-2.5 w-2.5 text-gray-900" />
-                      </button>
-                    </div>
-                    <div class="text-end md:order-4 md:w-32">
-                      <p class="text-base font-bold text-gray-900">$598</p>
-                    </div>
-                  </div>
-
-                  <div class="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
-                    <a
-                      href="#"
-                      class="text-base font-medium text-gray-900 hover:underline"
-                    >
-                      Restored Apple Watch Series 8 (GPS) 41mm Midnight Aluminum
-                      Case with Midnight Sport Band
-                    </a>
-
-                    <div class="flex items-center gap-4">
-                      <button
-                        type="button"
-                        class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 hover:underline"
-                      >
-                        <FaHeart className="me-1.5 h-4 w-4" />
-                        Add to Favorites
-                      </button>
-
-                      <button
-                        type="button"
-                        class="inline-flex items-center text-sm font-medium text-red-600 hover:underline"
-                      >
-                        <FaTimes className="me-1.5 h-4 w-4" />
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6">
-                <div class="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
-                  <a href="#" class="w-20 shrink-0 md:order-1">
-                    <img
-                      class="h-20 w-20"
-                      src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/macbook-pro-light.svg"
-                      alt="imac image"
-                    />
-                  </a>
-
-                  <label for="counter-input-3" class="sr-only">
-                    Choose quantity:
-                  </label>
-                  <div class="flex items-center justify-between md:order-3 md:justify-end">
-                    <div class="flex items-center">
-                      <button
-                        type="button"
-                        id="decrement-button-3"
-                        data-input-counter-decrement="counter-input-3"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
-                      >
-                        <FaMinus className="h-2.5 w-2.5 text-gray-900" />
-                      </button>
-                      <input
-                        type="text"
-                        id="counter-input-3"
-                        data-input-counter
-                        class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0"
-                        placeholder=""
-                        value="2"
-                        required
-                      />
-                      <button
-                        type="button"
-                        id="increment-button-3"
-                        data-input-counter-increment="counter-input-3"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
-                      >
-                        <FaPlus className="h-2.5 w-2.5 text-gray-900" />
-                      </button>
-                    </div>
-                    <div class="text-end md:order-4 md:w-32">
-                      <p class="text-base font-bold text-gray-900 ">$1,799</p>
-                    </div>
-                  </div>
-
-                  <div class="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
-                    <a
-                      href="#"
-                      class="text-base font-medium text-gray-900 hover:underline"
-                    >
-                      Apple - MacBook Pro 16" Laptop, M3 Pro chip, 36GB Memory,
-                      18-core GPU, 512GB SSD, Space Black
-                    </a>
-
-                    <div class="flex items-center gap-4">
-                      <button
-                        type="button"
-                        class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 hover:underline"
-                      >
-                        <FaHeart className="me-1.5 h-4 w-4" />
-                        Add to Favorites
-                      </button>
-
-                      <button
-                        type="button"
-                        class="inline-flex items-center text-sm font-medium text-red-600 hover:underline"
-                      >
-                        <FaTimes className="me-1.5 h-4 w-4" />
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
             <div class="hidden xl:mt-8 xl:block">
               <h3 class="text-2xl font-semibold text-gray-900">
