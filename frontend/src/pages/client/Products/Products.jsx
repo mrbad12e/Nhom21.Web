@@ -1,20 +1,21 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import {
-  FaTruck,
-  FaUndo,
-  FaStar,
-  FaStarHalfAlt,
-  FaRegStar,
-  FaHeart,
-  FaPlus,
-  FaMinus,
-} from "react-icons/fa";
+import Banner from "@/components/common/Banner";
 import useProducts from "@/hooks/useProducts";
+import { useProductLogic } from "@/pages/client/Products/index";
 import "@/pages/client/Products/Products.module.css";
 import RelatedProducts from "@/pages/client/Products/RelatedProducts";
-import Banner from "@/components/common/Banner";
-import { useProductLogic } from "@/pages/client/Products/index";
+import { useState } from "react";
+import { useCart } from "@/components/features/cart/CartContext/CartContext";
+import {
+  FaHeart,
+  FaMinus,
+  FaPlus,
+  FaRegStar,
+  FaStar,
+  FaStarHalfAlt,
+  FaTruck,
+  FaUndo,
+} from "react-icons/fa";
+import { useParams } from "react-router-dom";
 
 const Products = () => {
   const { id } = useParams();
@@ -199,7 +200,7 @@ const Products = () => {
                 </div>
                 <button 
                   className="bg-rose-500 text-white px-3 py-2 rounded hover:bg-rose-600"
-                  onClick={handleBuyNow}>
+                  onClick={() => handleBuyNow(product, quantity)}>
                   Buy Now
                 </button>
                 <button

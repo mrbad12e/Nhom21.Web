@@ -9,8 +9,10 @@ import Contact from '@/pages/client/Contact';
 import Shop from '@/pages/client/Shop';
 import Products from '@/pages/client/Products';
 import Cart from "@/pages/client/Cart";
+import Checkout from "@/pages/client/Checkout";
 import adminRoutes from './routes/adminRoutes';
 
+          <Route path="/checkout" element={<Checkout />} />
 const App = () => {
     const renderRoutes = (routes) => {
         return routes.map((route) => (

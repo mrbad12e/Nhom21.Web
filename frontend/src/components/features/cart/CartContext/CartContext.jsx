@@ -27,17 +27,20 @@ export const CartProvider = ({ children }) => {
       },
     ]);
 
-  const addToCart = (item) => {
-    setCartItems((prev) => {
-      const existingItem = prev.find((i) => i.id === item.id);
-      if (existingItem) {
-        return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
-      return [...prev, { ...item, quantity: 1 }];
-    });
-  };
+    const addToCart = (item) => {
+      setCartItems((prev) => {
+        const existingItem = prev.find((i) => i.id === item.id);
+        
+        if (existingItem) {
+          return prev.map((i) =>
+            i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+          );
+        }
+        
+        return [...prev, { ...item, quantity: item.quantity }];
+      });
+    };
+    
 
   const removeFromCart = (id) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
