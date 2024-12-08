@@ -1,117 +1,45 @@
 const db = require('../config/database');
 
 class Order {
-  constructor(data) {
-    this.validate(data);
-
-    this.id = data.id;
-    this.customerId = data.customer_id || data.customerId;
-    this.totalPrice = parseFloat(data.total_price || data.totalPrice);
-    this.shippingAddress = data.shipping_address || data.shippingAddress;
-    this.orderStatus = data.order_status || data.orderStatus;
-    this.paymentStatus = data.payment_status || data.paymentStatus;
-    this.createdAt = data.created_at || data.createdAt;
-    this.items = data.items || [];
-  }
-
-  // Kiểm tra tính hợp lệ của các thông tin đơn hàng
-  validate(order) {
-    const validationErrors = [];
-
-    if (!order.customer_id) {
-      validationErrors.push('Customer ID is required');
-    }
-
-    if (!this.isValidStatus(order.order_status)) {
-      validationErrors.push('Invalid order status');
-    }
-
-    if (!this.isValidPaymentStatus(order.payment_status)) {
-      validationErrors.push('Invalid payment status');
-    }
-
-    if (parseFloat(order.total_price) < 0) {
-      validationErrors.push('Invalid total price');
-    }
-
-    if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join(', '));
-    }
-
-    return true;
-  }
-
-  static getValidStatuses() {
-    return ['PENDING', 'SHIPPED', 'DELIVERED', 'CANCELED'];
-  }
-
-  static getValidPaymentStatuses() {
-    return ['PENDING', 'COMPLETED', 'FAILED'];
-  }
-
-  isValidStatus(status) {
-    return Order.getValidStatuses().includes(status);
-  }
-
-  isValidPaymentStatus(status) {
-    return Order.getValidPaymentStatuses().includes(status);
-  }
-
   // Tạo đơn hàng từ giỏ hàng
   static async createOrderFromCart(userId, shippingAddress) {
     try {
-      // Thực thi hàm SQL create_order_from_cart
       const query = `
         SELECT * from public.create_order_from_cart($1, $2);
       `;
       const result = await db.query(query, [userId, shippingAddress]);
-      console.log(result);
-      
+  
       return result[0].create_order_from_cart;
-    } catch (err) {
-      console.error('Error creating order from cart:', err);
-      throw new Error('Failed to create order from cart');
+    }catch (err) {
+      throw new Error(err.message);
     }
   }
 
-  // Lấy thông tin đơn hàng theo ID
-  static async getOrderById(orderId) {
+  // Lấy thông tin đơn hàng theo ID cho người dùng cụ thể
+  static async getOrderById(orderId, userId) {
     try {
       const query = `
-        SELECT * FROM public.orders WHERE id = $1;
-      `;
-      const result = await db.query(query, [orderId]);
-      return result.rows[0];
+      SELECT * FROM public.get_order($1, $2);
+    `;
+    const result = await db.query(query, [orderId, userId]);
+    return result[0];
     } catch (err) {
-      console.error('Get order by ID error:', err);
-      throw new Error('Failed to fetch order');
+      throw new Error(err.message);
     }
   }
 
-  // Lấy thông tin các sản phẩm trong đơn hàng
-  static async getOrderItems(orderId) {
+  // Tạo thanh toán cho đơn hàng
+  static async createPayment(orderId, amount, paymentMethod) {
     try {
       const query = `
-        SELECT oi.id AS order_item_id, oi.quantity, oi.price, 
-               p.id AS product_id, p.name AS product_name, p.price AS product_price
-        FROM public.order_items oi
-        JOIN public.products p ON oi.product_id = p.id
-        WHERE oi.order_id = $1;
+        SELECT public.create_payment($1, $2, $3);
       `;
-      const result = await db.query(query, [orderId]);
-      return result.rows;
+      const result = await db.query(query, [orderId, amount, paymentMethod]);
+      return result[0].create_payment;
     } catch (err) {
-      console.error('Get order items error:', err);
-      throw new Error('Failed to fetch order items');
+      console.error('Create payment error:', err);
+      throw err;
     }
-  }
-
-  static generateOrderId() {
-    return Math.random().toString(36).substr(2, 16).toUpperCase();
-  }
-
-  static generateOrderItemId() {
-    return Math.random().toString(36).substr(2, 24).toUpperCase();
   }
 }
 

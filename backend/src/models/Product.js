@@ -64,37 +64,6 @@ class Product {
         }
     }
 
-    static async updateProduct(data) {
-        try {
-            const id = data.id;
-            const { name, description, price, stock, categoryId } = data.body;
-
-            if (!id) {
-                throw new Error('Product ID is required');
-            }
-
-            const result = await db.query('select * from update_product($1, $2, $3, $4, $5, $6)', [
-                id,
-                name || null,
-                description || null,
-                price || null,
-                stock || null,
-                categoryId || null,
-            ]);
-
-            if (!result || !result[0]) {
-                throw new Error('Failed to update product');
-            }
-
-            return {
-                id: result[0].product_id,
-                name: result[0].product_name,
-                price: result[0].product_price,
-            };
-        } catch (err) {
-            throw new Error(err.message);
-        }
-    }
 }
 
 module.exports = Product;

@@ -1,14 +1,14 @@
---UPDATE USE CURRENT QUANTITY-- 
-CREATE OR REPLACE FUNCTION public.update_cart_item_quantity(
+CREATE OR REPLACE PROCEDURE public.update_cart_item_quantity(
     p_user_id varchar(255),  -- ID người dùng
     p_product_id INT,        -- ID sản phẩm cần cập nhật
     p_new_quantity INT       -- Số lượng mới cần cập nhật vào giỏ hàng
 )
-RETURNS VOID AS $$
+LANGUAGE plpgsql
+AS $$
 DECLARE
     v_cart_id char(16);           -- Mã giỏ hàng, dùng MD5 16 ký tự
     v_available_stock INT;        -- Số lượng hàng tồn kho
-	v_current_quantity INT;
+    v_current_quantity INT;
 BEGIN
     -- Kiểm tra và lấy cart_id từ user_id
     SELECT id INTO v_cart_id
@@ -43,7 +43,9 @@ BEGIN
         RAISE EXCEPTION 'Desired quantity (%s) exceeds available stock (%s) for product_id=%', 
                         p_new_quantity, v_available_stock, p_product_id;
     END IF;
-	SELECT quantity INTO v_current_quantity
+    
+    -- Kiểm tra số lượng sản phẩm trong giỏ
+    SELECT quantity INTO v_current_quantity
     FROM public.cart_items
     WHERE cart_id = v_cart_id AND product_id = p_product_id;
 
@@ -71,7 +73,7 @@ EXCEPTION
         RAISE EXCEPTION 'Failed to update cart item for cart_id=%, product_id=%: %', 
                         v_cart_id, p_product_id, SQLERRM;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Function to get cart contents with product details
 drop function if exists public.get_cart_contents(user_id varchar(255));
@@ -135,6 +137,34 @@ begin
     where ci.cart_id = v_cart_id;
 
     return v_total;
+end;
+$$ language plpgsql;
+
+-- Function to remove item from cart
+drop function if exists public.remove_from_cart(user_id varchar(255), product_id int);
+create or replace function remove_from_cart(
+    user_id varchar(255),
+    product_id integer
+) returns void as $$
+declare
+    v_cart_id varchar(32);
+begin
+    -- Get user's cart
+    select id into v_cart_id
+    from public.carts
+    where customer_id = user_id;
+
+    if v_cart_id is null then
+        raise exception 'No active cart found for user %', user_id;
+    end if;
+
+    -- Remove item
+    delete from public.cart_items
+    where cart_id = v_cart_id and product_id = product_id;
+
+    if not found then
+        raise exception 'Product % not found in cart', product_id;
+    end if;
 end;
 $$ language plpgsql;
 
