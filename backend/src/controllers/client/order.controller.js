@@ -45,9 +45,8 @@ class OrderController {
   }
 
   static async getCustomerPayments(req, res) {
-    const userId = req.user.userId[0].signin;
+    const userId = req.user.userId;
     const { limit = 50, offset = 0 } = req.query;
-
     try {
         const payments = await CustomerPaymentService.getCustomerPayments(userId, limit, offset);
         res.status(200).json({

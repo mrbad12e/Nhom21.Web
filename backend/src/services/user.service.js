@@ -10,6 +10,7 @@ class UserService {
                 throw new Error('Invalid login credentials');
             }
             userId = userId[0].signin;
+            console.log(userId);
             const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1d' });
             return token;
         } catch (err) {

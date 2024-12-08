@@ -17,6 +17,7 @@ class CartController {
     try {
       const userId = req.user.userId;
       const { productId, quantity } = req.body;
+      console.log(userId);
       await Cart.addProductToCart(userId, productId, quantity);
       res.status(200).json({ message: 'Product added to cart successfully' });
     } catch (err) {

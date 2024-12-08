@@ -12,6 +12,6 @@ router.get('/:orderId',authenticate, OrderController.getOrderById);
 // Tạo thanh toán cho đơn hàng
 router.post('/payments',authenticate, OrderController.createPayment);
 
-router.get('/payments/:userId', CustomerPaymentController.getCustomerPayments);
+router.get('/payments/:userId', authenticate, OrderController.getCustomerPayments);
 
 module.exports = router;
