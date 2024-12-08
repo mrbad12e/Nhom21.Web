@@ -140,6 +140,34 @@ begin
 end;
 $$ language plpgsql;
 
+-- Function to remove item from cart
+drop function if exists public.remove_from_cart(user_id varchar(255), product_id int);
+create or replace function remove_from_cart(
+    user_id varchar(255),
+    product_id integer
+) returns void as $$
+declare
+    v_cart_id varchar(32);
+begin
+    -- Get user's cart
+    select id into v_cart_id
+    from public.carts
+    where customer_id = user_id;
+
+    if v_cart_id is null then
+        raise exception 'No active cart found for user %', user_id;
+    end if;
+
+    -- Remove item
+    delete from public.cart_items
+    where cart_id = v_cart_id and product_id = product_id;
+
+    if not found then
+        raise exception 'Product % not found in cart', product_id;
+    end if;
+end;
+$$ language plpgsql;
+
 -- Function to clear cart
 drop function if exists public.clear_cart(user_id varchar(255));
 create or replace function clear_cart(

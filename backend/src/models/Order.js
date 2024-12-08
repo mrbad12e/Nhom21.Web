@@ -1,62 +1,6 @@
 const db = require('../config/database');
 
 class Order {
-  constructor(data) {
-    this.validate(data);
-
-    this.id = data.id;
-    this.customerId = data.customer_id || data.customerId;
-    this.totalPrice = parseFloat(data.total_price || data.totalPrice);
-    this.shippingAddress = data.shipping_address || data.shippingAddress;
-    this.orderStatus = data.order_status || data.orderStatus;
-    this.paymentStatus = data.payment_status || data.paymentStatus;
-    this.createdAt = data.created_at || data.createdAt;
-    this.items = data.items || [];
-  }
-
-  // Kiểm tra tính hợp lệ của các thông tin đơn hàng
-  validate(order) {
-    const validationErrors = [];
-
-    if (!order.customer_id) {
-      validationErrors.push('Customer ID is required');
-    }
-
-    if (!this.isValidStatus(order.order_status)) {
-      validationErrors.push('Invalid order status');
-    }
-
-    if (!this.isValidPaymentStatus(order.payment_status)) {
-      validationErrors.push('Invalid payment status');
-    }
-
-    if (parseFloat(order.total_price) < 0) {
-      validationErrors.push('Invalid total price');
-    }
-
-    if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join(', '));
-    }
-
-    return true;
-  }
-
-  static getValidStatuses() {
-    return ['PENDING', 'SHIPPED', 'DELIVERED', 'CANCELED'];
-  }
-
-  static getValidPaymentStatuses() {
-    return ['PENDING', 'COMPLETED', 'FAILED'];
-  }
-
-  isValidStatus(status) {
-    return Order.getValidStatuses().includes(status);
-  }
-
-  isValidPaymentStatus(status) {
-    return Order.getValidPaymentStatuses().includes(status);
-  }
-
   // Tạo đơn hàng từ giỏ hàng
   static async createOrderFromCart(userId, shippingAddress) {
     try {
@@ -64,9 +8,8 @@ class Order {
         SELECT * from public.create_order_from_cart($1, $2);
       `;
       const result = await db.query(query, [userId, shippingAddress]);
-      console.log(result);
   
-        return result[0].create_order_from_cart;
+      return result[0].create_order_from_cart;
     }catch (err) {
       throw new Error(err.message);
     }
@@ -79,14 +22,9 @@ class Order {
       SELECT * FROM public.get_order($1, $2);
     `;
     const result = await db.query(query, [orderId, userId]);
-    if (result.rowCount === 0) {
-      throw new Error('Order not found');
-    }
-    console.log(result);
-    return result[0].getOrderById;
+    return result[0];
     } catch (err) {
-      console.error('Get order by ID error:', err);
-      throw err;
+      throw new Error(err.message);
     }
   }
 
@@ -98,7 +36,6 @@ class Order {
       `;
       const result = await db.query(query, [orderId, amount, paymentMethod]);
       return result[0].create_payment;
-      console.log(result);
     } catch (err) {
       console.error('Create payment error:', err);
       throw err;

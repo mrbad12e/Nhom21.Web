@@ -33,6 +33,37 @@ class Product {
         }
     }
 
+    static async addNewProduct(req) {
+        try {
+            const { name, description, price, stock, categoryId, imageUrls = null } = req.body;
+
+            if (!name || !description || price == null || stock == null || !categoryId) {
+                throw new Error('Missing required fields');
+            }
+
+            const result = await db.query('select * from create_product($1, $2, $3, $4, $5, $6)', [
+                name,
+                description,
+                price,
+                stock,
+                categoryId,
+                imageUrls,
+            ]);
+
+            if (!result || !result[0]) {
+                throw new Error('Failed to create product');
+            }
+
+            return {
+                id: result[0].id,
+                name: result[0].name,
+                price: result[0].price,
+            };
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+
 }
 
 module.exports = Product;

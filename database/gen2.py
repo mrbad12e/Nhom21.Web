@@ -1,62 +1,108 @@
-# Get all categories from the category.csv file
-# Then search for the products in each category and save them in a csv file
-
-import requests
-import csv
-import time
+import psycopg2
+from faker import Faker
 import random
-import os
-from pexelsapi.pexels import Pexels
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
-import math
+import os
 
+fake = Faker()
 load_dotenv()
 
-PEXEL_API = os.getenv('PEXEL_API')
-pexel = Pexels(PEXEL_API)
+def generate_mock_orders(num_orders=100):
+    conn = psycopg2.connect(
+        dbname=os.getenv('DB_NAME'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        host=os.getenv('DB_HOST'),
+        port=os.getenv('DB_PORT')
+    )
+    cur = conn.cursor()
 
-# Get all categories from the category.csv file
+    try:
+        # Get admin ID for status updates
+        cur.execute("SELECT id FROM users WHERE role = 'ADMIN' LIMIT 1")
+        admin_id = cur.fetchone()[0]
+        
+        # Set admin context for status history
+        cur.execute("SET LOCAL app.current_user_id = %s", (admin_id,))
+        
+        # Get other required data
+        cur.execute("SELECT id FROM users WHERE role = 'CUSTOMER'")
+        user_ids = [row[0] for row in cur.fetchall()]
+        
+        cur.execute("SELECT id, price FROM products")
+        products = {row[0]: row[1] for row in cur.fetchall()}
+        
+        # Disable inventory triggers only
+        cur.execute("ALTER TABLE order_items DISABLE TRIGGER check_inventory_trigger")
+        cur.execute("ALTER TABLE payments DISABLE TRIGGER after_payment_insert_or_update")
+        
+        for i in range(num_orders):
+            try:
+                order_id = fake.uuid4()[:16]
+                customer_id = random.choice(user_ids)
+                created_at = fake.date_time_between(start_date='-1y', end_date='now')
+                
+                # Start with PENDING
+                cur.execute("""
+                    INSERT INTO orders (id, customer_id, total_price, shipping_address, order_status, payment_status, created_at)
+                    VALUES (%s, %s, %s, %s, 'PENDING', 'PENDING', %s)
+                """, (order_id, customer_id, 0, fake.street_address(), created_at))
 
-def get_categories():
-    with open('data/category.csv', 'r') as f:
-        reader = csv.reader(f)
-        categories = list(reader)
-        return categories[1:]
+                # Add items and calculate total
+                total_price = 0
+                for product_id in random.sample(list(products.keys()), random.randint(1, 5)):
+                    quantity = random.randint(1, 3)
+                    price = products[product_id]
+                    total_price += price * quantity
+                    
+                    cur.execute("""
+                        INSERT INTO order_items (id, order_id, product_id, quantity, price, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, (fake.uuid4()[:24], order_id, product_id, quantity, price, created_at))
 
-# Search 10 products in each category and save them in a csv file
-# Search for 3 images for each product
-# Save the product name, price, description, category_id and images in the csv file
-def generate_csv_file():
-    categories = get_categories()
-    
-    with open('data/products.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(['Name', 'Price', 'Description', 'Category_Id', 'Image1', 'Image2', 'Image3'])
+                # Update total price
+                cur.execute("""
+                    UPDATE orders SET total_price = %s WHERE id = %s
+                """, (total_price, order_id))
 
-        for category in categories:
-            print(f'Searching for {category[1]} products...')
-            url = f'https://api.pexels.com/v1/search?query={category[1]}&per_page=15'
-            headers = {
-                'Authorization': PEXEL_API
-            }
-            response = requests.get(url, headers=headers)
-            data = response.json()
-            product_photos = data['photos']
-            
-            description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec odio nec nisl tincidunt tincidunt. Nullam nec purus nec nisl'
-            # Generate 5 products, each with 3 images
-            for i in range(0, math.floor(len(product_photos) / 3) * 3, 3):
-                product = [
-                    # (category[0] -1 ) * 5 + i + 1,
-                    f'{category[1]} Product {i+1}',
-                    random.randint(10, 100),
-                    description,
-                    category[0],
-                    product_photos[i]['src']['original'],
-                    product_photos[i+1]['src']['original'],
-                    product_photos[i+2]['src']['original']
-                ]
-                writer.writerow(product)
-            print(f'{category[1]} products saved')
-            time.sleep(1)
-generate_csv_file()
+                # Update to final status (this will trigger status history)
+                final_status = random.choices(['PENDING', 'SHIPPED', 'DELIVERED', 'CANCELED'], weights=[15, 25, 50, 10])[0]
+                if final_status != 'PENDING':
+                    # Simulate status progression
+                    if final_status in ['SHIPPED', 'DELIVERED']:
+                        cur.execute("UPDATE orders SET order_status = 'SHIPPED' WHERE id = %s", (order_id,))
+                    if final_status == 'DELIVERED':
+                        cur.execute("UPDATE orders SET order_status = 'DELIVERED' WHERE id = %s", (order_id,))
+                    if final_status == 'CANCELED':
+                        cur.execute("UPDATE orders SET order_status = 'CANCELED' WHERE id = %s", (order_id,))
+
+                # Set payment status
+                payment_status = 'COMPLETED' if final_status in ['SHIPPED', 'DELIVERED'] else random.choice(['PENDING', 'COMPLETED', 'FAILED'])
+                
+                if final_status != 'CANCELED':
+                    cur.execute("""
+                        INSERT INTO payments (id, order_id, amount, payment_status, payment_method, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, (fake.uuid4()[:28], order_id, total_price, payment_status,
+                          random.choice(['CREDIT_CARD', 'DEBIT_CARD', 'PAYPAL']), created_at))
+
+                if i % 10 == 0:
+                    conn.commit()
+
+            except Exception as e:
+                print(f"Error processing order {i}: {str(e)}")
+                conn.rollback()
+                continue
+
+        conn.commit()
+
+    finally:
+        cur.execute("ALTER TABLE order_items ENABLE TRIGGER check_inventory_trigger")
+        cur.execute("ALTER TABLE payments ENABLE TRIGGER after_payment_insert_or_update")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+if __name__ == "__main__":
+    generate_mock_orders()

@@ -19,7 +19,6 @@ class Cart {
       `;
       await db.query(query, [userId, productId, quantity]);
     } catch (err) {
-      console.error('Add to cart error:', err);
       throw new Error(err.message); // Sử dụng lỗi từ procedure
     }
   }
@@ -37,10 +36,8 @@ class Cart {
         throw new Error('No rows affected. Please check the input data or procedure.');
       }
   
-      console.log('Cart item quantity updated successfully.');
     } catch (err) {
-      console.error('Update cart item quantity error:', err.message);
-      throw new Error('Failed to update cart item quantity: ${err.message}');
+      throw new Error(err.message);
     }
   }
   
@@ -48,43 +45,22 @@ class Cart {
   // Lấy danh sách sản phẩm trong giỏ hàng
   static async getCartItems(userId) {
     try {
-      const query = `
-        SELECT ci.id AS cart_item_id, ci.quantity, 
-               p.id AS product_id, p.name AS product_name, 
-               p.price, p.stock, p.image_urls
-        FROM cart_items ci
-        JOIN carts c ON ci.cart_id = c.id
-        JOIN products p ON ci.product_id = p.id
-        WHERE c.customer_id = $1
-      `;
+      const query = `select * from get_cart_contents($1)`;
       const result = await db.query(query, [userId]);
-      return result.rows;
+      return { cart_items: result};
     } catch (err) {
-      console.error('Fetch cart items error:', err);
-      throw new Error('Failed to fetch cart items');
+      throw new Error(err.message);
     }
   }
 
   // Xóa sản phẩm khỏi giỏ hàng
   static async removeProductFromCart(userId, productId) {
     try {
-      const query = `
-        DELETE FROM public.cart_items 
-        WHERE cart_id = (
-          SELECT id FROM public.carts WHERE customer_id = $1 LIMIT 1
-        ) 
-        AND product_id = $2;
-      `;
+      const query = `select remove_from_cart($1, $2);`;
       
-      const result = await db.query(query, [userId, productId]);
-  
-      // Kiểm tra nếu không có dòng nào bị xóa (giỏ hàng hoặc sản phẩm không tồn tại)
-      if (result.rowCount === 0) {
-        throw new Error('No matching cart or product found');
-      }
+      await db.query(query, [userId, productId]);
     } catch (err) {
-      console.error('Remove from cart error:', err);
-      throw new Error('Failed to remove product from cart');
+      throw new Error(err.message);
     }
   }
   

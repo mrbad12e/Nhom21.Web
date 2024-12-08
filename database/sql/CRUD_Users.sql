@@ -338,25 +338,26 @@ $$ LANGUAGE plpgsql;
 -- SELECT update_password('nghia2003', '123456');
 
 -- Tự động tạo cho người dùng một cart khi tài khoản được kích hoạt (setActive = false -> true)
--- Bước 1: Tạo hàm trigger để tự động tạo cart khi is_active chuyển từ FALSE thành TRUE
-CREATE OR REPLACE FUNCTION create_cart_on_activation()
+-- Drop existing trigger and function
+DROP TRIGGER IF EXISTS create_cart_on_user_creation ON public.users;
+DROP FUNCTION IF EXISTS create_user_cart();
+
+-- Create new function to create cart on user insertion
+CREATE OR REPLACE FUNCTION create_cart_on_user_creation()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Kiểm tra nếu is_active chuyển từ FALSE thành TRUE
-    IF NEW.is_active = TRUE AND OLD.is_active = FALSE THEN
-        -- Thêm một bản ghi mới vào bảng carts cho người dùng được kích hoạt
-        INSERT INTO public.carts (id, customer_id, created_at)
-        VALUES (lower(encode(gen_random_bytes(16), 'hex')), NEW.id, now());
-    END IF;
+    -- Create a new cart for the newly created user
+    INSERT INTO public.carts (id, customer_id, created_at)
+    VALUES (lower(encode(gen_random_bytes(8), 'hex')), NEW.id, now());
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Bước 2: Tạo trigger trên bảng users để kích hoạt hàm khi cập nhật is_active
-CREATE TRIGGER activate_user_cart
-AFTER UPDATE OF is_active ON public.users
+-- Create trigger to execute after user insertion
+CREATE OR REPLACE TRIGGER create_user_cart
+AFTER INSERT ON public.users
 FOR EACH ROW
-EXECUTE FUNCTION create_cart_on_activation();
+EXECUTE FUNCTION create_cart_on_user_creation();
 
 -- Chỉnh sửa cột `id` của bảng `carts` thành VARCHAR(32)
 ALTER TABLE public.carts

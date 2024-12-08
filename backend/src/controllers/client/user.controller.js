@@ -33,7 +33,7 @@ class UserController {
 
     static async updateProfile(req, res) {
         try {
-            const userId = req.user.userId[0].signin;
+            const userId = req.user.userId;
             await User.updateProfile(userId, req.body);
             res.status(200).json({ message: 'Profile updated successfully',userId });
         } catch (error) {
@@ -43,9 +43,8 @@ class UserController {
 
     static async updatePassword(req, res) {
         try {
-            const userId = req.user.userId;
-            await User.updatePassword(userId, req.body.oldPassword, req.body.newPassword);
-    
+            const userId = req.user.userId;  // Get userId from token
+            await User.updatePassword({ user: userId, ...req.body });
             res.status(200).json({ message: 'Password updated successfully' });
         } catch (error) {
             res.status(400).json({ message: error.message });

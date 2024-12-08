@@ -107,20 +107,18 @@ drop function if exists get_full_category_path(integer);
 create or replace function get_full_category_path(category_id integer)
 returns text as $$
 with recursive category_path as (
-    -- Base case: start with the target category
-    select id, name, parent_category_id, array[name::character varying] as path_array
+    select id, name, parent_category_id, create_category_slug(name)::text as path
     from categories
     where id = category_id
     
     union all
     
-    -- Recursive case: join with parent categories
     select c.id, c.name, c.parent_category_id,
-           array_prepend(c.name::character varying, cp.path_array)
+           create_category_slug(c.name) || '/' || cp.path
     from categories c
     inner join category_path cp on c.id = cp.parent_category_id
 )
-select array_to_string(path_array, ' > ')
+select path
 from category_path
 where parent_category_id is null
 limit 1;
