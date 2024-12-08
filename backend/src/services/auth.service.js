@@ -4,11 +4,13 @@ const pool = require('../config/database');
 exports.validateAdminCredentials = async (username, password) => {
     try {
         // Query to validate user credentials using raw SQL (keeping the same query structure)
-        const result = await pool.query('SELECT * from signIn($1, $2)', [username, password]);
+
+        const result = await pool.query('SELECT * from signin($1, $2)', [username, password]);
 
         if (!result[0].signin) throw new Error('Wrong username or password');
 
-        const role = await pool.query('SELECT role FROM users WHERE id = $1', [result[0].signin]);
+        const role = await pool.query('SELECT role,id FROM users WHERE username = $1', [username]);
+
         if (role[0].role !== 'ADMIN') {
             const error = new Error('Unauthorized. User is not an admin.');
             error.statusCode = 403;
@@ -16,11 +18,10 @@ exports.validateAdminCredentials = async (username, password) => {
         }
 
         return {
-            id: result[0].signin,
+            id: role[0].id,
             username: username,
             role: role[0].role,
-        }
-        
+        };
     } catch (err) {
         console.log('Error during admin authentication:', err);
         throw err; // Pass the error to the middleware

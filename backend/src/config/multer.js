@@ -1,0 +1,30 @@
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
+
+const productStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '../../uploads/products'));
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const tempName = `${crypto.randomBytes(32).toString('hex')}` + ext;
+        cb(null, tempName);
+    },
+});
+
+const productUpload = multer({
+    storage: productStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png/;
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        if (extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Only accept JPEG,JPG and PNG format.'));
+        }
+    },
+});
+
+module.exports = productUpload;

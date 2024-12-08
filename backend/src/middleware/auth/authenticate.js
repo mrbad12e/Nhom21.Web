@@ -4,6 +4,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware xác thực người dùng qua JWT
 async function authenticate(req, res, next) {
+    console.log('authen middleware');
+    
     const token =
         req.cookies.auth ||
         (req.header('Authorization') && req.header('Authorization').startsWith('Bearer ')

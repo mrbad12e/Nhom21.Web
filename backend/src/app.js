@@ -13,6 +13,8 @@ const app = express();
 
 // Middleware để parse dữ liệu JSON trong request body (tích hợp sẵn trong express)
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(cookieParser());
 
 // Đăng ký các routes

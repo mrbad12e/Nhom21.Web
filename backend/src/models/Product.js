@@ -17,8 +17,12 @@ class Product {
 
     static async getById(id) {
         try {
-            const result = db.query('SELECT * FROM get_product_details($1)', [id]);
-            return result.rows; //the return from query is result= {rows:{data}}
+            console.log('get from product class' + id);
+
+            const result = await db.query('SELECT * FROM get_product_details($1)', [id]);
+            console.log(result);
+
+            return result;
         } catch (error) {
             throw error;
         }
@@ -50,10 +54,10 @@ class Product {
             return {
                 products: result,
                 pagination: {
-                    page: parseInt(req.query.page) || 1,
-                    pageSize: parseInt(req.query.pageSize) || 10,
+                    page: parseInt(page) || 1,
+                    pageSize: parseInt(pageSize) || 10,
                     total: result[0]?.total_count || 0,
-                    totalPages: Math.ceil((result[0]?.total_count || 0) / (req.query.pageSize || 10)),
+                    totalPages: Math.ceil((result[0]?.total_count || 0) / (pageSize || 10)),
                 },
             };
         } catch (err) {
@@ -64,12 +68,11 @@ class Product {
 
     static async addNewProduct(req) {
         try {
-            const { name, description, price, stock, categoryId, imageUrls = null } = req.body;
-
+            const { name, description, price, stock, categoryId, imageUrls = null } = req;
+            
             if (!name || !description || price == null || stock == null || !categoryId) {
                 throw new Error('Missing required fields');
             }
-
             const result = await db.query('select * from create_product($1, $2, $3, $4, $5, $6)', [
                 name,
                 description,
@@ -96,7 +99,7 @@ class Product {
     static async updateProduct(data) {
         try {
             const id = data.id;
-            const { name, description, price, stock, categoryId } = data.body;
+            const { name = null, description = null, price = null, stock = null, categoryId = null } = data;
 
             if (!id) {
                 throw new Error('Product ID is required');
@@ -110,7 +113,6 @@ class Product {
                 stock || null,
                 categoryId || null,
             ]);
-
             if (!result || !result[0]) {
                 throw new Error('Failed to update product');
             }

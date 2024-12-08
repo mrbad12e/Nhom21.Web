@@ -1,4 +1,54 @@
 const Product = require('../models/Product');
+const { google } = require('googleapis');
+const path = require('path');
+const crypto = require('crypto');
+const fs = require('fs');
+require('dotenv').config();
+const auth = new google.auth.GoogleAuth({
+    keyFile: process.env.JSON_FILE,
+    scopes: ['https://www.googleapis.com/auth/drive.file'],
+});
+
+const drive = google.drive({ version: 'v3', auth });
+
+async function createOrGetFolder(folderName, parentId) {
+    const query = parentId
+        ? `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents`
+        : `name='${folderName}' and mimeType='application/vnd.google-apps.folder'`;
+
+    const response = await drive.files.list({
+        q: query,
+        fields: 'files(id, name)',
+    });
+
+    if (response.data.files.length > 0) {
+        return response.data.files[0].id;
+    }
+
+    const folderMetadata = {
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder',
+        ...(parentId && { parents: [parentId] }),
+    };
+
+    const folder = await drive.files.create({
+        requestBody: folderMetadata,
+        fields: 'id',
+    });
+
+    return folder.data.id;
+}
+
+async function createNestedFolders(path, baseId) {
+    const folders = path.split('/').filter(Boolean);
+    let currentParentId = baseId;
+
+    for (const folder of folders) {
+        currentParentId = await createOrGetFolder(folder, currentParentId);
+    }
+
+    return currentParentId;
+}
 
 // Lấy danh sách toàn bộ sản phẩm (bao gồm các tiêu chí tìm kiếm, phân trang, sắp xếp)
 const getAllProducts = async (options = {}) => {
@@ -53,10 +103,41 @@ const editProductService = async (updatedProductData) => {
     }
 };
 
+const addProductImageService = async (req) => {
+    const BASE_FOLDER_ID = process.env.BASE_FOLDER_ID;
+    const folderPath = `Products/${crypto.randomBytes(32).toString('hex')}`;
+    const finalFolderId = await createNestedFolders(folderPath, BASE_FOLDER_ID);
+
+    const uploadResults = await Promise.all(
+        req.files.map(async (file) => {
+            const response = await drive.files.create({
+                requestBody: {
+                    name: `product_${crypto.randomBytes(32).toString('hex')}${path.extname(file.originalname)}`,
+                    parents: [finalFolderId],
+                },
+                media: {
+                    mimeType: file.mimetype,
+                    body: fs.createReadStream(file.path),
+                },
+                fields: 'id, webViewLink',
+            });
+
+            fs.unlinkSync(file.path);
+            return {
+                name: file.originalname,
+                fileId: response.data.id,
+                url: response.data.webViewLink,
+            };
+        })
+    );
+    return uploadResults;
+};
+
 module.exports = {
     getAllProducts,
     getProductsByCategory,
     getProductById,
     addNewProductService,
     editProductService,
+    addProductImageService,
 };

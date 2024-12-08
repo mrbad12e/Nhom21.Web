@@ -1,7 +1,11 @@
 const authService = require('../../services/auth.service');
 
 exports.login = async (req, res, next) => {
-    const { username, password } = req.body;
+    console.log(req);
+    
+    const username = req.body.username;
+    const password = req.body.password;
+
     try {
         const admin = await authService.validateAdminCredentials(username, password);
 
@@ -31,5 +35,3 @@ exports.logout = async (req, res, next) => {
         next(new Error(err.message));
     }
 };
-
-
