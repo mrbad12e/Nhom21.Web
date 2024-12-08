@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 class UserService {
     static async signIn(username, password) {
         try {
-            let userId = await User.signIn(username, password);
+            let userId = await User.signIn(username, password);            
             if (!userId[0].signin) {
                 throw new Error('Invalid login credentials');
             }

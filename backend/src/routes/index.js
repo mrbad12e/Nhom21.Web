@@ -11,7 +11,7 @@ const adminAuthRoutes = require('./admin/auth.routes');
 // Import routes cho client
 const clientRoutes = require('./client/user.routes');
 const clientCartRoutes = require('./client/cart.routes');
-// const clientOrderRoutes = require('./client/order.routes');
+const clientOrderRoutes = require('./client/order.routes');
 // const clientProfileRoutes = require('./client/profile.routes');
 const clientProductRoutes = require('./client/product.routes');
 
@@ -25,7 +25,7 @@ router.use('/admin/auth', adminAuthRoutes);
 // Gắn các route client
 router.use('/client', clientRoutes);
 router.use('/client/cart', clientCartRoutes);
-// router.use('/client/orders', clientOrderRoutes);
+router.use('/client/orders', clientOrderRoutes);
 // router.use('/client/profile', clientProfileRoutes);
 router.use('/products', clientProductRoutes);
 

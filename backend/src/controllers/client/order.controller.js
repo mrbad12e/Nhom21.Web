@@ -4,7 +4,8 @@ class OrderController {
   // Tạo đơn hàng từ giỏ hàng
   static async createOrder(req, res) {
     try {
-      const { userId, shippingAddress } = req.body;
+      const userId = req.user.userId;
+      const { shippingAddress } = req.body;
       const orderId = await OrderService.createOrderFromCart(userId, shippingAddress);
       res.status(200).json({ message: 'Order created successfully', orderId });
     } catch (err) {

@@ -62,10 +62,12 @@ class Order {
     try {
       // Thực thi hàm SQL create_order_from_cart
       const query = `
-        SELECT public.create_order_from_cart($1, $2) AS order_id;
+        SELECT * from public.create_order_from_cart($1, $2);
       `;
       const result = await db.query(query, [userId, shippingAddress]);
-      return result.rows[0].order_id;
+      console.log(result);
+      
+      return result[0].create_order_from_cart;
     } catch (err) {
       console.error('Error creating order from cart:', err);
       throw new Error('Failed to create order from cart');
