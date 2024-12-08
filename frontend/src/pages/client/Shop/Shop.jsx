@@ -1,9 +1,10 @@
-import Banner from "@/assets/shoppage/banner.jpg";
+import BannerImg from "@/assets/shoppage/banner.jpg";
 import FilterBar from "@/components/common/FilterBar";
 import { Pagination } from "@mui/material";
 import { useState } from "react";
 import { FaBars, FaFilter, FaTh } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import useProducts from "@/hooks/useProducts";
 
 const Shop = () => {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
@@ -16,91 +17,10 @@ const Shop = () => {
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
 
-  const products = [
-    {
-      _id: "1",
-      title: "Product 1",
-      description: "Description 1",
-      category: "Electronics",
-      basePrice: 100,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "2",
-      title: "Product 2",
-      description: "Description 2",
-      category: "Fashion and apparel",
-      basePrice: 150,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "3",
-      title: "Product 3",
-      description: "Description 3",
-      category: "Media",
-      basePrice: 200,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "4",
-      title: "Product 4",
-      description: "Description 4",
-      category: "Food and beverage",
-      basePrice: 250,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "5",
-      title: "Product 5",
-      description: "Description 5",
-      category: "Electronics",
-      basePrice: 300,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "6",
-      title: "Product 6",
-      description: "Description 6",
-      category: "Fashion and apparel",
-      basePrice: 350,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "7",
-      title: "Product 7",
-      description: "Description 7",
-      category: "Media",
-      basePrice: 400,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "8",
-      title: "Product 8",
-      description: "Description 8",
-      category: "Food and beverage",
-      basePrice: 450,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "9",
-      title: "Product 9",
-      description: "Description 9",
-      category: "Toy and hobbies",
-      basePrice: 500,
-      image: "https://via.placeholder.com/200",
-    },
-    {
-      _id: "10",
-      title: "Product 10",
-      description: "Description 10",
-      category: "Electronics",
-      basePrice: 550,
-      image: "https://via.placeholder.com/200",
-    },
-    // Add more products as needed
-  ];
+  // Sử dụng custom hook để lấy danh sách sản phẩm và trạng thái loading
+  const { products, loading } = useProducts();
 
-  // **Lọc sản phẩm dựa trên tiêu chí**
+  // Lọc sản phẩm dựa trên tiêu chí
   const filteredProducts = products.filter((product) => {
     const inCategory =
       !selectedCategory || product.category === selectedCategory;
@@ -135,11 +55,16 @@ const Shop = () => {
     startResult,
     startResult + itemsPerPage
   );
-
-  console.log(visibleProducts);
-  console.log(totalProducts);
-
+  
   const toggleFilterVisibility = () => setIsFilterVisible(!isFilterVisible);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <p>Loading products...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="text-white min-h-screen">
@@ -147,7 +72,7 @@ const Shop = () => {
       <div className="relative h-64 flex flex-col justify-center items-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ background: `url(${Banner})` }}
+          style={{ background: `url(${BannerImg})` }}
         ></div>
         <div className="relative z-10 text-center">
           <h1 className="text-4xl font-medium mb-2 text-gray-200">Shop</h1>

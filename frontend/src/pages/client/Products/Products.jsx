@@ -1,116 +1,252 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
-import Banner from "@/assets/shoppage/banner.jpg";
+import React, { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  FaTruck,
+  FaUndo,
+  FaStar,
+  FaStarHalfAlt,
+  FaRegStar,
+  FaHeart,
+  FaPlus,
+  FaMinus,
+} from "react-icons/fa";
+import useProducts from "@/hooks/useProducts";
+import "@/pages/client/Products/Products.module.css";
+import RelatedProducts from "@/pages/client/Products/RelatedProducts";
+import Banner from "@/components/common/Banner";
+import { useProductLogic } from "@/pages/client/Products/index";
 
 const Products = () => {
-  const { id } = useParams(); // Lấy ID từ URL
-  const [product, setProduct] = useState(null); // Lưu thông tin sản phẩm
-  const [loading, setLoading] = useState(true); // Trạng thái tải dữ liệu
+  const { id } = useParams();
+  const { products, loading } = useProducts();
 
-  // Fake API data (thay bằng API thực tế hoặc dữ liệu từ database)
-  const fakeProducts = [
-    { 
-      _id: "1", 
-      title: "Product 1", 
-      description: "Description 1", 
-      basePrice: 100, 
-      image: "https://via.placeholder.com/400", 
-      category: "Electronics" 
-    },
-    { 
-      _id: "2", 
-      title: "Product 2", 
-      description: "Description 2", 
-      basePrice: 150, 
-      image: "https://via.placeholder.com/400", 
-      category: "Clothing" 
-    },
-    { 
-      _id: "3", 
-      title: "Product 3", 
-      description: "Description 3", 
-      basePrice: 200, 
-      image: "https://via.placeholder.com/400", 
-      category: "Books" 
-    },
-  ];
+  const product = products.find((p) => p._id === id);
+  const [selectedImage, setSelectedImage] = useState(product?.image);
+  const [quantity, setQuantity] = useState(1);
 
-  // Fetch product details
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true);
-      // Giả lập việc lấy dữ liệu từ API
-      const productData = fakeProducts.find((item) => item._id === id);
-      setProduct(productData);
-      setLoading(false);
-    };
-
-    fetchProduct();
-  }, [id]);
+  const { handleBuyNow } = useProductLogic();
 
   if (loading) {
     return <div className="text-center text-gray-600 py-10">Loading...</div>;
   }
 
   if (!product) {
-    return <div className="text-center text-red-600 py-10">Product not found</div>;
+    return (
+      <div className="text-center text-red-600 py-10">Product not found</div>
+    );
   }
+
+  const images = [product.image];
+
+  const totalReviews = 120;
+  const positiveReviews = 90;
+
+  const ratingPercentage = (positiveReviews / totalReviews) * 100;
+
+  const renderStars = (percentage) => {
+    const fullStars = Math.floor((percentage / 100) * 5);
+    const halfStars = Math.ceil(((percentage / 100) * 5 - fullStars) * 2) / 2;
+    const emptyStars = 5 - fullStars - halfStars;
+
+    let stars = [];
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={`full-${i}`} className="text-yellow-400" />);
+    }
+
+    for (let i = 0; i < halfStars; i++) {
+      stars.push(
+        <FaStarHalfAlt key={`half-${i}`} className="text-yellow-400" />
+      );
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<FaRegStar key={`empty-${i}`} className="text-gray-400" />);
+    }
+
+    return stars;
+  };
+
+  const handleDecrease = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const handleIncrease = () => {
+    setQuantity(quantity + 1);
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = Math.max(1, Math.floor(e.target.value));
+    setQuantity(value);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 pb-10">
       {/* Banner Section */}
-      <div className="relative h-64 flex flex-col justify-center items-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ background: `url(${Banner})` }}
-        ></div>
-        <div className="relative z-10 text-center">
-          <h1 className="text-4xl font-medium mb-2 text-gray-200">{product.category}</h1> {/* Hiển thị tên category */}
-          <h2 className="text-xl font-light text-gray-200">
-            <Link
-              to="/"
-              className="hover:text-rose-500 font-medium text-gray-200"
-            >
-              Home
-            </Link>
-            <span className="mx-2 font-medium text-gray-200">&gt;</span>
-            <Link
-              to="/shop"
-              className="hover:text-rose-500 font-medium text-gray-200"
-            >
-              Shop
-            </Link>
-            <span className="mx-2 font-medium text-gray-200">&gt;</span>
-            <span className="text-rose-500 font-medium">{product.category}</span>
-            <span className="mx-2 font-medium text-gray-200">&gt;</span>
-            <span className="font-medium text-gray-200">{product.title}</span>
-          </h2>
-        </div>
-      </div>
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        {/* Product Image */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="w-full lg:w-1/2">
-            <img
-              src={product.image}
-              alt={product.title}
-              className="w-full h-auto rounded-lg object-cover"
-            />
+      <Banner />
+  
+      {/* Product Section */}
+      <section className="py-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white shadow-lg rounded-lg p-6">
+            {/* Thumbnails Column */}
+            <div className="col-span-2 hidden lg:block overflow-hidden max-h-[600px]">
+              <div className="h-full overflow-y-auto space-y-4 pr-2">
+                {images.length > 1 ? (
+                  images.map((thumb, index) => (
+                    <img
+                      key={index}
+                      src={thumb}
+                      alt={`Thumbnail ${index + 1}`}
+                      className={`cursor-pointer rounded-lg border ${
+                        selectedImage === thumb
+                          ? "border-rose-500"
+                          : "border-gray-300"
+                      }`}
+                      onClick={() => setSelectedImage(thumb)}
+                    />
+                  ))
+                ) : (
+                  <p className="text-gray-500">No additional images available</p>
+                )}
+              </div>
+            </div>
+  
+            {/* Main Image Column */}
+            <div className="col-span-1 lg:col-span-5 flex items-center justify-center max-h-[600px]">
+              <img
+                src={selectedImage}
+                alt="Selected Product"
+                className="w-full h-auto max-h-full rounded-lg object-contain"
+              />
+            </div>
+  
+            {/* Product Details Column */}
+            <div className="col-span-1 lg:col-span-5 flex flex-col gap-5">
+              <h2 className="text-black text-2xl font-semibold">
+                {product.title}
+              </h2>
+  
+              {/* Review and Stock Information */}
+              <div className="flex flex-wrap items-start gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">{renderStars(ratingPercentage)}</div>
+                  <div className="text-black text-sm opacity-50">
+                    ({totalReviews} Reviews)
+                  </div>
+                </div>
+                <div className="text-green-800 text-sm opacity-60">
+                  In Stock
+                </div>
+              </div>
+  
+              {/* Product Price */}
+              <div className="text-black text-2xl">${product.basePrice}</div>
+  
+              {/* Product Description */}
+              <p className="text-black text-sm">{product.description}</p>
+  
+              {/* Colours */}
+              <div className="flex flex-wrap items-center gap-6">
+                <span className="text-black text-xl">Colours:</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-[#a0bce0] rounded-full border"></div>
+                  <div className="w-5 h-5 bg-[#e07575] rounded-full border"></div>
+                </div>
+              </div>
+  
+              {/* Sizes */}
+              <div className="flex flex-wrap items-center gap-6">
+                <span className="text-black text-xl">Size:</span>
+                <div className="flex gap-2">
+                  {["XS", "S", "M", "L", "XL"].map((size, index) => (
+                    <div
+                      key={index}
+                      className={`w-8 h-8 flex items-center justify-center border ${
+                        size === "M" ? "bg-rose-500 text-white" : "border-gray-300"
+                      } rounded`}
+                    >
+                      {size}
+                    </div>
+                  ))}
+                </div>
+              </div>
+  
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleDecrease}
+                    className="border px-3 py-3 rounded"
+                  >
+                    <FaMinus />
+                  </button>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    className="border px-2 py-2 text-center w-16"
+                    min="1"
+                  />
+                  <button
+                    onClick={handleIncrease}
+                    className="border px-3 py-3 rounded"
+                  >
+                    <FaPlus />
+                  </button>
+                </div>
+                <button 
+                  className="bg-rose-500 text-white px-3 py-2 rounded hover:bg-rose-600"
+                  onClick={handleBuyNow}>
+                  Buy Now
+                </button>
+                <button
+                  onClick={() => alert("Added to wishlist")}
+                  className="border p-3 rounded"
+                >
+                  <FaHeart />
+                </button>
+              </div>
+  
+              {/* Delivery Info */}
+              <div className="border rounded p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <FaTruck className="text-xl" />
+                  <div>
+                    <p className="font-medium">Free Delivery</p>
+                    <p className="text-sm text-gray-500">
+                      Enter your postal code for delivery availability.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaUndo className="text-xl" />
+                  <div>
+                    <p className="font-medium">Free Returns</p>
+                    <p className="text-sm text-gray-500">
+                      Free 30 Days Delivery Returns.{" "}
+                      <a href="#" className="underline">
+                        Details
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          {/* Product Details */}
-          <div className="w-full lg:w-1/2">
-            <h1 className="text-3xl font-semibold text-gray-800 mb-4">{product.title}</h1>
-            <p className="text-rose-600 text-2xl font-bold mb-6">${product.basePrice}</p>
-            <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
-            <button className="w-full bg-rose-500 text-white py-3 rounded-lg hover:bg-rose-600 transition">
-              Add to Cart
-            </button>
-          </div>
         </div>
-      </div>
+      </section>
+  
+      {/* Related Products */}
+      <section className="py-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <RelatedProducts />
+        </div>
+      </section>
     </div>
-  );
+  );  
 };
 
 export default Products;
