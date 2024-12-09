@@ -56,6 +56,7 @@ create or replace function get_products(
     product_price decimal(10,2),
     product_stock integer,
     category_name varchar,
+    category_path text,
     is_active boolean,
     total_count bigint
 ) as $$
@@ -69,6 +70,17 @@ begin
     end if;
 
     return query
+    with recursive category_tree as (
+        select id
+        from categories
+        where id = coalesce(p_category_id, id)
+        
+        union all
+        
+        select c.id
+        from categories c
+        inner join category_tree ct on c.parent_category_id = ct.id
+    )
     select 
         p.id as product_id,
         p.name as product_name,
@@ -76,6 +88,7 @@ begin
         p.price as product_price,
         p.stock as product_stock,
         c.name as category_name,
+        get_full_category_path(c.id) as category_path,
         p.is_active,
         count(*) over() as total_count
     from products p
@@ -84,7 +97,7 @@ begin
         p.name ilike '%' || p_search || '%' or 
         p.description ilike '%' || p_search || '%'
     ))
-    and (p_category_id is null or p.category_id = p_category_id)
+    and (p_category_id is null or p.category_id in (select id from category_tree))
     and (p_min_price is null or p.price >= p_min_price)
     and (p_max_price is null or p.price <= p_max_price)
     and (p_include_inactive = true or p.is_active = true)

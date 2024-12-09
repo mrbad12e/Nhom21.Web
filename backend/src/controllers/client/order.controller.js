@@ -1,41 +1,64 @@
-const OrderService = require('../../services/order.service');
-
+const Order = require('../../models/Order');
 class OrderController {
   // Tạo đơn hàng từ giỏ hàng
   static async createOrder(req, res) {
     try {
-      const { userId, shippingAddress } = req.body;
-      const orderId = await OrderService.createOrderFromCart(userId, shippingAddress);
-      res.status(200).json({ message: 'Order created successfully', orderId });
+      const userId = req.user.userId;
+      const { shippingAddress } = req.body;
+      const orderId = await Order.createOrderFromCart(userId, shippingAddress);
+      res.status(201).json({ 
+        message: 'Order created successfully', 
+        orderId 
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      res.status(400).json({ 
+        message: err.message || 'Failed to create order' 
+      });
     }
   }
 
-  // Lấy thông tin đơn hàng theo ID
   static async getOrderById(req, res) {
     try {
-      const { orderId } = req.params;
-      const order = await OrderService.getOrderById(orderId);
-      if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-      res.status(200).json(order);
+      const orderId= req.params.orderId;
+      const userId = req.user.userId;
+      const result = await Order.getOrderById(orderId, userId);
+      res.status(200).json({order: result});
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      res.status(404).json({ message: err.message });
     }
   }
-
-  // Lấy các sản phẩm trong đơn hàng
-  static async getOrderItems(req, res) {
+  
+  // Tạo thanh toán cho đơn hàng
+  static async createPayment(req, res) {
     try {
-      const { orderId } = req.params;
-      const items = await OrderService.getOrderItems(orderId);
-      res.status(200).json(items);
+      const {orderId, amount, paymentMethod } = req.body;
+      const paymentId = await Order.createPayment(orderId, amount, paymentMethod);
+      res.status(201).json({ 
+        message: 'Payment created successfully', 
+        paymentId 
+      });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      res.status(400).json({ 
+        message: err.message || 'Failed to create payment' 
+      });
     }
   }
-}
 
+  static async getCustomerPayments(req, res) {
+    const userId = req.user.userId;
+    const { limit = 50, offset = 0 } = req.query;
+    try {
+        const payments = await CustomerPaymentService.getCustomerPayments(userId, limit, offset);
+        res.status(200).json({
+            success: true,
+            data: payments,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+}
 module.exports = OrderController;

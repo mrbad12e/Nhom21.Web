@@ -5,3 +5,5 @@ uploads/*
 !uploads/products/.gitkeep
 !uploads/users/.gitkeep
 nhom-web-21-20241-25d91b266355.json
+package-lock.json
+uploads

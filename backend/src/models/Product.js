@@ -29,6 +29,7 @@ class Product {
     }
 
     static async get({
+        id = null,
         search = null,
         categoryId = null,
         minPrice = null,
@@ -40,6 +41,10 @@ class Product {
         sortOrder = 'asc',
     } = {}) {
         try {
+            if (id) {
+                const result = await db.query('select * from get_product_details($1)', [id]);
+                return result;
+            }
             const result = await db.query('SELECT * FROM get_products($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
                 search,
                 categoryId,
@@ -61,8 +66,7 @@ class Product {
                 },
             };
         } catch (err) {
-            console.error('Fetch products error:', err);
-            throw err;
+            throw new Error(err.message);
         }
     }
 

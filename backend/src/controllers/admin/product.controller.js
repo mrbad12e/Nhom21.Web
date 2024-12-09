@@ -1,10 +1,4 @@
-const {
-    getAllProducts,
-    addNewProductService,
-    editProductService,
-    getProductById,
-    addProductImageService,
-} = require('../../services/product.service');
+const ProductService = require('../../services/product.service');
 
 exports.getProductList = async (req, res, next) => {
     //logic idk
@@ -20,7 +14,7 @@ exports.getProductList = async (req, res, next) => {
             sortOrder: req.query.sortOrder,
             categoryId: req.query.categoryId,
         };
-        const productList = await getAllProducts(option);
+        const productList = await ProductService.getAllProducts(option);
         res.status(200).json({
             message: productList,
         });
@@ -36,7 +30,7 @@ exports.addProduct = async (req, res, next) => {
             throw new Error('No file found');
         } //ignore if no file uploads
 
-        const result = await addProductImageService(req);
+        const result = await ProductService.addProductImageService(req);
 
         imageUrls = result.map((result) => result.url);
         console.log(imageUrls);
@@ -44,7 +38,7 @@ exports.addProduct = async (req, res, next) => {
         const productData = { ...req.body, imageUrls: `{${imageUrls}}` };
         console.log(productData);
 
-        const { id, name, price } = await addNewProductService(productData);
+        const { id, name, price } = await ProductService.addNewProductService(productData);
         return res.status(200).json({
             message: `Added new product named ${name} !`,
         });
@@ -59,7 +53,7 @@ exports.editProduct = async (req, res, next) => {
         const updatedProduct = req.body;
         if (updatedProduct.id != id) throw new Error('Updating wrong product,aborting...');
         else {
-            const result = await editProductService(updatedProduct);
+            const result = await ProductService.editProductService(updatedProduct);
             return res.status(200).json({ message: result });
         }
     } catch (err) {
@@ -72,7 +66,7 @@ exports.getProduct = async (req, res, next) => {
         const id = req.params.id;
         console.log(id);
 
-        const result = await getProductById(id);
+        const result = await ProductService.getProductById(id);
         res.status(200).json({
             message: result,
         });

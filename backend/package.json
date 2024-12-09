@@ -5,22 +5,28 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "test": "jest"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "chai": "^5.1.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "ecommerce-backend": "file:../backend",
-    "express": "^4.18.2",
+    "express": "^4.21.2",
     "express-validator": "^7.0.1",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.1",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.0.1"
   }
 }

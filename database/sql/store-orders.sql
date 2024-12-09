@@ -295,7 +295,7 @@ begin
     where u.id = p_user_id;
     
     if v_user_role is null then
-        raise exception 'User % not found', p_user_id;
+        raise exception 'User not found';
     end if;
     
     -- Get order's customer_id
@@ -304,7 +304,7 @@ begin
     where o.id = p_order_id;
     
     if v_order_customer_id is null then
-        raise exception 'Order % not found', p_order_id;
+        raise exception 'Order not found';
     end if;
     
     -- Check authorization
@@ -333,7 +333,7 @@ begin
         from public.orders o 
         where o.id = p_order_id;
     else
-        raise exception 'User % does not have permission to view this order', p_user_id;
+        raise exception 'User does not have permission to view this order';
     end if;
 end; 
 $$ language plpgsql;

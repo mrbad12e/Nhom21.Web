@@ -11,13 +11,24 @@ class OrderService {
     }
 
     // Lấy thông tin đơn hàng theo ID
-    static async getOrderById(customerId, orderId) {
+    static async getOrderById(orderId, userId) {
         try {
-            return await Order.getOrderById(customerId, orderId);
+            return await Order.getOrderById(orderId, userId);
         } catch (error) {
             throw error;
         }
     }
+
+  // Tạo thanh toán cho đơn hàng
+  static async createPayment(orderId, amount, paymentMethod) {
+      return await Order.createPayment(orderId, amount, paymentMethod);
+
+  }
+
+  static async getCustomerPayments(userId, limit, offset) {
+    return await CustomerPaymentModel.getCustomerPayments(userId, limit, offset);
+  
+  }
 
     // Lấy các sản phẩm trong đơn hàng
     static async getOrderItems(orderId) {

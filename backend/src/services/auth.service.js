@@ -23,7 +23,6 @@ exports.validateAdminCredentials = async (username, password) => {
             role: role[0].role,
         };
     } catch (err) {
-        console.log('Error during admin authentication:', err);
         throw err; // Pass the error to the middleware
     }
 };

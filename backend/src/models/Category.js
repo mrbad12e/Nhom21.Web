@@ -21,11 +21,8 @@ class Category {
       const result = await db.query(
         'SELECT * FROM get_category($1, $2)',
         [categoryId, includeTree]
-      );
-      
-      return result.rows.length > 0 
-        ? new Category(result.rows[0]) 
-        : null;
+      );      
+      return result[0];
     } catch (err) {
       console.error('Fetch category error:', err);
       throw err;
@@ -35,7 +32,7 @@ class Category {
   static async getAll() {
     try {
       const result = await db.query('SELECT * FROM categories');
-      return result.rows.map(category => new Category(category));
+      return result
     } catch (err) {
       console.error('Fetch categories error:', err);
       throw err;
@@ -62,8 +59,7 @@ class Category {
         'SELECT create_category_slug($1) AS slug',
         [categoryName]
       );
-      
-      return result.rows[0].slug;
+      return result[0].slug;
     } catch (err) {
       console.error('Category slug generation error:', err);
       throw err;
@@ -76,8 +72,7 @@ class Category {
         'SELECT get_full_category_path($1) AS path',
         [categoryId]
       );
-      
-      return result.rows[0].path;
+      return result[0].path;
     } catch (err) {
       console.error('Category path generation error:', err);
       throw err;

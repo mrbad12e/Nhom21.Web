@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const crypto = require('crypto');
 
 class User {
     static async signIn(username, password) {
@@ -12,17 +13,18 @@ class User {
 
     static async createAccount(data) {
         try {
-            const query = `select create_account($1, $2, $3, $4, $5) as user`;
+            const query = 'SELECT create_account($1, $2, $3, $4, $5) as user';
             const values = [data.username, data.password, data.email, data.firstName, data.lastName];
             await db.query(query, values);
             return true;
         } catch (err) {
-            throw new Error('Failed to create account');
+            console.error("Error creating account:", err.message);
+            throw new Error(`Failed to create account: ${err.message}`); 
         }
     }
-
+    
     static async updateProfile(userId, updateData) {
-        const query = 'select update_profile($1, $2, $3, $4, $5, $6, $7)';
+        const query = 'SELECT update_profile($1, $2, $3, $4, $5, $6, $7)'; 
         const values = [
             userId,
             updateData.email,
@@ -35,19 +37,17 @@ class User {
         await db.query(query, values);
     }
 
-    static async updatePassword(userData) {
-        try {
-            const query = 'select update_password($1, $2, $3)';
-            await db.query(query, [userData.user, userData.oldPassword, userData.newPassword]);
-        } catch (err) {
-            throw new Error(err.message);
-        }
+    static async updatePassword(userId, oldPassword, newPassword) {
+        const query = 'SELECT update_password($1, $2, $3)'; // Changed select to SELECT
+        const values = [userId, oldPassword, newPassword];
+        
+        await db.query(query, values);
     }
-
+    
     static async getUserDetailByID(id) {
         try {
-            const result = await db.query('SELECT view_profile(select username from users where id = $1)', [id]);
-            return result.rows[0]; // Can be use flexible with specific userid or just * for all user
+            const result = await db.query('SELECT * FROM users WHERE id = $1', [id]); 
+            return result.rows[0]; 
         } catch (error) {
             throw error;
         }
@@ -55,7 +55,7 @@ class User {
 
     static async getAllUser() {
         try {
-            const result = await db.query('SELECT view_all_profiles()');
+            const result = await db.query('SELECT * FROM users'); 
             return result.rows;
         } catch (error) {
             throw error;

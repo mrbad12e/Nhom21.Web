@@ -1,20 +1,7 @@
 const db = require('../config/database');
 
 class Order {
-    constructor(data) {
-        this.validate(data);
-
-        this.id = data.id;
-        this.customerId = data.customer_id || data.customerId;
-        this.totalPrice = parseFloat(data.total_price || data.totalPrice);
-        this.shippingAddress = data.shipping_address || data.shippingAddress;
-        this.orderStatus = data.order_status || data.orderStatus;
-        this.paymentStatus = data.payment_status || data.paymentStatus;
-        this.createdAt = data.created_at || data.createdAt;
-        this.items = data.items || [];
-    }
-
-    // Kiểm tra tính hợp lệ của các thông tin đơn hàng
+   // Kiểm tra tính hợp lệ của các thông tin đơn hàng
     validate(order) {
         const validationErrors = [];
 
@@ -56,53 +43,60 @@ class Order {
     isValidPaymentStatus(status) {
         return Order.getValidPaymentStatuses().includes(status);
     }
-
-    // Tạo đơn hàng từ giỏ hàng
-    static async createOrderFromCart(userId, shippingAddress) {
-        try {
-            // Thực thi hàm SQL create_order_from_cart
-            const query = `
-        SELECT public.create_order_from_cart($1, $2) AS order_id;
+  // Tạo đơn hàng từ giỏ hàng
+  static async createOrderFromCart(userId, shippingAddress) {
+    try {
+      const query = `
+        SELECT * from public.create_order_from_cart($1, $2);
       `;
-            const result = await db.query(query, [userId, shippingAddress]);
-            return result.rows[0].order_id;
-        } catch (err) {
-            console.error('Error creating order from cart:', err);
-            throw new Error('Failed to create order from cart');
-        }
+      const result = await db.query(query, [userId, shippingAddress]);
+  
+      return result[0].create_order_from_cart;
+    }catch (err) {
+      throw new Error(err.message);
     }
+  }
 
-    // Lấy thông tin đơn hàng theo ID
-    static async getOrderById(customerId, orderId) {
-        try {
-            const query = `
-        SELECT * FROM public.get_order($1,$2);
-      `;
-            const result = await db.query(query, [orderId, customerId]);
-            return result;
-        } catch (err) {
-            console.error('Get order by ID error:', err);
-            throw new Error('Failed to fetch order');
-        }
+  // Lấy thông tin đơn hàng theo ID cho người dùng cụ thể
+  static async getOrderById(orderId, userId) {
+    try {
+      const query = `
+      SELECT * FROM public.get_order($1, $2);
+    `;
+    const result = await db.query(query, [orderId, userId]);
+    return result[0];
+    } catch (err) {
+      throw new Error(err.message);
     }
+  }
 
-    // Lấy thông tin các sản phẩm trong đơn hàng
-    static async getOrderItems(orderId) {
-        try {
-            const query = `
-        SELECT oi.id AS order_item_id, oi.quantity, oi.price, 
-               p.id AS product_id, p.name AS product_name, p.price AS product_price
-        FROM public.order_items oi
-        JOIN public.products p ON oi.product_id = p.id
-        WHERE oi.order_id = $1;
+  // Tạo thanh toán cho đơn hàng
+  static async createPayment(orderId, amount, paymentMethod) {
+    try {
+      const query = `
+        SELECT public.create_payment($1, $2, $3);
       `;
-            const result = await db.query(query, [orderId]);
-            return result.rows;
-        } catch (err) {
-            console.error('Get order items error:', err);
-            throw new Error('Failed to fetch order items');
-        }
+      const result = await db.query(query, [orderId, amount, paymentMethod]);
+      return result[0].create_payment;
+    } catch (err) {
+      console.error('Create payment error:', err);
+      throw err;
     }
+  }
+
+  static async getCustomerPayments(userId, limit = 50, offset = 0) {
+    try {
+      const query = `
+        SELECT * 
+        FROM public.get_customer_payments($1, $2, $3);
+    `;
+        const result = await db.query(query, [userId, limit, offset]);
+        console.log(result);
+        return result[0].getCustomerPayments;
+    } catch (error) {
+        throw new Error(`Error fetching customer payments: ${error.message}`);
+    }
+}
 
     static generateOrderId() {
         return Math.random().toString(36).substr(2, 16).toUpperCase();

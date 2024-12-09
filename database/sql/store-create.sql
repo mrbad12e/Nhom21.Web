@@ -121,3 +121,4 @@ create table public.payments (
 );
 
 alter table public.cart_items add unique (cart_id, product_id);
+alter table public.order_items drop constraint if exists order_items_order_id_key;

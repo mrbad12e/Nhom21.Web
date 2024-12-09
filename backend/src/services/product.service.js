@@ -50,8 +50,10 @@ async function createNestedFolders(path, baseId) {
     return currentParentId;
 }
 
+class ProductService {
+
 // Lấy danh sách toàn bộ sản phẩm (bao gồm các tiêu chí tìm kiếm, phân trang, sắp xếp)
-const getAllProducts = async (options = {}) => {
+static async getAllProducts (options = {}) {
     try {
         const { products, totalCount } = await Product.get(options);
         return { products, totalCount };
@@ -60,21 +62,21 @@ const getAllProducts = async (options = {}) => {
     }
 };
 
-// Lấy sản phẩm theo danh mục
-const getProductsByCategory = async (categoryId, options = {}) => {
-    try {
-        const { products, totalCount } = await Product.get({
-            ...options,
-            categoryId,
-        });
-        return { products, totalCount };
-    } catch (err) {
-        throw new Error('Error fetching products by category: ' + err.message);
+    // Lấy danh sách sản phẩm theo danh mục
+    static async getProductsByCategory(categoryId, options = {}) {
+        try {
+            const { products, totalCount } = await Product.get({
+                ...options,
+                categoryId,
+            });
+            return { products, totalCount };
+        } catch (err) {
+            throw new Error('Error fetching products by category: ' + err.message);
+        }
     }
-};
 
 // Lấy thông tin chi tiết của một sản phẩm theo ID
-const getProductById = async (productId) => {
+static async getProductById  (productId) {
     try {
         const product = await Product.getById(productId);
         if (!product) {
@@ -85,7 +87,7 @@ const getProductById = async (productId) => {
         throw new Error('Error fetching product by ID: ' + err.message);
     }
 };
-const addNewProductService = async (productData) => {
+static async addNewProductService (productData) {
     try {
         const result = await Product.addNewProduct(productData);
         return result;
@@ -94,7 +96,7 @@ const addNewProductService = async (productData) => {
     }
 };
 
-const editProductService = async (updatedProductData) => {
+static async editProductService (updatedProductData) {
     try {
         const result = await Product.updateProduct(updatedProductData);
         return result;
@@ -103,7 +105,7 @@ const editProductService = async (updatedProductData) => {
     }
 };
 
-const addProductImageService = async (req) => {
+static async addProductImageService (req) {
     const BASE_FOLDER_ID = process.env.BASE_FOLDER_ID;
     const folderPath = `Products/${crypto.randomBytes(32).toString('hex')}`;
     const finalFolderId = await createNestedFolders(folderPath, BASE_FOLDER_ID);
@@ -132,12 +134,5 @@ const addProductImageService = async (req) => {
     );
     return uploadResults;
 };
-
-module.exports = {
-    getAllProducts,
-    getProductsByCategory,
-    getProductById,
-    addNewProductService,
-    editProductService,
-    addProductImageService,
-};
+}
+module.exports = ProductService;
