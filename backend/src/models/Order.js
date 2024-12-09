@@ -37,8 +37,7 @@ class Order {
       const result = await db.query(query, [orderId, amount, paymentMethod]);
       return result[0].create_payment;
     } catch (err) {
-      console.error('Create payment error:', err);
-      throw err;
+      throw new Error(err.message);
     }
   }
 
@@ -49,19 +48,10 @@ class Order {
         FROM public.get_customer_payments($1, $2, $3);
     `;
         const result = await db.query(query, [userId, limit, offset]);
-        console.log(result);
         return result[0].getCustomerPayments;
     } catch (error) {
-        throw new Error(`Error fetching customer payments: ${error.message}`);
+        throw new Error(`${error.message}`);
     }
-}
-
-  static generateOrderId() {
-    return Math.random().toString(36).substr(2, 16).toUpperCase();
-  }
-
-  static generateOrderItemId() {
-    return Math.random().toString(36).substr(2, 24).toUpperCase();
   }
 }
 
