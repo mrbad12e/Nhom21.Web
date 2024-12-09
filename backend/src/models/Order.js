@@ -15,18 +15,19 @@ class Order {
     }
   }
 
-  // Lấy thông tin đơn hàng theo ID cho người dùng cụ thể
-  static async getOrderById(orderId, userId) {
-    try {
-      const query = `
-      SELECT * FROM public.get_order($1, $2);
-    `;
-    const result = await db.query(query, [orderId, userId]);
-    return result[0];
-    } catch (err) {
-      throw new Error(err.message);
+    // Lấy thông tin đơn hàng theo ID
+    static async getOrderById(customerId, orderId) {
+        try {
+            const query = `
+        SELECT * FROM public.get_order($1,$2);
+      `;
+            const result = await db.query(query, [orderId, customerId]);
+            return result;
+        } catch (err) {
+            console.error('Get order by ID error:', err);
+            throw new Error('Failed to fetch order');
+        }
     }
-  }
 
   // Tạo thanh toán cho đơn hàng
   static async createPayment(orderId, amount, paymentMethod) {

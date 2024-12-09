@@ -22,10 +22,10 @@ class Product {
             return {
                 products: result,
                 pagination: {
-                    page: parseInt(req.query.page) || 1,
-                    pageSize: parseInt(req.query.pageSize) || 10,
+                    page: parseInt(page) || 1,
+                    pageSize: parseInt(pageSize) || 10,
                     total: result[0]?.total_count || 0,
-                    totalPages: Math.ceil((result[0]?.total_count || 0) / (req.query.pageSize || 10)),
+                    totalPages: Math.ceil((result[0]?.total_count || 0) / (pageSize || 10)),
                 },
             };
         } catch (err) {
@@ -35,12 +35,11 @@ class Product {
 
     static async addNewProduct(req) {
         try {
-            const { name, description, price, stock, categoryId, imageUrls = null } = req.body;
-
+            const { name, description, price, stock, categoryId, imageUrls = null } = req;
+            
             if (!name || !description || price == null || stock == null || !categoryId) {
                 throw new Error('Missing required fields');
             }
-
             const result = await db.query('select * from create_product($1, $2, $3, $4, $5, $6)', [
                 name,
                 description,
@@ -64,6 +63,36 @@ class Product {
         }
     }
 
+    static async updateProduct(data) {
+        try {
+            const id = data.id;
+            const { name = null, description = null, price = null, stock = null, categoryId = null } = data;
+
+            if (!id) {
+                throw new Error('Product ID is required');
+            }
+
+            const result = await db.query('select * from update_product($1, $2, $3, $4, $5, $6)', [
+                id,
+                name || null,
+                description || null,
+                price || null,
+                stock || null,
+                categoryId || null,
+            ]);
+            if (!result || !result[0]) {
+                throw new Error('Failed to update product');
+            }
+
+            return {
+                id: result[0].product_id,
+                name: result[0].product_name,
+                price: result[0].product_price,
+            };
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
 }
 
 module.exports = Product;

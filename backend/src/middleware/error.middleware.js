@@ -23,7 +23,7 @@ function errorHandler(err, req, res, next) {
     } else {
         // For any other errors (internal server errors, etc.)
         return res.status(500).json({
-            message: 'Something went wrong, please try again later.', // Hide stack trace in production
+            message: 'Something went wrong, please try again later.',
         });
     }
 }
