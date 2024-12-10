@@ -1,6 +1,11 @@
+const { productUpload, upload } = require('../config/multer');
+
+function checkFileUpload(req, res, next) {
+    return productUpload.array('files')(req, res, next); // 'files' là trường trong formData của client
+}
+
 const { google } = require('googleapis');
 const fs = require('fs');
-const upload = require('../config/multer');
 
 async function getOrCreateUserFolder(drive, userId) {
     const userFolderPath = `User/${userId}`;
@@ -10,7 +15,7 @@ async function getOrCreateUserFolder(drive, userId) {
     for (const folder of folders) {
         const response = await drive.files.list({
             q: `name='${folder}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents`,
-            fields: 'files(id)'
+            fields: 'files(id)',
         });
 
         if (response.data.files.length > 0) {
@@ -19,11 +24,11 @@ async function getOrCreateUserFolder(drive, userId) {
             const folderMetadata = {
                 name: folder,
                 mimeType: 'application/vnd.google-apps.folder',
-                parents: [parentId]
+                parents: [parentId],
             };
             const newFolder = await drive.files.create({
                 requestBody: folderMetadata,
-                fields: 'id'
+                fields: 'id',
             });
             parentId = newFolder.data.id;
         }
@@ -37,7 +42,7 @@ const uploadProfileImage = async (req, res, next) => {
             if (err) {
                 return res.status(400).json({ error: err.message });
             }
-            
+
             if (!req.file) {
                 delete req.body.image;
                 return next();
@@ -84,4 +89,4 @@ const uploadProfileImage = async (req, res, next) => {
     }
 };
 
-module.exports = uploadProfileImage;
+module.exports = { uploadProfileImage, checkFileUpload };

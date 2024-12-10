@@ -17,20 +17,20 @@ exports.getAllOrders = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-
-    exports.getOrderById = async (req, res, next) => {
-        try {
-            const id = req.user.id; //take admin_id to check instead of ask for it in admin controller
-            const order_id = req.params.id;
-            const result = await OrderService.getOrderById(id, order_id);
-            return res.status(200).json({
-                message: result,
-            });
-        } catch (error) {
-            next(error);
-        }
-    };
 };
+exports.getOrderById = async (req, res, next) => {
+    try {
+        const id = req.user.id;
+        const order_id = req.params.id;
+        const result = await OrderService.getOrderById(id, order_id);
+        return res.status(200).json({
+            message: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 exports.updateOrderStatus = async (req, res, next) => {
     try {

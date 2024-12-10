@@ -1,11 +1,10 @@
 const express = require('express');
 const authorizeAdmin = require('../../middleware/auth/authorize');
-const authenticate = require('../../middleware/auth/authenticate');
-const adminOrderController = require('../../controllers/admin/order.controller');
+const { getAllOrders, getOrderById, updateOrderStatus } = require('../../controllers/admin/order.controller');
 const routes = express.Router();
 
-routes.post('/order-list', authenticate, authorizeAdmin, adminOrderController.getAllOrders);
-routes.post('/order/:id', authenticate, authorizeAdmin, adminOrderController.getOrderById);
-routes.put('/order/:id/update', authenticate, authorizeAdmin, adminOrderController.updateOrderStatus);
+routes.post('/list', authorizeAdmin, getAllOrders);
+routes.post('/:id', authorizeAdmin, getOrderById);
+routes.put('/update/:id', authorizeAdmin, updateOrderStatus);
 
 module.exports = routes;

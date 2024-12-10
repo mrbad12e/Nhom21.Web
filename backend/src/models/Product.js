@@ -1,7 +1,21 @@
 const db = require('../config/database');
 
 class Product {
-    static async get(req) {
+    static validate(product) {
+        return !!(
+            product.name &&
+            product.description &&
+            parseFloat(product.price) >= 0 &&
+            parseInt(product.stock) >= 0 &&
+            product.categoryId
+        );
+    }
+
+    isInStock() {
+        return this.stock > 0 && this.isActive;
+    }
+
+    static async getById(id) {
         try {
             if (req.query.id) {
                 const result = await db.query('select * from get_product_details($1)', [req.query.id]);
