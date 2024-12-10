@@ -19,15 +19,13 @@ const productUpload = multer({
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png/;
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-        if (extname) {
+        if (extname && file.mimetype.startsWith('image/')) {
             return cb(null, true);
         } else {
             cb(new Error('Only accept JPEG,JPG and PNG format.'));
         }
     },
 });
-
-module.exports = productUpload;
 
 const upload = multer({
     dest: 'uploads/users',
@@ -39,7 +37,7 @@ const upload = multer({
             return cb(new Error('Only image files allowed'));
         }
         cb(null, true);
-    }
+    },
 });
 
-module.exports = upload;
+module.exports = { upload, productUpload };

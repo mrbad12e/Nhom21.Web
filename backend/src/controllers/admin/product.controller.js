@@ -25,6 +25,8 @@ exports.getProductList = async (req, res, next) => {
 
 exports.addProduct = async (req, res, next) => {
     try {
+        console.log('reach controller');
+
         if (!req.files || req.files.length === 0) {
             console.log('aborted');
             throw new Error('No file found');
@@ -34,7 +36,7 @@ exports.addProduct = async (req, res, next) => {
 
         imageUrls = result.map((result) => result.url);
         console.log(imageUrls);
-        
+
         const productData = { ...req.body, imageUrls: `{${imageUrls}}` };
         console.log(productData);
 

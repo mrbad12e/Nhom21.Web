@@ -1,7 +1,7 @@
 const express = require('express');
 const UserController = require('../../controllers/client/user.controller');
 const authenticate = require('../../middleware/auth/authenticate');
-const uploadProfileImage = require('../../middleware/upload.middleware');
+const { uploadProfileImage } = require('../../middleware/upload.middleware');
 const router = express.Router();
 
 router.post('/signin', UserController.signIn);
