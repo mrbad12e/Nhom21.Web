@@ -29,14 +29,14 @@ class UserService {
         try {
             return await User.getUserDetailByID(id);
         } catch (error) {
-            throw error;
+            throw new Error(error.message);
         }
     }
     static async getAllUserService() {
         try {
             return await User.getAllUser();
         } catch (error) {
-            throw error;
+            throw new Error(error.message);
         }
     }
 

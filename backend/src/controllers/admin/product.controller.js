@@ -1,23 +1,9 @@
 const ProductService = require('../../services/product.service');
 
-exports.getProductList = async (req, res, next) => {
+exports.get = async (req, res, next) => {
     //logic idk
     try {
-        const option = {
-            search: req.query.search,
-            page: req.query.page,
-            pageSize: req.query.pageSize,
-            minPrice: req.query.minPrice,
-            maxPrice: req.query.maxPrice,
-            includeInactive: req.query.includeInactive,
-            sortBy: req.query.sortBy,
-            sortOrder: req.query.sortOrder,
-            categoryId: req.query.categoryId,
-        };
-        const productList = await ProductService.getAllProducts(option);
-        res.status(200).json({
-            message: productList,
-        });
+        res.status(200).json(await ProductService.get(req));
     } catch (err) {
         next(err);
     }
@@ -25,20 +11,15 @@ exports.getProductList = async (req, res, next) => {
 
 exports.addProduct = async (req, res, next) => {
     try {
-        console.log('reach controller');
-
         if (!req.files || req.files.length === 0) {
-            console.log('aborted');
             throw new Error('No file found');
         } //ignore if no file uploads
 
         const result = await ProductService.addProductImageService(req);
 
         imageUrls = result.map((result) => result.url);
-        console.log(imageUrls);
 
         const productData = { ...req.body, imageUrls: `{${imageUrls}}` };
-        console.log(productData);
 
         const { id, name, price } = await ProductService.addNewProductService(productData);
         return res.status(200).json({
@@ -66,7 +47,6 @@ exports.editProduct = async (req, res, next) => {
 exports.getProduct = async (req, res, next) => {
     try {
         const id = req.params.id;
-        console.log(id);
 
         const result = await ProductService.getProductById(id);
         res.status(200).json({

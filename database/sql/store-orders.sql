@@ -390,6 +390,46 @@ begin
 end; 
 $$ language plpgsql;
 
+drop function if exists get_dashboard_stats();
+create or replace function get_dashboard_stats() 
+returns table (
+    total_revenue decimal(10,2),
+    total_orders bigint,
+    active_customers bigint,
+    low_stock_products bigint
+) as $$
+begin
+    return query
+    select 
+        coalesce(sum(total_price), 0) as total_revenue,
+        count(*) as total_orders,
+        count(distinct customer_id) as active_customers,
+        (select count(*) from products where stock < 10) as low_stock_products
+    from orders 
+    where created_at >= date_trunc('month', current_date);
+end;
+$$ language plpgsql;
+
+drop function if exists get_sales_overview(int);
+create or replace function get_sales_overview(days int)
+returns table (
+    date date,
+    sales decimal(10,2),
+    orders bigint
+) as $$
+begin
+    return query
+    select 
+        date_trunc('day', created_at)::date,
+        sum(total_price) as sales,
+        count(*) as orders
+    from orders
+    where created_at >= current_date - make_interval(days := days)
+    group by 1
+    order by 1;
+end;
+$$ language plpgsql;
+
 -- Customer
 -- Order
 create or replace function public.get_customer_orders(

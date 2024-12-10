@@ -59,7 +59,7 @@ SELECT signIn('nghia03', '123456');
 
 -- Hàm xem profile một người theo username
 CREATE OR REPLACE FUNCTION view_profile(
-    user_username varchar
+    user_id varchar
 ) RETURNS TABLE (
     id varchar,
     username varchar,
@@ -70,15 +70,15 @@ CREATE OR REPLACE FUNCTION view_profile(
     role public.user_role,
     created_at timestamp,
     is_active boolean,
-    -- account_type public.account_type,
-    -- code_id varchar,
-    -- code_expired date,
     phone varchar,
     address varchar,
     image varchar
 ) AS $$
 BEGIN
-    -- Trả về thông tin của người dùng cụ thể dựa trên username
+    IF NOT EXISTS (SELECT 1 FROM public.users WHERE public.users.id = user_id) THEN
+        RAISE EXCEPTION 'User not found';
+    END IF;
+
     RETURN QUERY
     SELECT 
         public.users.id, 
@@ -90,14 +90,11 @@ BEGIN
         public.users.role, 
         public.users.created_at,
         public.users.is_active,
-        -- public.users.account_type,
-        -- public.users.code_id,
-        -- public.users.code_expired,
         public.users.phone,
         public.users.address,
         public.users.image
     FROM public.users
-    WHERE public.users.username = user_username;
+    WHERE public.users.id = user_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -190,8 +187,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Xem thông tin của người dùng 'caroline85'
-SELECT * FROM view_profile('caroline85');
 
 -- Tìm theo email người dùng có email 'nghiaaa2003@gmail.com'
 SELECT * FROM find_by_email('nghiaaa2003@gmail.com');

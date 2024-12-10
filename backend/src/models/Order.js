@@ -73,6 +73,49 @@ class Order {
             throw error;
         }
     }
+
+    static async getDashboardStats() {
+        try {
+            const query = 'SELECT * FROM public.get_dashboard_stats()';
+            const result = await db.query(query);
+            return result[0];
+        } catch (error) {
+            throw new Error(`Error fetching dashboard stats: ${error.message}`);
+        }
+    }
+
+    static async getSalesOverview(days) {
+        try {
+            const query = 'SELECT * FROM public.get_sales_overview($1)';
+            const result = await db.query(query, [days]);
+            return result;
+        } catch (error) {
+            throw new Error(`Error fetching sales overview: ${error.message}`);
+        }
+    }
+
+    static async getRecentOrders(limit) {
+        try {
+            const query = `
+                SELECT 
+                    o.*,
+                    json_build_object(
+                        'username', u.username,
+                        'email', u.email,
+                        'first_name', u.first_name,
+                        'last_name', u.last_name
+                    ) as customer_info
+                FROM public.orders o
+                JOIN public.users u ON u.id = o.customer_id
+                ORDER BY o.created_at DESC
+                LIMIT $1
+            `;
+            const result = await db.query(query, [limit]);
+            return result;
+        } catch (error) {
+            throw new Error(`Error fetching recent orders: ${error.message}`);
+        }
+    }
 }
 
 module.exports = Order;

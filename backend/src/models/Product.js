@@ -1,22 +1,8 @@
 const db = require('../config/database');
 
 class Product {
-    static validate(product) {
-        return !!(
-            product.name &&
-            product.description &&
-            parseFloat(product.price) >= 0 &&
-            parseInt(product.stock) >= 0 &&
-            product.categoryId
-        );
-    }
-
-    isInStock() {
-        return this.stock > 0 && this.isActive;
-    }
-
-    static async getById(id) {
-        try {
+    static async get(req) {
+        try {            
             if (req.query.id) {
                 const result = await db.query('select * from get_product_details($1)', [req.query.id]);
                 return result;
@@ -36,10 +22,10 @@ class Product {
             return {
                 products: result,
                 pagination: {
-                    page: parseInt(page) || 1,
-                    pageSize: parseInt(pageSize) || 10,
+                    page: parseInt(req.query.page) || 1,
+                    pageSize: parseInt(req.query.pageSize) || 10,
                     total: result[0]?.total_count || 0,
-                    totalPages: Math.ceil((result[0]?.total_count || 0) / (pageSize || 10)),
+                    totalPages: Math.ceil((result[0]?.total_count || 0) / (req.query.pageSize || 10)),
                 },
             };
         } catch (err) {

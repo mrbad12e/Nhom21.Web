@@ -1,5 +1,4 @@
 const db = require('../config/database');
-const crypto = require('crypto');
 
 class User {
     static async signIn(username, password) {
@@ -45,21 +44,12 @@ class User {
     }
     
     static async getUserDetailByID(id) {
-        try {
-            const result = await db.query('SELECT * FROM users WHERE id = $1', [id]); 
-            return result.rows[0]; 
-        } catch (error) {
-            throw error;
-        }
+        const result = await db.query('SELECT * FROM view_profile($1)', [id]);            
+        return result[0]; 
     }
 
     static async getAllUser() {
-        try {
-            const result = await db.query('SELECT * FROM users'); 
-            return result.rows;
-        } catch (error) {
-            throw error;
-        }
+       return await db.query('SELECT * FROM view_all_profiles()');
     }
 }
 
