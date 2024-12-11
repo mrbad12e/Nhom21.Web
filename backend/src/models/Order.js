@@ -55,12 +55,8 @@ class Order {
     }
 
     static async getAllOrder(options) {
-        try {
-            const { id, offset, limit, status } = options;
-            const result = await db.query('SELECT * FROM get_all_orders($1, $2, $3, $4)', [id, limit, offset, status]);
-        } catch (error) {
-            throw error;
-        }
+        const { id, offset, limit, status } = options;
+        return await db.query('SELECT * FROM get_all_orders($1, $2, $3, $4)', [id, limit, offset, status || null]);
     }
 
     static async updateOrderStatus(orderId, status, userId) {
