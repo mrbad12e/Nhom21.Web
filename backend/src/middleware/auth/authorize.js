@@ -3,8 +3,6 @@ const db = require('../../config/database');
 
 async function authorizeAdmin(req, res, next) {
     try {
-        console.log('Cookies:', req.cookies); // Add this
-        console.log('Auth header:', req.headers.authorization); // Add this
         const token = req.cookies.auth || req.headers.authorization?.replace('Bearer ', '');
 
         if (!token) {
@@ -26,7 +24,7 @@ async function authorizeAdmin(req, res, next) {
         req.user = { ...decoded, role: user.role };
         next();
     } catch (error) {
-        // res.clearCookie('auth');
+        res.clearCookie('auth');
         return res.status(401).json({ message: 'Authentication failed' });
     }
 }

@@ -4,7 +4,6 @@ const userService = require('../../services/user.service');
 exports.login = async (req, res, next) => {
     const username = req.body.username;
     const password = req.body.password;
-    console.log(username, password);
     try {
         const admin = await authService.validateAdminCredentials(username, password);
 
@@ -18,14 +17,12 @@ exports.login = async (req, res, next) => {
             Object.entries(profile).filter(([key]) => !fieldsToExclude.includes(key))
         );
         const accessToken = authService.generateAccessToken(admin);
-        console.log(accessToken);
         res.cookie('auth', accessToken, {
             httpOnly: true,
             secure: true, // for HTTPS
-            sameSite: 'none', // for cross-site requests
+            sameSite: 'lax', // for local development
             maxAge: 24 * 60 * 60 * 1000,
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         });
         return res.status(200).json({
             message: 'Login successful',
