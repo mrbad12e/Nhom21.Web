@@ -1,22 +1,21 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const JWT_SECRET = process.env.JWT_SECRET;
 
-// Middleware xác thực người dùng qua JWT
 const authenticate = (req, res, next) => {
-    const token =
-        req.cookies.auth ||
-        (req.header('Authorization') && req.header('Authorization').startsWith('Bearer ')
-            ? req.header('Authorization').replace('Bearer ', '')
-            : '');
-    if (!token) return res.status(401).json({ message: 'Access denied' });
+    const token = req.cookies.auth || req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+        res.clearCookie('auth');
+        return res.status(401).json({ message: 'Access denied' });
+    }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // Lưu thông tin người dùng vào `req.user`
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
         next();
     } catch (err) {
-        res.status(400).json({ message: 'Invalid token' });
+        res.clearCookie('auth');
+        return res.status(401).json({ message: err.message });
     }
 };
 

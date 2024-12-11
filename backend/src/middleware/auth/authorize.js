@@ -1,38 +1,31 @@
 const jwt = require('jsonwebtoken');
 const db = require('../../config/database');
-// Middleware to check if the user is an admin
+
 async function authorizeAdmin(req, res, next) {
-    // Get the token from cookies (or headers)
     try {
-        const token =
-            req.cookies.auth ||
-            (req.header('Authorization') && req.header('Authorization').startsWith('Bearer ')
-                ? req.header('Authorization').replace('Bearer ', '')
-                : '');
+        const token = req.cookies.auth || req.headers.authorization?.replace('Bearer ', '');
 
         if (!token) {
-            return res.status(401).send('No token provided');
+            return res.status(401).json({ message: 'No token provided' });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        const result = await db.query('SELECT role FROM users WHERE id = $1', [decoded.id]);
+        const [user] = await db.query('SELECT id, role FROM users WHERE id = $1', [decoded.id]);
         
-        if (result.length === 0) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
 
-        if (result[0].role !== 'ADMIN') {
+        if (user.role !== 'ADMIN') {
             return res.status(403).json({ message: 'Admin access required' });
         }
 
-        req.user = decoded;
+        req.user = { ...decoded, role: user.role };
         next();
     } catch (error) {
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Invalid token' });
-        }
-        return res.status(500).json({ message: 'Internal server error' });
+        res.clearCookie('auth');
+        return res.status(401).json({ message: 'Authentication failed' });
     }
 }
 
