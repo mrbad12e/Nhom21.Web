@@ -18,7 +18,7 @@ exports.login = async (req, res, next) => {
         );
         const accessToken = authService.generateAccessToken(admin);
         res.cookie('auth', accessToken, {
-            httpOnly: true,
+            httpOnly: false,
             secure: true, // for HTTPS
             sameSite: 'lax', // for local development
             maxAge: 24 * 60 * 60 * 1000,

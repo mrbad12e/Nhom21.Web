@@ -7,7 +7,7 @@ class UserController {
             const { username, password } = req.body;
             const { token, filteredProfile } = await UserService.signIn(username, password);            
             res.cookie('auth', token, {
-                httpOnly: true,
+                httpOnly: false,
                 secure: true,
                 sameSite: 'lax',
                 maxAge: 24 * 60 * 60 * 1000, // 24 hours
