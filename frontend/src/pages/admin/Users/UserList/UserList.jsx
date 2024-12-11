@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import axios from 'axios';
-import { Button } from '@/components/ui/button';
 import { UserTable } from '@/components/admin/users/UserTable';
-import { API_URL } from '@/utils/constants';
 import styles from './UserList.module.css';
+import axiosInstance from '@/services/api';
 
 const UserList = () => {
     const navigate = useNavigate();
@@ -34,7 +31,7 @@ const UserList = () => {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${API_URL}/admin/users/list`);
+            const response = await axiosInstance.get(`/admin/users/list`);
             const data = response.data?.users || response.data || [];
             setUsers(data);
             setTotal(data.length);
@@ -84,11 +81,7 @@ const UserList = () => {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Users</h1>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add User
-                </Button>
+                <h2 className={styles.title}>Users</h2>
             </div>
 
             <div className={styles.content}>

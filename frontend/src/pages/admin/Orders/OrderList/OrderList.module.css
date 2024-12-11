@@ -3,11 +3,11 @@
 }
 
 .header {
-    @apply flex justify-between items-center mb-6;
+    @apply flex justify-between items-center;
 }
 
 .title {
-    @apply text-2xl font-bold;
+    @apply text-2xl font-bold tracking-tight;
 }
 
 .filters {

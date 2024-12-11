@@ -2,13 +2,13 @@
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { Dashboard } from '@/pages/admin/Dashboard';
 import { Navigate, Outlet } from 'react-router-dom';
-import { OrderTable } from '@/components/admin/orders/OrderTable';
 import { OrderDetails } from '@/components/admin/orders/OrderDetails';
 import { ProductList } from '@/pages/admin/Products/ProductList';
 import { AddProduct } from '@/pages/admin/Products/AddProduct';
 import { EditProduct } from '@/pages/admin/Products/EditProduct';
 import { UserList } from '@/pages/admin/Users/UserList';
 import { UserDetails } from '@/pages/admin/Users/UserDetails';
+import { OrderList } from '@/pages/admin/Orders/OrderList';
 
 const adminRoutes = [
     {
@@ -49,7 +49,7 @@ const adminRoutes = [
                 children: [
                     {
                         path: '',
-                        element: <OrderTable />
+                        element: <OrderList />
                     },
                     {
                         path: ':id',

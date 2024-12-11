@@ -10,10 +10,7 @@ exports.getAllOrders = async (req, res, next) => {
             limit: parseInt(limit, 10),
             ...(status && { status }), //add status if theres a status
         };
-        const result = await OrderService.getAllOrdersService(option);
-        return res.status(200).json({
-            message: result,
-        });
+        return res.status(200).json(await OrderService.getAllOrdersService(option));
     } catch (err) {
         next(err);
     }

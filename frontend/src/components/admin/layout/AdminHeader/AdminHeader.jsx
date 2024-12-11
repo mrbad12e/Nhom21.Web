@@ -21,17 +21,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { API_URL } from '@/utils/constants';
-import axios from 'axios';
+import axiosInstance from '@/services/api';
 import styles from './AdminHeader.module.css';
-
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true
-});
 
 const AdminHeader = () => {
     const navigate = useNavigate();
@@ -51,8 +42,9 @@ const AdminHeader = () => {
 
     const handleLogout = async () => {
         try {
-            await api.get('/admin/auth/logout');
+            await axiosInstance.get('/admin/auth/logout');
             localStorage.removeItem('profile');
+            localStorage.removeItem('auth');
             navigate('/');
         } catch (error) {
             console.error('Logout failed:', error.response?.data?.message || 'An error occurred');
