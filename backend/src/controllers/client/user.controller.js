@@ -6,7 +6,12 @@ class UserController {
         try {
             const { username, password } = req.body;
             const { token, filteredProfile } = await UserService.signIn(username, password);            
-            res.cookie('auth', token, { httpOnly: true });
+            res.cookie('auth', token, {
+                httpOnly: true,
+                secure: true, // for HTTPS
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000 // 24 hours
+            });
             res.status(200).json({ message: 'Login successful', profile: filteredProfile });
         } catch (error) {
             res.status(500).json({ message: error.message });

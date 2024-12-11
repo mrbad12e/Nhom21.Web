@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
-const BACKEND_URL = import.meta.env.BACKEND_URL || 'http://localhost:5000';
+import { API_URL } from '@/utils/constants';
 
 // Configure axios defaults
 axios.defaults.withCredentials = true; // Enable sending cookies with requests
@@ -33,7 +32,7 @@ export default function LoginForm({ switchToRegister, switchToForgotPassword }) 
 
         try {
             const endpoint =
-                selectedRole === 'ADMIN' ? `${BACKEND_URL}/admin/auth/login` : `${BACKEND_URL}/client/signin`;
+                selectedRole === 'ADMIN' ? `${API_URL}/admin/auth/login` : `${API_URL}/client/signin`;
 
             const response = await axios.post(endpoint, {
                 username: formData.username,
