@@ -20,10 +20,11 @@ exports.login = async (req, res, next) => {
         const accessToken = authService.generateAccessToken(admin);
         res.cookie('auth', accessToken, {
             httpOnly: true,
-            secure: false, // for HTTPS
+            secure: true, // for HTTPS
             sameSite: 'none', // for cross-site requests
             maxAge: 24 * 60 * 60 * 1000,
-            path: '/'
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         });
         return res.status(200).json({
             message: 'Login successful',
