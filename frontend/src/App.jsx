@@ -8,6 +8,9 @@ import NotFound from '@/pages/client/NotFound';
 import Contact from '@/pages/client/Contact';
 import Shop from '@/pages/client/Shop';
 import Products from '@/pages/client/Products';
+import Cart from "@/pages/client/Cart";
+import Checkout from "@/pages/client/Checkout";
+import Account from "@/pages/client/Account";
 import adminRoutes from './routes/adminRoutes';
 
 const App = () => {
@@ -40,6 +43,9 @@ const App = () => {
                     <Route path="/products/:id" element={<Products />} />
                     <Route path="*" element={<NotFound />} />
                     <Route path="/shop" element={<Shop />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/account/*" element={<Account />} />
                 </Route>
                 <Route path="/login" element={<Login />} />
                 {renderRoutes(adminRoutes)}
