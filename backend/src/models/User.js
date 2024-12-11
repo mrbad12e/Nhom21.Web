@@ -12,7 +12,7 @@ class User {
 
     static async createAccount(data) {
         try {
-            const query = 'SELECT create_account($1, $2, $3, $4, $5) as user';
+            const query = 'SELECT create_account($1, $2, $3, $4, $5) as user';            
             const values = [data.username, data.password, data.email, data.firstName, data.lastName];
             await db.query(query, values);
             return true;

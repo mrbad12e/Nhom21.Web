@@ -149,16 +149,11 @@ CREATE OR REPLACE FUNCTION view_all_profiles()
 RETURNS TABLE (
     id varchar,
     username varchar,
-    password varchar,
     email varchar,
     first_name varchar,
     last_name varchar,
     role public.user_role,
     created_at timestamp,
-    is_active boolean,
-    -- account_type public.account_type,
-    -- code_id varchar,
-    -- code_expired date,
     phone varchar,
     address varchar,
     image varchar
@@ -169,16 +164,11 @@ BEGIN
     SELECT 
         public.users.id, 
         public.users.username, 
-        public.users.password, 
         public.users.email, 
         public.users.first_name, 
         public.users.last_name, 
         public.users.role, 
         public.users.created_at,
-        public.users.is_active,
-        -- public.users.account_type,
-        -- public.users.code_id,
-        -- public.users.code_expired,
         public.users.phone,
         public.users.address,
         public.users.image

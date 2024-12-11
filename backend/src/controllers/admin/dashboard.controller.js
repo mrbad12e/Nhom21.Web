@@ -13,7 +13,7 @@ class dashboardController {
     }
 
     static async getSalesOverview(req, res, next) {
-        try {
+        try {            
             const days = req.query.days || 7;
             const result = await Order.getSalesOverview(days);
             return res.status(200).json(result);

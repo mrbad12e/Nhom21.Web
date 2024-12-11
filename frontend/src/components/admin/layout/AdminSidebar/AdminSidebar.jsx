@@ -13,6 +13,16 @@ import {
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './AdminSidebar.module.css';
+import { API_URL } from '@/utils/constants';
+import axios from 'axios';
+
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: true
+});
 
 const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
@@ -30,11 +40,14 @@ const AdminSidebar = () => {
         navigate(path);
     };
 
-    const handleLogout = () => {
-        // Add your logout logic here
-        // For example:
-        // logout();
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            await api.get('/admin/auth/logout');
+            localStorage.removeItem('profile');
+            navigate('/');
+        } catch (error) {
+            console.error('Logout failed:', error.response?.data?.message || 'An error occurred');
+        }
     };
 
     return (

@@ -1,7 +1,7 @@
-// AdminHeader.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Bell, User, Settings, Calendar, Users, LayoutDashboard, Command } from 'lucide-react';
+import { Bell, User, Settings, Calendar, Users, LayoutDashboard } from 'lucide-react';
 import {
     CommandDialog,
     CommandEmpty,
@@ -21,10 +21,43 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { API_URL } from '@/utils/constants';
+import axios from 'axios';
 import styles from './AdminHeader.module.css';
 
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: true
+});
+
 const AdminHeader = () => {
+    const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);
+    const [profile, setProfile] = React.useState(null);
+
+    React.useEffect(() => {
+        const storedProfile = localStorage.getItem('profile');
+        if (storedProfile) {
+            setProfile(JSON.parse(storedProfile));
+        }
+    }, []);
+
+    const getInitials = (firstName, lastName) => {
+        return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+    };
+
+    const handleLogout = async () => {
+        try {
+            await api.get('/admin/auth/logout');
+            localStorage.removeItem('profile');
+            navigate('/');
+        } catch (error) {
+            console.error('Logout failed:', error.response?.data?.message || 'An error occurred');
+        }
+    };
 
     React.useEffect(() => {
         const down = (e) => {
@@ -89,7 +122,6 @@ const AdminHeader = () => {
             </div>
 
             <div className={styles.actions}>
-                {/* Notifications */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className={styles.actionButton}>
@@ -98,7 +130,7 @@ const AdminHeader = () => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-80">
-                        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="flex flex-col items-start">
                             <p className="font-medium">New User Registration</p>
@@ -115,19 +147,22 @@ const AdminHeader = () => {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* User Profile */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className={styles.profile}>
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src="/placeholder-avatar.jpg" />
-                                <AvatarFallback>JD</AvatarFallback>
+                                {profile?.image && <AvatarImage src={profile.image} alt={profile.username} />}
+                                <AvatarFallback>
+                                    {getInitials(profile?.first_name, profile?.last_name)}
+                                </AvatarFallback>
                             </Avatar>
-                            <span className={styles.profileName}>John Doe</span>
+                            <span className={styles.profileName}>
+                                {profile?.first_name} {profile?.last_name}
+                            </span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuLabel>{profile?.email}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>
                             <User className="mr-2 h-4 w-4" />
@@ -135,7 +170,9 @@ const AdminHeader = () => {
                         </DropdownMenuItem>
                         <DropdownMenuItem>Settings</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">Logout</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                            Logout
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

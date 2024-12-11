@@ -10,8 +10,13 @@ class UserService {
                 throw new Error('Invalid login credentials');
             }
             userId = userId[0].signin;
+            const profile = await User.getUserDetailByID(userId);
+            const fieldsToExclude = ["password", "is_active", "role", "created_at"];
+            const filteredProfile = Object.fromEntries(
+                Object.entries(profile).filter(([key]) => !fieldsToExclude.includes(key))
+            );
             const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1d' });
-            return token;
+            return { token, filteredProfile };
         } catch (err) {
             throw new Error(err.message);
         }

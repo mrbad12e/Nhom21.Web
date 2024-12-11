@@ -1,45 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-    LineChart, 
-    Line, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
-    ResponsiveContainer,
-    Legend 
+    LineChart, Line, XAxis, YAxis, CartesianGrid, 
+    Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import styles from './SalesChart.module.css';
 
-const SalesChart = () => {
-    const [timeRange, setTimeRange] = useState('7days');
+const timeRanges = [
+    { value: '7', label: 'Last 7 Days' },
+    { value: '30', label: 'Last 30 Days' },
+    { value: '90', label: 'Last 90 Days' }
+];
 
-    // Mock data - replace with actual API data
-    const data = [
-        { date: '2024-11-08', sales: 4500, orders: 45 },
-        { date: '2024-11-09', sales: 5200, orders: 52 },
-        { date: '2024-11-10', sales: 4800, orders: 48 },
-        { date: '2024-11-11', sales: 6100, orders: 61 },
-        { date: '2024-11-12', sales: 5900, orders: 59 },
-        { date: '2024-11-13', sales: 6800, orders: 68 },
-        { date: '2024-11-14', sales: 7200, orders: 72 }
-    ];
-
-    const timeRanges = [
-        { value: '7days', label: 'Last 7 Days' },
-        { value: '30days', label: 'Last 30 Days' },
-        { value: '90days', label: 'Last 90 Days' },
-        { value: '12months', label: 'Last 12 Months' }
-    ];
-
+const SalesChart = ({ data, timeRange, onTimeRangeChange }) => {
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
+            minimumFractionDigits: 0
         }).format(value);
     };
 
@@ -54,13 +32,15 @@ const SalesChart = () => {
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
             return (
-                <div className={styles.customTooltip}>
-                    <p className={styles.tooltipDate}>{formatDate(label)}</p>
-                    <p className={styles.tooltipSales}>
-                        Sales: {formatCurrency(payload[0].value)}
+                <div className="bg-white p-3 rounded-lg shadow-lg border border-border">
+                    <p className="text-sm font-medium mb-1 text-muted-foreground">
+                        {formatDate(label)}
                     </p>
-                    <p className={styles.tooltipOrders}>
-                        Orders: {payload[1].value}
+                    <p className="text-sm text-blue-600 mb-1">
+                        Sales: {formatCurrency(Number(payload[0].value))}
+                    </p>
+                    <p className="text-sm text-green-600">
+                        Orders: {Number(payload[1].value)}
                     </p>
                 </div>
             );
@@ -68,11 +48,21 @@ const SalesChart = () => {
         return null;
     };
 
+    const chartData = data?.map(item => ({
+        ...item,
+        sales: Number(item.sales),
+        orders: Number(item.orders)
+    })) || [];
+
+    const totalSales = chartData.reduce((sum, item) => sum + item.sales, 0);
+    const totalOrders = chartData.reduce((sum, item) => sum + item.orders, 0);
+    const avgOrderValue = totalOrders ? totalSales / totalOrders : 0;
+
     return (
-        <Card className={styles.salesCard}>
+        <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between pb-8">
                 <CardTitle className="text-xl font-bold">Sales Overview</CardTitle>
-                <Select value={timeRange} onValueChange={setTimeRange}>
+                <Select value={timeRange} onValueChange={onTimeRangeChange}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select time range" />
                     </SelectTrigger>
@@ -86,17 +76,9 @@ const SalesChart = () => {
                 </Select>
             </CardHeader>
             <CardContent>
-                <div className={styles.chartContainer}>
-                    <ResponsiveContainer width="100%" height={400}>
-                        <LineChart
-                            data={data}
-                            margin={{
-                                top: 5,
-                                right: 30,
-                                left: 20,
-                                bottom: 5,
-                            }}
-                        >
+                <div className="h-[400px] w-full">
+                    <ResponsiveContainer>
+                        <LineChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                             <XAxis 
                                 dataKey="date" 
@@ -136,26 +118,23 @@ const SalesChart = () => {
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
-                <div className={styles.summaryStats}>
-                    <div className={styles.stat}>
-                        <span className={styles.statLabel}>Total Sales</span>
-                        <span className={styles.statValue}>
-                            {formatCurrency(data.reduce((sum, item) => sum + item.sales, 0))}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 p-4 bg-muted/50 rounded-lg">
+                    <div className="flex flex-col items-center justify-center p-2">
+                        <span className="text-sm text-muted-foreground">Total Sales</span>
+                        <span className="text-lg font-semibold mt-1">
+                            {formatCurrency(totalSales)}
                         </span>
                     </div>
-                    <div className={styles.stat}>
-                        <span className={styles.statLabel}>Total Orders</span>
-                        <span className={styles.statValue}>
-                            {data.reduce((sum, item) => sum + item.orders, 0)}
+                    <div className="flex flex-col items-center justify-center p-2">
+                        <span className="text-sm text-muted-foreground">Total Orders</span>
+                        <span className="text-lg font-semibold mt-1">
+                            {totalOrders}
                         </span>
                     </div>
-                    <div className={styles.stat}>
-                        <span className={styles.statLabel}>Avg. Order Value</span>
-                        <span className={styles.statValue}>
-                            {formatCurrency(
-                                data.reduce((sum, item) => sum + item.sales, 0) / 
-                                data.reduce((sum, item) => sum + item.orders, 0)
-                            )}
+                    <div className="flex flex-col items-center justify-center p-2">
+                        <span className="text-sm text-muted-foreground">Avg. Order Value</span>
+                        <span className="text-lg font-semibold mt-1">
+                            {formatCurrency(avgOrderValue)}
                         </span>
                     </div>
                 </div>

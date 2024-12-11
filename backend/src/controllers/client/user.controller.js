@@ -5,9 +5,9 @@ class UserController {
     static async signIn(req, res) {
         try {
             const { username, password } = req.body;
-            const token = await UserService.signIn(username, password);            
+            const { token, filteredProfile } = await UserService.signIn(username, password);            
             res.cookie('auth', token, { httpOnly: true });
-            res.status(200).json({ message: 'Login successful',token});
+            res.status(200).json({ message: 'Login successful', profile: filteredProfile });
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
@@ -15,8 +15,8 @@ class UserController {
 
     static async createAccount(req, res) {
         try {
-            const token=await UserService.createAccount(req.body); 
-            res.status(201).json({ message: 'Account created successfully',token});
+            await UserService.createAccount(req.body); 
+            res.status(201).json({ message: 'Account created successfully' });
         } catch (error) {
             res.status(400).json({ message: error.message });
         }
