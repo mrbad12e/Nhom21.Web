@@ -7,7 +7,7 @@ const authenticate = (req, res, next) => {
     const token = req.cookies.auth || req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
-        res.clearCookie('auth');
+        // res.clearCookie('auth');
         return res.status(401).json({ message: 'Access denied' });
     }
 
@@ -16,7 +16,7 @@ const authenticate = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        res.clearCookie('auth');
+        // res.clearCookie('auth');
         return res.status(401).json({ message: err.message });
     }
 };

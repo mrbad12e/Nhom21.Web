@@ -18,6 +18,7 @@ exports.login = async (req, res, next) => {
             Object.entries(profile).filter(([key]) => !fieldsToExclude.includes(key))
         );
         const accessToken = authService.generateAccessToken(admin);
+        console.log(accessToken);
         res.cookie('auth', accessToken, {
             httpOnly: true,
             secure: true, // for HTTPS

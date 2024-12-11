@@ -26,7 +26,7 @@ async function authorizeAdmin(req, res, next) {
         req.user = { ...decoded, role: user.role };
         next();
     } catch (error) {
-        res.clearCookie('auth');
+        // res.clearCookie('auth');
         return res.status(401).json({ message: 'Authentication failed' });
     }
 }
