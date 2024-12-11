@@ -24,6 +24,15 @@ app.use(cookieParser());
 app.use('/', attachedRoutes);
 app.use(errorHandler);
 
+
+// Handle preflight requests
+app.options('*', cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 const port = process.env.PORT || 3000;
 // Khởi động server
 app.listen(port, function (err) {
