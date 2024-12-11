@@ -1,56 +1,41 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import DefaultLayout from '@/components/layout/DefaultLayout';
-import Home from '@/pages/client/Home';
-import About from '@/pages/client/About';
 import Login from '@/pages/client/Login';
-import NotFound from '@/pages/client/NotFound';
-import Contact from '@/pages/client/Contact';
-import Shop from '@/pages/client/Shop';
-import Products from '@/pages/client/Products';
-import Cart from "@/pages/client/Cart";
-import Checkout from "@/pages/client/Checkout";
-import Account from "@/pages/client/Account";
-import adminRoutes from './routes/adminRoutes';
+import adminRoutes from '@/routes/adminRoutes';
+import clientRoutes from '@/routes/clientRoutes';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 
 const App = () => {
     const renderRoutes = (routes) => {
         return routes.map((route) => (
-            <Route key={route.path} path={route.path} element={route.element}>
-                {route.children &&
-                    route.children.map((childRoute) => (
-                        <Route
-                            key={childRoute.path || 'index'}
-                            index={childRoute.index}
-                            path={childRoute.path}
-                            element={childRoute.element}
-                        >
-                            {childRoute.children && renderRoutes(childRoute.children)}
-                        </Route>
-                    ))}
-            </Route>
+            <Route
+                key={route.path}
+                path={route.path}
+                element={route.element}
+                exact={route.exact}
+            />
         ));
     };
 
     return (
-        <BrowserRouter>
-            <Routes>
-                {/* Routes bọc bởi DefaultLayout */}
-                <Route path="/" element={<DefaultLayout />}>
-                    <Route index element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/products/:id" element={<Products />} />
-                    <Route path="*" element={<NotFound />} />
-                    <Route path="/shop" element={<Shop />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/account/*" element={<Account />} />
-                </Route>
-                <Route path="/login" element={<Login />} />
-                {renderRoutes(adminRoutes)}
-            </Routes>
-        </BrowserRouter>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    {/* Client routes wrapped by DefaultLayout */}
+                    <Route path="/" element={<DefaultLayout />}>
+                        {renderRoutes(clientRoutes)}
+                    </Route>
+
+                    {/* Login route */}
+                    <Route path="/login" element={<Login />} />
+
+                    {/* Admin routes */}
+                    {renderRoutes(adminRoutes)}
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
     );
 };
 

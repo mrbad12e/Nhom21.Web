@@ -25,9 +25,9 @@ const Cart = () => {
         <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
           <div className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
             <div className="space-y-6">
-              {cartItems.map((item) => (
+              {cartItems.map((item, index) => (
                 <div
-                  key={item.id}
+                key={`${item.id}-${index}`}
                   className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6"
                 >
                   <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
