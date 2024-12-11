@@ -47,3 +47,26 @@ exports.updateOrderStatus = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getAllPayment = async (req, res, next) => {
+    try {
+        const id = req.user.id;
+        const { limit, offset, status } = req.query;
+        const result = await OrderService.getAllPaymentService(id, limit, offset, status);
+        res.status(200).json({
+            message: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.updatePayment = async (req, res, next) => {
+    try {
+        const id = req.user.id;
+        const { paymentId, status, amount } = req.body;
+        const result = await OrderService.updatePaymentService(paymentId, status, amount, id);
+    } catch (error) {
+        next(error);
+    }
+};

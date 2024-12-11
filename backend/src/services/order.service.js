@@ -19,16 +19,14 @@ class OrderService {
         }
     }
 
-  // Tạo thanh toán cho đơn hàng
-  static async createPayment(orderId, amount, paymentMethod) {
-      return await Order.createPayment(orderId, amount, paymentMethod);
+    // Tạo thanh toán cho đơn hàng
+    static async createPayment(orderId, amount, paymentMethod) {
+        return await Order.createPayment(orderId, amount, paymentMethod);
+    }
 
-  }
-
-  static async getCustomerPayments(userId, limit, offset) {
-    return await CustomerPaymentModel.getCustomerPayments(userId, limit, offset);
-  
-  }
+    static async getCustomerPayments(userId, limit, offset) {
+        return await CustomerPaymentModel.getCustomerPayments(userId, limit, offset);
+    }
 
     // Lấy các sản phẩm trong đơn hàng
     static async getOrderItems(orderId) {
@@ -54,8 +52,21 @@ class OrderService {
             throw error;
         }
     }
+    static async getAllPaymentService(userId, limit, offset, status) {
+        try {
+            return await Order.getAllPayment(userId, limit, offset, status);
+        } catch (error) {
+            throw error;
+        }
+    }
 
-    
+    static async updatePaymentService(paymentId, status, amount, userId) {
+        try {
+            return await Order.updatePayment(paymentId, status, amount, userId);
+        } catch (e) {
+            throw e;
+        }
+    }
 }
 
 module.exports = OrderService;

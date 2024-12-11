@@ -1,7 +1,7 @@
 const db = require('../config/database');
 
 class Order {
-   // Kiểm tra tính hợp lệ của các thông tin đơn hàng
+    // Kiểm tra tính hợp lệ của các thông tin đơn hàng
     validate(order) {
         const validationErrors = [];
 
@@ -43,60 +43,60 @@ class Order {
     isValidPaymentStatus(status) {
         return Order.getValidPaymentStatuses().includes(status);
     }
-  // Tạo đơn hàng từ giỏ hàng
-  static async createOrderFromCart(userId, shippingAddress) {
-    try {
-      const query = `
+    // Tạo đơn hàng từ giỏ hàng
+    static async createOrderFromCart(userId, shippingAddress) {
+        try {
+            const query = `
         SELECT * from public.create_order_from_cart($1, $2);
       `;
-      const result = await db.query(query, [userId, shippingAddress]);
-  
-      return result[0].create_order_from_cart;
-    }catch (err) {
-      throw new Error(err.message);
-    }
-  }
+            const result = await db.query(query, [userId, shippingAddress]);
 
-  // Lấy thông tin đơn hàng theo ID cho người dùng cụ thể
-  static async getOrderById(orderId, userId) {
-    try {
-      const query = `
+            return result[0].create_order_from_cart;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+
+    // Lấy thông tin đơn hàng theo ID cho người dùng cụ thể
+    static async getOrderById(orderId, userId) {
+        try {
+            const query = `
       SELECT * FROM public.get_order($1, $2);
     `;
-    const result = await db.query(query, [orderId, userId]);
-    return result[0];
-    } catch (err) {
-      throw new Error(err.message);
+            const result = await db.query(query, [orderId, userId]);
+            return result[0];
+        } catch (err) {
+            throw new Error(err.message);
+        }
     }
-  }
 
-  // Tạo thanh toán cho đơn hàng
-  static async createPayment(orderId, amount, paymentMethod) {
-    try {
-      const query = `
+    // Tạo thanh toán cho đơn hàng
+    static async createPayment(orderId, amount, paymentMethod) {
+        try {
+            const query = `
         SELECT public.create_payment($1, $2, $3);
       `;
-      const result = await db.query(query, [orderId, amount, paymentMethod]);
-      return result[0].create_payment;
-    } catch (err) {
-      console.error('Create payment error:', err);
-      throw err;
+            const result = await db.query(query, [orderId, amount, paymentMethod]);
+            return result[0].create_payment;
+        } catch (err) {
+            console.error('Create payment error:', err);
+            throw err;
+        }
     }
-  }
 
-  static async getCustomerPayments(userId, limit = 50, offset = 0) {
-    try {
-      const query = `
+    static async getCustomerPayments(userId, limit = 50, offset = 0) {
+        try {
+            const query = `
         SELECT * 
         FROM public.get_customer_payments($1, $2, $3);
     `;
-        const result = await db.query(query, [userId, limit, offset]);
-        console.log(result);
-        return result[0].getCustomerPayments;
-    } catch (error) {
-        throw new Error(`Error fetching customer payments: ${error.message}`);
+            const result = await db.query(query, [userId, limit, offset]);
+            console.log(result);
+            return result[0].getCustomerPayments;
+        } catch (error) {
+            throw new Error(`Error fetching customer payments: ${error.message}`);
+        }
     }
-}
 
     static generateOrderId() {
         return Math.random().toString(36).substr(2, 16).toUpperCase();
@@ -122,6 +122,28 @@ class Order {
             } else throw new Error('Invalid order status, cannot update');
         } catch (error) {
             throw error;
+        }
+    }
+
+    static async getAllPayment(userId, limit, offset, status) {
+        try {
+            return await db.query('SELECT * FROM public.get_all_payments($1,$2,$3,$4)', [
+                userId,
+                limit,
+                offset,
+                status,
+            ]);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    static async updatePayment(paymentId, status, amount, userId) {
+        try {
+            await db.query('CALL update_payment_info($1,$2,$3,$4)', [paymentId, status, amount, userId]);
+            return true;
+        } catch (e) {
+            throw e;
         }
     }
 }
