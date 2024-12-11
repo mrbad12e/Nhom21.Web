@@ -7,16 +7,9 @@ const attachedRoutes = require('./routes/index');
 const errorHandler = require('./middleware/error.middleware');
 
 const app = express();
-const whitelist = [process.env.CLIENT_URL, 'http://localhost:5173'];
 
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: process.env.CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

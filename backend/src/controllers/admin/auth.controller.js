@@ -20,10 +20,10 @@ exports.login = async (req, res, next) => {
         const accessToken = authService.generateAccessToken(admin);
         res.cookie('auth', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // for HTTPS
+            secure: false, // for HTTPS
             sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000, // 24 hours
-            domain: 'localhost'  // Add this for local development
+            maxAge: 24 * 60 * 60 * 1000,
+            path: '/'
         });
         return res.status(200).json({
             message: 'Login successful',

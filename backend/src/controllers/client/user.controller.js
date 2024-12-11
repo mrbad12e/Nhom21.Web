@@ -8,10 +8,10 @@ class UserController {
             const { token, filteredProfile } = await UserService.signIn(username, password);            
             res.cookie('auth', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // for HTTPS
+                secure: false,
                 sameSite: 'lax',
                 maxAge: 24 * 60 * 60 * 1000, // 24 hours
-                domain: 'localhost'  // Add this for local development
+                path: '/',
             });
             res.status(200).json({ message: 'Login successful', profile: filteredProfile });
         } catch (error) {
