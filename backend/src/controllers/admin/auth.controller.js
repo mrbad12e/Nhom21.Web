@@ -21,7 +21,7 @@ exports.login = async (req, res, next) => {
         res.cookie('auth', accessToken, {
             httpOnly: true,
             secure: false, // for HTTPS
-            sameSite: 'lax',
+            sameSite: 'none', // for cross-site requests
             maxAge: 24 * 60 * 60 * 1000,
             path: '/'
         });
