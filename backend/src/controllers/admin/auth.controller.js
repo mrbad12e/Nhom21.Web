@@ -18,15 +18,17 @@ exports.login = async (req, res, next) => {
         );
         const accessToken = authService.generateAccessToken(admin);
         res.cookie('auth', accessToken, {
-            httpOnly: false,
+            httpOnly: true,
             secure: true, // for HTTPS
             sameSite: 'lax', // for local development
             maxAge: 24 * 60 * 60 * 1000,
             path: '/',
+            domain: '.onrender.com', // for deployment
         });
         return res.status(200).json({
             message: 'Login successful',
             profile: filteredProfile,
+            token: accessToken,
         });
     } catch (err) {
         next(new Error(err.message));
