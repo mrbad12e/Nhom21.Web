@@ -36,9 +36,7 @@ const clientRoutes = [
     {
         path: '/cart',
         element: (
-            <ProtectedRoute>
                 <Cart />
-            </ProtectedRoute>
         ),
     },
     {

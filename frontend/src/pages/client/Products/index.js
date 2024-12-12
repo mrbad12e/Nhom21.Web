@@ -5,16 +5,20 @@ export const useProductLogic = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  const handleBuyNow = (product, quantity) => {
+  const handleBuyNow = async (product, quantity) => {
     if (product && quantity > 0) {
-      addToCart({
-        id: product._id,
-        name: product.title,
-        image: product.image,
-        price: product.basePrice,
-        quantity,  // Sử dụng số lượng người dùng đã chọn
-      });
-      navigate("/cart");
+      try {
+        await addToCart({
+          id: product.product_id,
+          name: product.product_name,
+          image: product.product_image_urls?.[0] || '',
+          price: product.product_price,
+          quantity,
+        });
+        navigate("/cart"); // Redirect to cart after adding
+      } catch (error) {
+        alert("Error adding product to cart. Please try again.");
+      }
     } else {
       alert("Invalid product or quantity");
     }
@@ -25,4 +29,4 @@ export const useProductLogic = () => {
   };
 };
 
-export { default } from '@/pages/client/Products/Products';
+export { default } from "@/pages/client/Products/Products";
