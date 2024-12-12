@@ -1,51 +1,38 @@
+import React, { useState } from 'react';
 import BannerImg from '@/assets/shoppage/banner.jpg';
 import FilterBar from '@/components/common/FilterBar';
 import { Pagination } from '@mui/material';
-import { useState } from 'react';
 import { FaBars, FaFilter, FaTh } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import useProducts from '@/hooks/useProducts';
+import useAllProducts from '@/hooks/useAllProducts';
 
 const Shop = () => {
-  const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(8);
-  const [currentPage, setCurrentPage] = useState(1); // Start at page 1
-  const [sortOption, setSortOption] = useState("id");
-  const [searchQuery, setSearchQuery] = useState("");
-  
-   // Track selected category as an integer ID
-   const [selectedCategoryId, setSelectedCategoryId] = useState(null); 
-   const [priceRange, setPriceRange] = useState([0, 10000]);
-   const [selectedColors, setSelectedColors] = useState([]);
-   const [selectedSizes, setSelectedSizes] = useState([]);
+    const [isFilterVisible, setIsFilterVisible] = useState(false);
+    const [itemsPerPage, setItemsPerPage] = useState(8);
+    const [currentPage, setCurrentPage] = useState(1); // Start at page 1
+    const [sortOption, setSortOption] = useState("id");
+    const [searchQuery, setSearchQuery] = useState("");
+    
+    // Track selected category as an integer ID
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null); 
+    const [priceRange, setPriceRange] = useState([0, 10000]);
+    const [selectedColors, setSelectedColors] = useState([]);
+    const [selectedSizes, setSelectedSizes] = useState([]);
 
-   // Fetch products and pagination info
-   const { products, pagination, loading, error } = useProducts(
-     currentPage,
-     itemsPerPage,
-     searchQuery,
-     selectedCategoryId,
-     priceRange[0],
-     priceRange[1],
-     sortOption
-   );
+    // Fetch products and pagination info
+    const { products, pagination, loading, error } = useAllProducts(
+        currentPage,
+        itemsPerPage,
+        searchQuery,
+        selectedCategoryId,
+        priceRange[0],
+        priceRange[1],
+        sortOption
+    );
 
-   // Handle loading and error states
-   if (loading) {
-     return (
-       <div className="min-h-screen flex justify-center items-center">
-         <p>Loading products...</p>
-       </div>
-     );
-   }
-
-   if (error) {
-     return (
-       <div className="min-h-screen flex justify-center items-center">
-         <p>{error}</p>
-       </div>
-     );
-   }
+    // Handle loading and error states
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
 
     return (
         <div className="text-white min-h-screen">
@@ -129,50 +116,54 @@ const Shop = () => {
          )}
 
                 {/* Product Grid */}
-<div className="flex-1 container mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-    {products.map((product) => (
-        <div key={product.product_id} className="bg-white shadow-sm border rounded-lg p-4 max-h-96 hover:shadow-lg transition-shadow duration-300">
-            {/* Image */}
-            <Link to={`/products/${product.product_id}`} className="block">
-                {product.product_image_urls ? (
-                    <img
-                        src={product.product_image_urls[0]} // Accessing first image in array
-                        alt={product.product_name}
-                        className="h-48 w-full object-cover mb-4 rounded hover:scale-105 transition-transform duration-300"
-                    />
-                ) : (
-                    <div className="h-48 w-full bg-gray-300 mb-4 rounded"></div> // Placeholder if no image is available
-                )}
-            </Link>
+         <div className="flex-1 container mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+           {products.map((product) => (
+             <div key={product.product_id} className="bg-white shadow-sm border rounded-lg p-4 max-h-96 hover:shadow-lg transition-shadow duration-300">
+                            {/* Image */}
+                            <Link to={`/products/${product.product_id}`} className="block">
+                                {product.product_image_urls ? (
+                                    <img
+                                        src={product.product_image_urls}
+                                        alt={product.product_name}
+                                        className="h-48 w-full object-cover mb-4 rounded hover:scale-105 transition-transform duration-300"
+                                    />
+                                ) : (
+                                    <div className="h-48 w-full bg-gray-300 mb-4 rounded"></div> // Placeholder if no image is available
+                                )}
+                            </Link>
 
-            {/* Title */}
-            <Link to={`/products/${product.product_id}`} className="block mb-2">
-                <p className="text-gray-800 text-xl font-semibold leading-tight hover:text-rose-600 transition-colors duration-200">
-                    {product.product_name}
-                </p>
-            </Link>
+                            {/* Title */}
+                            <Link to={`/products/${product.product_id}`} className="block mb-2">
+                                <p className="text-gray-800 text-xl font-semibold leading-tight hover:text-rose-600 transition-colors duration-200">
+                                    {product.product_name}
+                                </p>
+                            </Link>
 
-            {/* Price and Description */}
-            <div className="mb-2 flex items-start justify-between gap-2">
-                <p className="text-rose-600 text-xl font-semibold">
-                    ${parseFloat(product.product_price).toFixed(2)}
-                </p>
-            </div>
-            <p className="text-gray-600 leading-normal font-light">{product.product_description}</p>
+                            {/* Price and Description */}
+                            <div className="mb-2 flex items-start justify-between gap-2">
+                                <p className="text-rose-600 text-xl font-semibold">
+                                    ${parseFloat(product.product_price).toFixed(2)}
+                                </p>{' '}
+                                {/* Format price */}
+                            </div>
+                            <p className="text-gray-600 leading-normal font-light">{product.product_description}</p>
 
-            {/* Add to Cart Button */}
-            {product.product_stock > 0 ? (
-                <button className="mt-3 w-full bg-rose500 text-white py-2 rounded-lg hover:bg-rose600 transition-colors duration-200">
-                    Add to Cart
-                </button>
-            ) : (
-                <button disabled className="mt-3 w-full bg-gray500 text-white py-2 rounded-lg cursor-notallowed">
-                    Out of Stock
-                </button> // Disable button if out of stock
-            )}
-        </div>
-    ))}
-</div>
+                            {/* Add to Cart Button */}
+                            {product.product_stock > 0 ? (
+                                <button className="mt-3 w-full bg-rose500 text-white py-2 rounded-lg hover:bg-rose600 transition-colors duration-200">
+                                    Add to Cart
+                                </button>
+                            ) : (
+                                <button
+                                    disabled
+                                    className="mt-3 w-full bg-gray500 text-white py-2 rounded-lg cursor-notallowed"
+                                >
+                                    Out of Stock
+                                </button> // Disable button if out of stock
+                            )}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Pagination */}

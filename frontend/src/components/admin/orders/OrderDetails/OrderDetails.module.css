@@ -1,5 +1,5 @@
 .container {
-    @apply space-y-6;
+    @apply w-full max-w-7xl mx-auto;
 }
 
 .header {
@@ -15,7 +15,7 @@
 }
 
 .gridContainer {
-    @apply grid gap-6 grid-cols-1 md:grid-cols-2;
+    @apply p-6 space-y-8;
 }
 
 .fullWidth {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { format } from 'date-fns';
 import { ChevronDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -39,7 +39,7 @@ const UserTable = ({
     };
 
     if (loading) {
-        return <div className="p-8 text-center">Loading...</div>;
+        return <LoadingSpinner/>
     }
 
     return (

@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import BannerImg from "@/assets/shoppage/banner.jpg";
 import { Link, useParams } from "react-router-dom";
-import useProducts from "@/hooks/useProducts";
+import useProducts from "@/hooks/useAllProducts";
 
 const Banner = () => {
   const { id } = useParams();

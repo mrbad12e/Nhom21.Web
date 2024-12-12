@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from '@/utils/constants';
+import axiosInstance from "@/services/api";
 
-const useProducts = (currentPage = 1, itemsPerPage = 10, searchQuery = "", categoryName = null, minPrice = null, maxPrice = null, sortBy = 'id', sortOrder = 'asc') => {
+const useAllProducts = (currentPage = 1, itemsPerPage = 10, searchQuery = "", categoryName = null, minPrice = null, maxPrice = null, sortBy = 'id', sortOrder = 'asc') => {
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(true);
@@ -14,10 +13,10 @@ const useProducts = (currentPage = 1, itemsPerPage = 10, searchQuery = "", categ
       setError(null);
 
       try {
-        const response = await axios.get(`${API_URL}/products`, {
+        const response = await axiosInstance.get(`/products`, {
           params: {
             search: searchQuery,
-            categoryId: categoryName || null, // Pass category name if selected
+            categoryId: categoryName || null,
             minPrice,
             maxPrice,
             page: currentPage,
@@ -34,7 +33,7 @@ const useProducts = (currentPage = 1, itemsPerPage = 10, searchQuery = "", categ
         setProducts(fetchedProducts); // Set products from response
         setPagination(fetchedPagination); // Set pagination info from response
       } catch (err) {
-        if (axios.isAxiosError(err)) {
+        if (axiosInstance.isAxiosError(err)) {
           console.error("Axios error:", err.response ? err.response.data : err.message);
           setError(err.response?.data?.message || "Failed to fetch products. Please try again.");
         } else {
@@ -52,4 +51,4 @@ const useProducts = (currentPage = 1, itemsPerPage = 10, searchQuery = "", categ
   return { products, pagination, loading, error }; // Return pagination info along with products
 };
 
-export default useProducts;
+export default useAllProducts;

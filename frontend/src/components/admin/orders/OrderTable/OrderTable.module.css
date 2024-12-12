@@ -1,55 +1,75 @@
-.filters {
-    @apply flex flex-col md:flex-row justify-between gap-4 mb-6;
+.container {
+  @apply relative rounded-md border;
 }
 
-.searchContainer {
-    @apply relative flex-1;
+.headerCell {
+  @apply cursor-pointer;
 }
 
-.searchIcon {
-    @apply absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground;
+.headerContent {
+  @apply flex items-center;
 }
 
-.searchInput {
-    @apply pl-9;
+.headerContentRight {
+  @apply flex items-center justify-end;
 }
 
-.filterContainer {
-    @apply flex items-center gap-2;
+.sortIcon {
+  @apply ml-2 h-4 w-4;
 }
 
-.tableContainer {
-    @apply relative overflow-x-auto;
+.row {
+  @apply hover:bg-muted/50;
 }
 
-.tableRow {
-    @apply hover:bg-muted/50;
+.header {
+  @apply bg-muted/50;
+}
+
+.idCell {
+  @apply font-medium;
 }
 
 .customerInfo {
-    @apply flex flex-col;
+  @apply flex flex-col;
+}
+
+.customerName {
+  @apply font-medium;
 }
 
 .customerEmail {
-    @apply text-sm text-muted-foreground;
+  @apply text-sm text-muted-foreground;
+}
+
+.address {
+  @apply max-w-[200px] truncate;
+}
+
+.statusContainer {
+  @apply flex flex-col gap-1;
+}
+
+.total {
+  @apply text-right font-medium;
 }
 
 .actionButton {
-    @apply hover:bg-muted;
+  @apply h-8 w-8 p-0;
 }
 
-.pagination {
-    @apply flex flex-col md:flex-row items-center justify-between gap-4 mt-4;
+.actionMenu {
+  @apply w-[160px];
 }
 
-.paginationInfo {
-    @apply text-sm text-muted-foreground;
+.emptyState {
+  @apply h-32 text-center text-muted-foreground;
 }
 
-.paginationControls {
-    @apply flex items-center gap-2;
+.icon {
+  @apply mr-2 h-4 w-4;
 }
 
-.pageNumbers {
-    @apply text-sm mx-2;
+.deleteAction {
+  @apply text-red-600;
 }

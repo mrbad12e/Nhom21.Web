@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
-import { API_URL } from '@/utils/constants';
+import axiosInstance from '@/services/api';
 
 const CartContext = createContext();
 
@@ -13,7 +12,7 @@ export const CartProvider = ({ children }) => {
         const fetchCartItems = async () => {
             try {
                 const userId = localStorage.getItem('userId'); // Get user ID from local storage
-                const response = await axios.get(`${API_URL}/client/cart/info`, {
+                const response = await axiosInstance.get(`/client/cart/info`, {
                     headers: {
                         Authorization: `Bearer ${userId}`, // Include authorization header if needed
                     },
@@ -38,8 +37,8 @@ export const CartProvider = ({ children }) => {
     const addToCart = async (item) => {
         try {
             const userId = localStorage.getItem('userId');
-            await axios.post(
-                `${API_URL}/client/cart/add`,
+            await axiosInstance.post(
+                `/client/cart/add`,
                 {
                     productId: item.id,
                     quantity: item.quantity,
@@ -78,8 +77,8 @@ export const CartProvider = ({ children }) => {
             const newQuantity = currentItem.quantity + 1;
 
             // Call your backend API to update the quantity
-            await axios.put(
-                `${API_URL}/client/cart/update`,
+            await axiosInstance.put(
+                `/client/cart/update`,
                 {
                     productId,
                     quantity: newQuantity,
@@ -109,8 +108,8 @@ export const CartProvider = ({ children }) => {
                 const newQuantity = currentItem.quantity - 1;
 
                 // Call your backend API to update the quantity
-                await axios.put(
-                    `${API_URL}/client/cart/update`,
+                await axiosInstance.put(
+                    `/client/cart/update`,
                     {
                         productId,
                         quantity: newQuantity,
@@ -135,7 +134,7 @@ export const CartProvider = ({ children }) => {
     const removeFromCart = async (productId) => {
         try {
             const userId = localStorage.getItem('userId');
-            await axios.delete(`${API_URL}/client/cart/remove`, {
+            await axiosInstance.delete(`/client/cart/remove`, {
                 headers: {
                     Authorization: `Bearer ${userId}`,
                 },

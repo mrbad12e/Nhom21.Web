@@ -15,7 +15,10 @@ const productStorage = multer.diskStorage({
 
 const productUpload = multer({
     storage: productStorage,
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB per file
+        fieldSize: 50 * 1024 * 1024 // 50MB for form fields (including base64)
+    },
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png/;
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());

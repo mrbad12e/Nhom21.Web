@@ -1,5 +1,5 @@
 .container {
-    @apply w-full max-w-7xl mx-auto;
+    @apply w-full max-w-7xl mx-auto p-6 space-y-6;
 }
 
 .header {
@@ -7,41 +7,33 @@
 }
 
 .title {
-    @apply text-2xl font-bold;
+    @apply text-2xl font-bold tracking-tight;
+}
+
+.exportButton {
+    @apply hidden md:flex;
 }
 
 .filters {
-    @apply flex gap-4 mb-6;
-}
-
-.searchContainer {
-    @apply relative flex-1;
-}
-
-.searchIcon {
-    @apply absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground;
-}
-
-.searchInput {
-    @apply pl-10;
+    @apply flex justify-end mb-6;
 }
 
 .statusFilter {
     @apply w-[180px];
 }
 
-.tableContainer {
-    @apply bg-card rounded-lg border shadow-sm;
+.error {
+    @apply text-red-500 p-4 rounded-md bg-red-50 border border-red-200;
 }
 
-.customerInfo {
-    @apply flex flex-col;
+.pagination {
+    @apply flex flex-col md:flex-row items-center justify-between gap-4 mt-6;
 }
 
-.customerName {
-    @apply font-medium;
-}
-
-.customerEmail {
+.pageInfo {
     @apply text-sm text-muted-foreground;
+}
+
+.pageControls {
+    @apply flex gap-2;
 }

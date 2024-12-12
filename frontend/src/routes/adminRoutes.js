@@ -2,18 +2,25 @@
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { Dashboard } from '@/pages/admin/Dashboard';
 import { Navigate, Outlet } from 'react-router-dom';
-import { OrderTable } from '@/components/admin/orders/OrderTable';
-import { OrderDetails } from '@/components/admin/orders/OrderDetails';
+import { ProtectedRoute } from './protectedRoute';
+import { OrderDetails } from '@/pages/admin/Orders/OrderDetails';
 import { ProductList } from '@/pages/admin/Products/ProductList';
 import { AddProduct } from '@/pages/admin/Products/AddProduct';
 import { EditProduct } from '@/pages/admin/Products/EditProduct';
 import { UserList } from '@/pages/admin/Users/UserList';
 import { UserDetails } from '@/pages/admin/Users/UserDetails';
+import { OrderList } from '@/pages/admin/Orders/OrderList';
 
 const adminRoutes = [
     {
         path: '/admin',
-        element: <AdminLayout><Outlet /></AdminLayout>,
+        element: (
+            <ProtectedRoute roles={['ADMIN']}>
+                <AdminLayout>
+                    <Outlet />
+                </AdminLayout>
+            </ProtectedRoute>
+        ),
         children: [
             {
                 path: '',
@@ -49,7 +56,7 @@ const adminRoutes = [
                 children: [
                     {
                         path: '',
-                        element: <OrderTable />
+                        element: <OrderList />
                     },
                     {
                         path: ':id',

@@ -8,6 +8,9 @@ const errorHandler = require('./middleware/error.middleware');
 
 const app = express();
 
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
+app.use(express.raw({ limit: '100mb' }));
 app.set('trust proxy', 1);
 
 const corsOptions = {
@@ -21,7 +24,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 // Middleware để parse dữ liệu JSON trong request body (tích hợp sẵn trong express)
 app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 

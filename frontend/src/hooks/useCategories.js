@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from '@/utils/constants';
+import axiosInstance from "@/services/api";
 
 const useCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -13,7 +12,7 @@ const useCategories = () => {
       setError(null);
 
       try {
-        const response = await axios.get(`${API_URL}/categories`, {
+        const response = await axiosInstance.get(`/categories`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -22,7 +21,7 @@ const useCategories = () => {
         // Set categories from response
         setCategories(response.data.categories); // Adjust according to your API response structure
       } catch (err) {
-        if (axios.isAxiosError(err)) {
+        if (axiosInstance.isAxiosError(err)) {
           console.error("Axios error:", err.response ? err.response.data : err.message);
         } else {
           console.error("Unexpected error:", err);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Bell, User, Settings, Calendar, Users, LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Bell, User } from 'lucide-react';
 import {
     CommandDialog,
     CommandEmpty,
@@ -9,7 +9,6 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-    CommandSeparator,
 } from '@/components/ui/command';
 import {
     DropdownMenu,
@@ -19,24 +18,29 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { API_URL } from '@/utils/constants';
-import axios from 'axios';
+import axiosInstance from '@/services/api';
 import styles from './AdminHeader.module.css';
 
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true
-});
+const searchItems = [
+    { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+    { value: 'products', label: 'Products', icon: ShoppingCart, path: '/admin/products' },
+    { value: 'orders', label: 'Orders', icon: Package, path: '/admin/orders' },
+    { value: 'users', label: 'Users', icon: Users, path: '/admin/users' },
+];
 
 const AdminHeader = () => {
     const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);
     const [profile, setProfile] = React.useState(null);
+
+    const handleCommandSelect = (path) => {
+        setOpen(false);
+        navigate(path);
+    };
 
     React.useEffect(() => {
         const storedProfile = localStorage.getItem('profile');
@@ -51,8 +55,9 @@ const AdminHeader = () => {
 
     const handleLogout = async () => {
         try {
-            await api.get('/admin/auth/logout');
+            await axiosInstance.get('/admin/auth/logout');
             localStorage.removeItem('profile');
+            localStorage.removeItem('auth');
             navigate('/');
         } catch (error) {
             console.error('Logout failed:', error.response?.data?.message || 'An error occurred');
@@ -81,41 +86,27 @@ const AdminHeader = () => {
                     )}
                     onClick={() => setOpen(true)}
                 >
-                    <span className="hidden lg:inline-flex">Search everything...</span>
+                    <span className="hidden lg:inline-flex">Search admin pages...</span>
                     <span className="inline-flex lg:hidden">Search...</span>
                     <kbd className="pointer-events-none absolute right-1.5 top-2 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100 sm:flex">
                         <span className="text-xs">⌘</span>K
                     </kbd>
                 </Button>
 
-                <CommandDialog open={open} onOpenChange={setOpen}>
-                    <CommandInput placeholder="Type a command or search..." />
+                <CommandDialog open={open} onOpenChange={setOpen} className="rounded-lg border shadow-md">
+                    <DialogTitle asChild className="px-3 py-3">
+                        <VisuallyHidden>Search Admin Pages</VisuallyHidden>
+                    </DialogTitle>
+                    <CommandInput placeholder="Type a command or search..." className="border-none focus:ring-0"/>
                     <CommandList>
                         <CommandEmpty>No results found.</CommandEmpty>
-                        <CommandGroup heading="Suggestions">
-                            <CommandItem>
-                                <LayoutDashboard className="mr-2 h-4 w-4" />
-                                <span>Dashboard</span>
-                            </CommandItem>
-                            <CommandItem>
-                                <Users className="mr-2 h-4 w-4" />
-                                <span>Users</span>
-                            </CommandItem>
-                            <CommandItem>
-                                <Calendar className="mr-2 h-4 w-4" />
-                                <span>Calendar</span>
-                            </CommandItem>
-                        </CommandGroup>
-                        <CommandSeparator />
-                        <CommandGroup heading="Settings">
-                            <CommandItem>
-                                <Settings className="mr-2 h-4 w-4" />
-                                <span>Settings</span>
-                            </CommandItem>
-                            <CommandItem>
-                                <User className="mr-2 h-4 w-4" />
-                                <span>Profile</span>
-                            </CommandItem>
+                        <CommandGroup heading="Pages">
+                            {searchItems.map((item) => (
+                                <CommandItem key={item.value} onSelect={() => handleCommandSelect(item.path)}>
+                                    <item.icon className="mr-2 h-4 w-4" />
+                                    <span>{item.label}</span>
+                                </CommandItem>
+                            ))}
                         </CommandGroup>
                     </CommandList>
                 </CommandDialog>
@@ -130,7 +121,7 @@ const AdminHeader = () => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-80">
-                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="flex flex-col items-start">
                             <p className="font-medium">New User Registration</p>
@@ -152,9 +143,7 @@ const AdminHeader = () => {
                         <Button variant="ghost" className={styles.profile}>
                             <Avatar className="h-8 w-8">
                                 {profile?.image && <AvatarImage src={profile.image} alt={profile.username} />}
-                                <AvatarFallback>
-                                    {getInitials(profile?.first_name, profile?.last_name)}
-                                </AvatarFallback>
+                                <AvatarFallback>{getInitials(profile?.first_name, profile?.last_name)}</AvatarFallback>
                             </Avatar>
                             <span className={styles.profileName}>
                                 {profile?.first_name} {profile?.last_name}

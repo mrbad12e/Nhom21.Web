@@ -41,7 +41,7 @@ class OrderService {
 
     static async getAllOrdersService(options) {
         try {
-            return await Order.getAllOrder(option);
+            return await Order.getAllOrder(options);
         } catch (error) {
             throw error;
         }

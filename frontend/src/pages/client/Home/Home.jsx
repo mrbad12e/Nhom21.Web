@@ -188,11 +188,13 @@ const Home = () => {
                     {category.description}
                   </p>
                   <a
-              href="/shop" // Updated to redirect to /shop
-              className="mt-4 inline-block text-sm font-medium text-rose-500 hover:underline"
-            >
-              Shop Now →
-            </a>
+                    href={`#${category.name
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    className="mt-4 inline-block text-sm font-medium text-rose-500 hover:underline"
+                  >
+                    Shop Now →
+                  </a>
                 </SwiperSlide>
               ))}
             </Swiper>

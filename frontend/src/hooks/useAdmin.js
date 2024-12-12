@@ -1,15 +1,6 @@
 // hooks/useDashboard.js
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_URL } from '@/utils/constants';
-
-const api = axios.create({
-    baseURL: API_URL,
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+import axiosInstance from '@/services/api';
 
 export const useRecentOrders = (limit = 10) => {
     const [data, setData] = useState([]);
@@ -20,7 +11,7 @@ export const useRecentOrders = (limit = 10) => {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
-                const response = await api.get('/admin/dashboard/recent-order', {
+                const response = await axiosInstance.get('/admin/dashboard/recent-order', {
                     params: { limit },
                 });
                 setData(response.data);
@@ -46,7 +37,7 @@ export const useSalesChart = (days = 7) => {
         const fetchSales = async () => {
             try {
                 setLoading(true);
-                const response = await api.get('/admin/dashboard/stat-chart', {
+                const response = await axiosInstance.get('/admin/dashboard/stat-chart', {
                     params: { days },
                 });
                 setData(response.data);
@@ -72,7 +63,7 @@ export const useStats = () => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                const response = await api.get('/admin/dashboard/stat-overview');
+                const response = await axiosInstance.get('/admin/dashboard/stat-overview');
                 setData(response.data);
             } catch (err) {
                 setError(err.response?.data?.message || 'Failed to fetch stats');

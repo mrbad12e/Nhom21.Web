@@ -66,19 +66,21 @@ class Product {
     static async updateProduct(data) {
         try {
             const id = data.id;
-            const { name = null, description = null, price = null, stock = null, categoryId = null } = data;
+            
+            const { name = null, description = null, price = null, stock = null, categoryId = null, imageUrls = null } = data;
 
             if (!id) {
                 throw new Error('Product ID is required');
             }
 
-            const result = await db.query('select * from update_product($1, $2, $3, $4, $5, $6)', [
+            const result = await db.query('select * from update_product($1, $2, $3, $4, $5, $6, $7)', [
                 id,
                 name || null,
                 description || null,
                 price || null,
                 stock || null,
                 categoryId || null,
+                imageUrls || null
             ]);
             if (!result || !result[0]) {
                 throw new Error('Failed to update product');

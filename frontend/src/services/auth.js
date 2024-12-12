@@ -1,10 +1,9 @@
 // src/utils/auth.js
-import axios from 'axios';
-import { API_URL } from '@/utils/constants';
+import axiosInstance from '@/services/api';
 
 export const checkAuth = async () => {
     try {
-        const response = await axios.get(`${API_URL}/client/check`, { withCredentials: true });
+        const response = await axiosInstance.get(`/client/check`, { withCredentials: true });
         return response.data.user; // Token hợp lệ
     } catch (error) {
         return null; // Token không hợp lệ hoặc đã hết hạn
@@ -13,7 +12,7 @@ export const checkAuth = async () => {
 
 export const logout = async () => {
     try {
-        await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
+        await axiosInstance.post(`/auth/logout`, {}, { withCredentials: true });
     } catch (error) {
         console.error('Logout failed:', error);
     }

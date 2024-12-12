@@ -1,9 +1,11 @@
 import React from "react";
 import { useCart } from "@/components/features/cart/CartContext/CartContext";
 import { FaTrashAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const CartPopup = ({ onClose }) => {
   const { cartItems, removeFromCart } = useCart(); // Get cartItems and removeFromCart from CartContext
+  const navigate = useNavigate(); // Initialize navigate
 
   return (
     <div className="absolute top-16 right-4 bg-gradient-to-b from-black from-10% via-zinc-700 to-neutral-700 text-white rounded-lg shadow-lg w-80 p-4 z-50">
@@ -44,9 +46,12 @@ const CartPopup = ({ onClose }) => {
           <p className="text-gray-600 text-center">Your cart is empty.</p>
         )}
 
-        {/* Close Button */}
-        <button onClick={onClose} className="mt-4 py-2 px-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition">
-          Close
+        {/* Go to Cart Button */}
+        <button 
+          onClick={() => navigate('/cart')} // Navigate to the /cart route
+          className="mt-4 py-2 px-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition"
+        >
+          Go to Cart
         </button>
       </div>
     </div>

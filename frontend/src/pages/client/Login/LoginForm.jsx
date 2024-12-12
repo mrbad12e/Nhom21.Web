@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { API_URL } from '@/utils/constants';
-
-// Configure axios defaults
-axios.defaults.withCredentials = true; // Enable sending cookies with requests
+import axiosInstance from '@/services/api';
 
 export default function LoginForm({ switchToRegister, switchToForgotPassword }) {
     const navigate = useNavigate();
@@ -31,14 +27,18 @@ export default function LoginForm({ switchToRegister, switchToForgotPassword }) 
         setIsLoading(true);
 
         try {
-            const endpoint =
-                selectedRole === 'ADMIN' ? `${API_URL}/admin/auth/login` : `${API_URL}/client/signin`;
+            const endpoint = selectedRole === 'ADMIN' ? `/admin/auth/login` : `/client/signin`;
 
-            const response = await axios.post(endpoint, {
+            const response = await axiosInstance.post(endpoint, {
                 username: formData.username,
                 password: formData.password,
                 remember: formData.rememberMe,
             });
+
+            if (response.data.token){
+                const token = response.data.token;
+                localStorage.setItem('auth', token);
+            }
 
             if (response.data.profile) {
                 localStorage.setItem('profile', JSON.stringify(response.data.profile));

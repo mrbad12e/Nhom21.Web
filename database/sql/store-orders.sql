@@ -272,8 +272,8 @@ $$ language plpgsql;
 -- Admin + Customer
 -- Order
 create or replace function public.get_order(
+    p_user_id varchar(255),
     p_order_id char(16), 
-    p_user_id varchar(255)
 ) 
 returns table (
     id char(16),
@@ -354,12 +354,11 @@ returns table (
     order_status public.order_status,
     payment_status public.payment_status,
     created_at timestamp,
-    customer_info json -- Added to include customer information
+    customer_info json
 ) as $$
 declare
     v_user_role public.user_role;
 begin
-    -- Validate user exists and is admin
     select u.role into v_user_role 
     from public.users u
     where u.id = p_user_id;
@@ -381,6 +380,7 @@ begin
             'first_name', u.first_name,
             'last_name', u.last_name
         ) as customer_info
+        
     from public.orders o
     join public.users u on u.id = o.customer_id
     where (p_status is null or o.order_status = p_status)

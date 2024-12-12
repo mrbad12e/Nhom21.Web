@@ -1,8 +1,7 @@
 export {default} from '@/components/common/ProfilePopup/ProfilePopup';
 
-import axios from 'axios';
+import axiosInstance from '@/services/api';
 import { useNavigate } from "react-router-dom";
-import { API_URL } from '@/utils/constants';
 
 export const useProfilePopupLogic = () => {
 
@@ -21,16 +20,21 @@ export const useProfilePopupLogic = () => {
   };
 
   const handleLogout = async () => {
-    try {
-      // Gửi yêu cầu xóa token từ cookies (đăng xuất)
-      await axios.get(`${API_URL}/client/signout`, {}, { withCredentials: true });
+    const navigate = useNavigate(); // Initialize navigate
 
-      // Sau khi logout, điều hướng về trang đăng nhập
-      navigate("/login");
+    localStorage.removeItem('auth'); // Remove authentication token
+    localStorage.removeItem('profile'); // Remove user profile data
+    try {
+        // Send request to delete token from cookies (logout)
+        await axiosInstance.get(`/client/signout`, { withCredentials: true });
+
+        // After logout, navigate to the login page
+        navigate("/login");
     } catch (error) {
-      console.error("Logout failed:", error);
+        console.error("Logout failed:", error);
+        // Optionally, you can add user feedback here, e.g., alert or toast notification
     }
-  };
+};
   
   return {
     handleNavigateToProfile,

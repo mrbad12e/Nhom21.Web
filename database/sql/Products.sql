@@ -148,14 +148,15 @@ end;
 $$ language plpgsql;
 
 -- UPDATE product with validation
-drop function if exists update_product(integer, varchar, text, decimal, integer, integer);
+drop function if exists update_product(integer, varchar, text, decimal, integer, integer, text[]);
 create or replace function update_product(
     p_product_id integer,
     p_name varchar default null,
     p_description text default null,
     p_price decimal(10,2) default null,
     p_stock integer default null,
-    p_category_id integer default null
+    p_category_id integer default null,
+    p_image_urls text[] default null
 ) returns table (
     product_id integer,
     product_name varchar,
@@ -181,7 +182,8 @@ begin
         description = coalesce(p_description, description),
         price = coalesce(p_price, price),
         stock = coalesce(p_stock, stock),
-        category_id = coalesce(p_category_id, category_id)
+        category_id = coalesce(p_category_id, category_id),
+        image_urls = coalesce(p_image_urls, image_urls)
     where id = p_product_id
     returning products.id as product_id, products.name as product_name, products.price as product_price;
 end;
