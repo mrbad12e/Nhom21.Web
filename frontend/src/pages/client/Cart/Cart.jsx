@@ -3,8 +3,20 @@ import { useCart } from '@/components/features/cart/CartContext/CartContext';
 import { FaHeart, FaTimes, FaMinus, FaPlus, FaCartPlus, FaLongArrowAltRight } from 'react-icons/fa';
 import { useCartLogic } from '@/pages/client/Cart/index';
 import { Link } from 'react-router-dom';
+import useAllProducts from '@/hooks/useAllProducts';
 const Cart = () => {
     const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } = useCart();
+    const { products, loading, error } = useAllProducts();
+
+    const relatedProductIds = cartItems.map((item) => item.category_id); // Assuming category_id is available
+    const relatedProducts = products
+        .filter(
+            (product) =>
+                relatedProductIds.includes(product.category_id) &&
+                !cartItems.some((item) => item.product_id === product.product_id)
+        )
+        .slice(0, 4); // Get only up to 4 related products
+
     const handleNavigateToCheckout = useCartLogic();
 
     // Calculate total price
@@ -94,170 +106,61 @@ const Cart = () => {
                                 </div>
                             ))}
                         </div>
-                        <div className="hidden xl:mt-8 xl:block">
-                            <h3 className="text-2xl font-semibold text-gray-900">People also bought</h3>
-                            <div className="mt-6 grid grid-cols-3 gap-4 sm:mt-8">
-                                <div className="space-y-6 overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm ">
-                                    <a href="#" className="overflow-hidden rounded">
-                                        <img
-                                            className="mx-auto h-44 w-44"
-                                            src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"
-                                            alt="imac image"
-                                        />
-                                    </a>
-                                    <div>
-                                        <a
-                                            href="#"
-                                            className="text-lg font-semibold leading-tight text-gray-900 hover:underline "
-                                        >
-                                            iMac 27”
-                                        </a>
-                                        <p className="mt-2 text-base font-normal text-gray-500 ">
-                                            This generation has some improvements, including a longer continuous battery
-                                            life.
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-lg font-bold text-gray-900 ">
-                                            <span className="line-through"> $399,99 </span>
-                                        </p>
-                                        <p className="text-lg font-bold leading-tight text-red-600 ">$299</p>
-                                    </div>
-                                    <div className="mt-6 flex items-center gap-2.5">
-                                        <button
-                                            data-tooltip-target="favourites-tooltip-1"
-                                            type="button"
-                                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white p-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-rose-500 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100"
-                                        >
-                                            <FaHeart className="h-5 w-5 text-gray-900" />
-                                        </button>
+                        {/* People Also Bought Section */}
+                        {relatedProducts.length > 0 && (
+                            <>
+                                <h3 className="text-2xl font-semibold text-gray-900 mt-8">People Also Bought</h3>
+                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {relatedProducts.map((product) => (
                                         <div
-                                            id="favourites-tooltip-1"
-                                            role="tooltip"
-                                            className="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white opacity-0 shadow-sm transition-opacity duration-300 "
+                                            key={product.product_id}
+                                            className="bg-white shadow-sm border rounded-lg p-4"
                                         >
-                                            Add to favourites
-                                            <div className="tooltip-arrow" data-popper-arrow></div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="inline-flex w-full items-center justify-center rounded-lg bg-rose-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-rose-600 focus:outline-none focus:ring-4 focus:ring-rose-300"
-                                        >
-                                            <FaCartPlus className="-ms-2 me-2 h-5 w-5" />
-                                            Add to cart
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="space-y-6 overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                                    <a href="#" className="overflow-hidden rounded">
-                                        <img
-                                            className="mx-auto h-44 w-44"
-                                            src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/ps5-light.svg"
-                                            alt="imac image"
-                                        />
-                                    </a>
-                                    <div>
-                                        <a
-                                            href="#"
-                                            className="text-lg font-semibold leading-tight text-gray-900 hover:underline "
-                                        >
-                                            Playstation 5
-                                        </a>
-                                        <p className="mt-2 text-base font-normal text-gray-500">
-                                            This generation has some improvements, including a longer continuous battery
-                                            life.
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-lg font-bold text-gray-900 ">
-                                            <span className="line-through"> $799,99 </span>
-                                        </p>
-                                        <p className="text-lg font-bold leading-tight text-red-600 ">$499</p>
-                                    </div>
-                                    <div className="mt-6 flex items-center gap-2.5">
-                                        <button
-                                            data-tooltip-target="favourites-tooltip-2"
-                                            type="button"
-                                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white p-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-rose-500 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100"
-                                        >
-                                            <FaHeart className="h-5 w-5 text-gray-900" />
-                                        </button>
-                                        <div
-                                            id="favourites-tooltip-2"
-                                            role="tooltip"
-                                            className="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white opacity-0 shadow-sm transition-opacity duration-300 "
-                                        >
-                                            Add to favourites
-                                            <div className="tooltip-arrow" data-popper-arrow></div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="inline-flex w-full items-center justify-center rounded-lg bg-rose-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-rose-600 focus:outline-none focus:ring-4 focus:ring-rose-300"
-                                        >
-                                            <FaCartPlus className="-ms-2 me-2 h-5 w-5" />
-                                            Add to cart
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="space-y-6 overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                                    <a href="#" className="overflow-hidden rounded">
-                                        <img
-                                            className="mx-auto h-44 w-44 "
-                                            src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/apple-watch-light.svg"
-                                            alt="imac image"
-                                        />
-                                        <img
-                                            className="mx-auto hidden h-44 w-44"
-                                            src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/apple-watch-dark.svg"
-                                            alt="imac image"
-                                        />
-                                    </a>
-                                    <div>
-                                        <a
-                                            href="#"
-                                            className="text-lg font-semibold leading-tight text-gray-900 hover:underline "
-                                        >
-                                            Apple Watch Series 8
-                                        </a>
-                                        <p className="mt-2 text-base font-normal text-gray-500">
-                                            This generation has some improvements, including a longer continuous battery
-                                            life.
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-lg font-bold text-gray-900 ">
-                                            <span className="line-through"> $1799,99 </span>
-                                        </p>
-                                        <p className="text-lg font-bold leading-tight text-red-600">$1199</p>
-                                    </div>
-                                    <div className="mt-6 flex items-center gap-2.5">
-                                        <button
-                                            data-tooltip-target="favourites-tooltip-3"
-                                            type="button"
-                                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white p-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-rose-500 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100"
-                                        >
-                                            <FaHeart className="h-5 w-5 text-gray-900" />
-                                        </button>
-                                        <div
-                                            id="favourites-tooltip-3"
-                                            role="tooltip"
-                                            className="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white opacity-0 shadow-sm transition-opacity duration-300"
-                                        >
-                                            Add to favourites
-                                            <div className="tooltip-arrow" data-popper-arrow></div>
-                                        </div>
+                                            {/* Image */}
+                                            <Link to={`/products/${product.product_id}`} className="block">
+                                                {product.product_image_urls && product.product_image_urls.length > 0 ? (
+                                                    <img
+                                                        src={product.product_image_urls[0]} // Accessing first image in array
+                                                        alt={product.product_name}
+                                                        className="h-44 w-full object-cover mb-4 rounded hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                ) : (
+                                                    <div className="h-44 w-full bg-gray-300 mb-4 rounded"></div> // Placeholder if no image is available
+                                                )}
+                                            </Link>
 
-                                        <button
-                                            type="button"
-                                            className="inline-flex w-full items-center justify-center rounded-lg bg-rose-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-rose-600 focus:outline-none focus:ring-4 focus:ring-rose-300"
-                                        >
-                                            <FaCartPlus className="-ms-2 me-2 h-5 w-5" />
-                                            Add to cart
-                                        </button>
-                                    </div>
+                                            {/* Title */}
+                                            <Link to={`/products/${product.product_id}`} className="block mb-2">
+                                                <p className="text-gray-800 text-xl font-semibold leading-tight hover:text-rose-600 transition-colors duration-200">
+                                                    {product.product_name}
+                                                </p>
+                                            </Link>
+
+                                            {/* Price */}
+                                            <p className="text-lg font-bold text-red-600">
+                                                ${parseFloat(product.product_price).toFixed(2)}
+                                            </p>
+
+                                            {/* Add to Cart Button */}
+                                            <button
+                                                onClick={() => {
+                                                    addToCart({
+                                                        id: product.product_id,
+                                                        name: product.product_name,
+                                                        image: product.product_image_urls?.[0] || '',
+                                                        price: product.product_price,
+                                                        quantity: 1,
+                                                    });
+                                                }}
+                                                className="mt-2 w-full bg-rose-500 text-white py-2 rounded-lg hover:bg-rose-600 transition-colors duration-200"
+                                            >
+                                                Add to Cart
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                        </div>
+                            </>
+                        )}
                     </div>
 
                     {/* Order Summary Section */}
