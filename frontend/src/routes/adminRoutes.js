@@ -2,7 +2,7 @@
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { Dashboard } from '@/pages/admin/Dashboard';
 import { Navigate, Outlet } from 'react-router-dom';
-import { OrderDetails } from '@/components/admin/orders/OrderDetails';
+import { OrderDetails } from '@/pages/admin/Orders/OrderDetails';
 import { ProductList } from '@/pages/admin/Products/ProductList';
 import { AddProduct } from '@/pages/admin/Products/AddProduct';
 import { EditProduct } from '@/pages/admin/Products/EditProduct';

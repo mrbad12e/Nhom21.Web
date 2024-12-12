@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/services/api';
 import OrderTable from '@/components/admin/orders/OrderTable/OrderTable';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
-import { Search, Download } from 'lucide-react';
 import styles from './OrderList.module.css';
 
+const MAX_PAGES = 50;
 const ITEMS_PER_PAGE = 10;
 const STATUS_OPTIONS = [
     { value: 'ALL', label: 'All Status' },
@@ -19,20 +18,34 @@ const STATUS_OPTIONS = [
 
 const OrderList = () => {
     const navigate = useNavigate();
-    const [allOrders, setAllOrders] = useState([]);
+    const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
-    const [statusFilter, setStatusFilter] = useState('');
-    const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+    const [status, setStatus] = useState('ALL');
+    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
 
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const { data } = await axiosInstance.post('/admin/orders/list', {
-                params: { offset: 0, limit: 1000 },
+            const endpoint = `/admin/orders/list?offset=${(page - 1) * ITEMS_PER_PAGE}&limit=${ITEMS_PER_PAGE}&status=${status !== 'ALL' ? status : ''}`;
+            const { data } = await axiosInstance.post(endpoint);
+            
+            const sortedOrders = [...data].sort((a, b) => {
+                const aValue = a[sortConfig.key];
+                const bValue = b[sortConfig.key];
+
+                if (sortConfig.key === 'created_at') {
+                    return sortConfig.direction === 'asc' 
+                        ? new Date(aValue) - new Date(bValue)
+                        : new Date(bValue) - new Date(aValue);
+                }
+                
+                // For total_price
+                return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
             });
-            setAllOrders(data);
+
+            setOrders(sortedOrders);
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to fetch orders');
         } finally {
@@ -42,48 +55,40 @@ const OrderList = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [page, status]);
 
     const handleSort = (key) => {
+        if (!['total_price', 'created_at'].includes(key)) return;
+        
         setSortConfig({
             key,
             direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc',
         });
-    };
 
-    const processOrders = () => {
-        let filtered = [...allOrders];
+        const newSortedOrders = [...orders].sort((a, b) => {
+            const aValue = a[key];
+            const bValue = b[key];
 
-        if (statusFilter && statusFilter !== 'ALL') {
-            filtered = filtered.filter((order) => order.order_status === statusFilter);
-        }
-
-        filtered.sort((a, b) => {
-            const aValue = sortConfig.key.includes('.')
-                ? sortConfig.key.split('.').reduce((obj, key) => obj[key], a)
-                : a[sortConfig.key];
-            const bValue = sortConfig.key.includes('.')
-                ? sortConfig.key.split('.').reduce((obj, key) => obj[key], b)
-                : b[sortConfig.key];
-
-            if (typeof aValue === 'string') {
-                return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+            if (key === 'created_at') {
+                return sortConfig.key === key && sortConfig.direction === 'asc'
+                    ? new Date(bValue) - new Date(aValue)
+                    : new Date(aValue) - new Date(bValue);
             }
-            return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+
+            return sortConfig.key === key && sortConfig.direction === 'asc'
+                ? bValue - aValue
+                : aValue - bValue;
         });
 
-        const start = (page - 1) * ITEMS_PER_PAGE;
-        return {
-            paginatedOrders: filtered.slice(start, start + ITEMS_PER_PAGE),
-            totalPages: Math.ceil(filtered.length / ITEMS_PER_PAGE),
-        };
+        setOrders(newSortedOrders);
     };
 
-    if (error) {
-        return <div className="text-red-500">Error: {error}</div>;
-    }
+    const handleStatusChange = (value) => {
+        setStatus(value);
+        setPage(1);
+    };
 
-    const { paginatedOrders, totalPages } = processOrders();
+    if (error) return <div className={styles.error}>{error}</div>;
 
     return (
         <div className={styles.container}>
@@ -92,14 +97,14 @@ const OrderList = () => {
             </div>
 
             <div className={styles.filters}>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={status} onValueChange={handleStatusChange}>
                     <SelectTrigger className={styles.statusFilter}>
                         <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
                     <SelectContent>
-                        {STATUS_OPTIONS.map((status) => (
-                            <SelectItem key={status.value} value={status.value}>
-                                {status.label}
+                        {STATUS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                                {option.label}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -107,32 +112,30 @@ const OrderList = () => {
             </div>
 
             <OrderTable
-                orders={paginatedOrders}
+                orders={orders}
                 loading={loading}
                 sortConfig={sortConfig}
                 onSort={handleSort}
                 onViewOrder={(id) => navigate(`/admin/orders/${id}`)}
-                onDownloadInvoice={(id) => console.log('Download invoice:', id)}
-                onDeleteOrder={(id) => console.log('Delete order:', id)}
             />
 
-            {totalPages > 1 && (
+            {MAX_PAGES > 1 && (
                 <div className={styles.pagination}>
                     <div className={styles.pageInfo}>
-                        Page {page} of {totalPages}
+                        Page {page} of {MAX_PAGES}
                     </div>
                     <div className={styles.pageControls}>
                         <Button
                             variant="outline"
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1 || loading}
                         >
                             Previous
                         </Button>
                         <Button
                             variant="outline"
-                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                            disabled={page === totalPages || loading}
+                            onClick={() => setPage(p => Math.min(MAX_PAGES, p + 1))}
+                            disabled={page === 50 || loading}
                         >
                             Next
                         </Button>

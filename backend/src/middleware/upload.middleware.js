@@ -1,7 +1,7 @@
 const { productUpload, upload } = require('../config/multer');
 
 function checkFileUpload(req, res, next) {
-    return productUpload.array('files')(req, res, next); // 'files' là trường trong formData của client
+    return productUpload.array('images')(req, res, next); // 'images' là trường trong formData của client
 }
 
 const { google } = require('googleapis');

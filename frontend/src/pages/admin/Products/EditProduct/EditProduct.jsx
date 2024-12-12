@@ -1,156 +1,112 @@
-// EditProduct.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ProductForm } from '@/components/admin/products/ProductForm';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardFooter,
-} from '@/components/ui/card';
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from "@/components/ui/badge";
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { 
-    ChevronLeft, 
-    Clock,
-    Eye,
-    MoreVertical,
-    Archive,
-    Trash2,
-    History,
-    Save,
-} from 'lucide-react';
+import axios from '@/services/api';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import styles from './EditProduct.module.css';
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from '@/components/ui/alert-dialog';
+import { ProductForm } from '@/components/admin/products/ProductForm';
+import { ChevronLeft, Clock, Eye, MoreVertical, Archive, Trash2, History, Save } from 'lucide-react';
 
-// Mock categories data
-const categories = [
-    { id: 1, name: 'Electronics' },
-    { id: 2, name: 'Accessories' },
-    { id: 3, name: 'Clothing' },
-    { id: 4, name: 'Books' }
-];
-
-// Mock product data - replace with API call
-const mockProduct = {
-    id: 1,
-    name: 'Premium Headphones',
-    description: 'High-quality wireless headphones with noise cancellation',
-    price: 199.99,
-    stock: 45,
-    category_id: 1,
-    image_urls: ['/api/placeholder/100/100', '/api/placeholder/100/100'],
-    created_at: '2024-03-15T10:30:00Z',
-    status: 'active',
-    lastUpdated: '2024-03-16T15:45:00Z',
-    views: 1234,
-    sales: 56
-};
-
-const EditProduct = () => {
+export default function EditProduct() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [product, setProduct] = useState(null);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [isArchiving, setIsArchiving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // Mock product data - replace with actual API call
-    const product = mockProduct;
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [productRes, categoriesRes] = await Promise.all([
+                    axios.get(`/admin/products?id=${id}`),
+                    axios.get('/categories'),
+                ]);
+                setProduct(productRes.data[0]);
+                setCategories(categoriesRes.data.categories);
+            } catch (err) {
+                setError(err.response?.data?.message || 'Error loading data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, [id]);
 
-    const handleBack = () => {
-        navigate('/admin/products');
-    };
+    const handleBack = () => navigate('/admin/products');
 
-    const handleSuccess = () => {
-        // Add success notification here
-        navigate('/admin/products');
-    };
-
-    const handleArchive = async () => {
-        setIsArchiving(true);
-        // Add archive logic here
-        setTimeout(() => {
-            setIsArchiving(false);
+    const handleSuccess = async (formData) => {
+        try {
+            await axios.put(`/admin/products/edit/${id}`, formData);
             navigate('/admin/products');
-        }, 1000);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error updating product');
+        }
     };
 
     const handleDelete = async () => {
         setIsDeleting(true);
-        // Add delete logic here
-        setTimeout(() => {
+        try {
+            // await axios.delete(`/admin/product/${id}`);
+            navigate('/admin/products');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error deleting product');
+        } finally {
             setIsDeleting(false);
             setShowDeleteDialog(false);
-            navigate('/admin/products');
-        }, 1000);
+        }
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+    if (isLoading) return <div className="p-6">Loading...</div>;
+    if (error)
+        return (
+            <Alert variant="destructive" className="m-6">
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        );
+    if (!product)
+        return (
+            <Alert className="m-6">
+                <AlertDescription>Product not found</AlertDescription>
+            </Alert>
+        );
 
     return (
-        <div className={styles.container}>
-            {/* Header Section */}
-            <div className={styles.header}>
-                <div className={styles.breadcrumbSection}>
-                    <Breadcrumb>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink onClick={handleBack}>Products</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>Edit Product</BreadcrumbItem>
-                    </Breadcrumb>
+        <div className="w-full mx-auto p-6 space-y-6 bg-background min-h-screen">
+            {/* Header */}
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleBack}
-                        >
+                        <Button variant="ghost" size="sm" onClick={handleBack}>
                             <ChevronLeft className="h-4 w-4 mr-2" />
                             Back
                         </Button>
-                        
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-green-600"
-                        >
+
+                        <Button variant="outline" size="sm" className="text-green-600">
                             <Eye className="h-4 w-4 mr-2" />
-                            View Live
+                            Preview
                         </Button>
 
                         <DropdownMenu>
@@ -165,14 +121,7 @@ const EditProduct = () => {
                                     View History
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={handleArchive}>
-                                    <Archive className="h-4 w-4 mr-2" />
-                                    Archive Product
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                    className="text-red-600"
-                                    onClick={() => setShowDeleteDialog(true)}
-                                >
+                                <DropdownMenuItem className="text-red-600" onClick={() => setShowDeleteDialog(true)}>
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Delete Product
                                 </DropdownMenuItem>
@@ -181,101 +130,52 @@ const EditProduct = () => {
                     </div>
                 </div>
 
-                <Card className={styles.headerCard}>
+                <Card className="bg-card/50 border-muted">
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <CardTitle>{product.name}</CardTitle>
-                                <CardDescription className="mt-1">
-                                    Product ID: {product.id}
-                                </CardDescription>
+                                <CardTitle>{product.product_name}</CardTitle>
+                                <CardDescription className="mt-1">Product ID: {product.product_id}</CardDescription>
                             </div>
-                            <Badge variant={product.status === 'active' ? 'success' : 'secondary'}>
-                                {product.status === 'active' ? 'Active' : 'Draft'}
+                            <Badge variant={product.is_active ? 'success' : 'secondary'}>
+                                {product.is_active ? 'Active' : 'Draft'}
                             </Badge>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className={styles.productStats}>
-                            <div className={styles.statItem}>
-                                <span className={styles.statLabel}>Created</span>
-                                <span className={styles.statValue}>{formatDate(product.created_at)}</span>
+                        <div className="flex items-center justify-between py-2">
+                            <div className="flex flex-col items-center px-4 text-center">
+                                <span className="text-sm text-muted-foreground">Price</span>
+                                <span className="font-medium mt-1">${product.product_price}</span>
                             </div>
                             <Separator orientation="vertical" />
-                            <div className={styles.statItem}>
-                                <span className={styles.statLabel}>Last Updated</span>
-                                <span className={styles.statValue}>{formatDate(product.lastUpdated)}</span>
+                            <div className="flex flex-col items-center px-4 text-center">
+                                <span className="text-sm text-muted-foreground">Stock</span>
+                                <span className="font-medium mt-1">{product.product_stock}</span>
                             </div>
                             <Separator orientation="vertical" />
-                            <div className={styles.statItem}>
-                                <span className={styles.statLabel}>Views</span>
-                                <span className={styles.statValue}>{product.views.toLocaleString()}</span>
-                            </div>
-                            <Separator orientation="vertical" />
-                            <div className={styles.statItem}>
-                                <span className={styles.statLabel}>Sales</span>
-                                <span className={styles.statValue}>{product.sales.toLocaleString()}</span>
+                            <div className="flex flex-col items-center px-4 text-center">
+                                <span className="text-sm text-muted-foreground">Category</span>
+                                <span className="font-medium mt-1">{product.category_name}</span>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Main Form Section */}
-            <div className={styles.formSection}>
-                <div className={styles.formContainer}>
-                    <ProductForm 
-                        initialData={product}
-                        categories={categories}
-                        onSuccess={handleSuccess}
-                    />
+            {/* Main Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <ProductForm initialData={product} categories={categories} onSuccess={handleSuccess} />
                 </div>
 
-                {/* Side Panel */}
-                <div className={styles.sidePanel}>
+                <div className="space-y-6">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Activity Log</CardTitle>
-                            <CardDescription>Recent changes to this product</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className={styles.activityLog}>
-                                <div className={styles.activityItem}>
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <div className={styles.activityContent}>
-                                        <p className={styles.activityText}>Price updated to $199.99</p>
-                                        <span className={styles.activityTime}>2 hours ago</span>
-                                    </div>
-                                </div>
-                                <div className={styles.activityItem}>
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <div className={styles.activityContent}>
-                                        <p className={styles.activityText}>Stock level adjusted to 45 units</p>
-                                        <span className={styles.activityTime}>5 hours ago</span>
-                                    </div>
-                                </div>
-                                <div className={styles.activityItem}>
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <div className={styles.activityContent}>
-                                        <p className={styles.activityText}>Description updated</p>
-                                        <span className={styles.activityTime}>1 day ago</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button variant="ghost" className="w-full text-sm">
-                                View Full History
-                            </Button>
-                        </CardFooter>
-                    </Card>
-
-                    <Card className="mt-4">
                         <CardHeader>
                             <CardTitle>Quick Actions</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className={styles.quickActions}>
+                            <div className="space-y-2">
                                 <Button className="w-full" variant="outline">
                                     <Save className="h-4 w-4 mr-2" />
                                     Save as Draft
@@ -290,14 +190,13 @@ const EditProduct = () => {
                 </div>
             </div>
 
-            {/* Delete Confirmation Dialog */}
+            {/* Delete Dialog */}
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Product</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this product? This action cannot be undone
-                            and will remove all associated data.
+                            Are you sure you want to delete this product? This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -314,6 +213,4 @@ const EditProduct = () => {
             </AlertDialog>
         </div>
     );
-};
-
-export default EditProduct;
+}

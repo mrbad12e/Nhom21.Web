@@ -1,102 +1,139 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { ProductForm } from '@/components/admin/products/ProductForm';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductTable } from '@/components/admin/products/ProductTable';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Search } from 'lucide-react';
+import axiosInstance from '@/services/api';
 import styles from './ProductList.module.css';
 
-// List of categories - Replace with API call
-const categories = [
-    { id: 1, name: 'Electronics' },
-    { id: 2, name: 'Accessories' },
-    { id: 3, name: 'Clothing' },
-    { id: 4, name: 'Books' }
-];
-
-// Mock data - Replace with API call
-const products = [
-    {
-        id: 1,
-        name: 'Premium Headphones',
-        sku: 'HDH-001',
-        category_id: 1,
-        price: 199.99,
-        stock: 45,
-        status: 'In Stock',
-        image_urls: ['/api/placeholder/100/100'],
-        description: 'High-quality wireless headphones with noise cancellation',
-        created_at: '2024-03-15T10:30:00Z'
-    },
-    {
-        id: 2,
-        name: 'Wireless Mouse',
-        sku: 'WMS-002',
-        category_id: 1,
-        price: 29.99,
-        stock: 0,
-        status: 'Out of Stock',
-        image_urls: ['/api/placeholder/100/100'],
-        description: 'Ergonomic wireless mouse with long battery life',
-        created_at: '2024-03-14T15:45:00Z'
-    },
-    {
-        id: 3,
-        name: 'Designer Watch',
-        sku: 'WCH-003',
-        category_id: 2,
-        price: 299.99,
-        stock: 5,
-        status: 'Low Stock',
-        image_urls: ['/api/placeholder/100/100'],
-        description: 'Luxury designer watch with premium materials',
-        created_at: '2024-03-13T09:15:00Z'
-    }
-];
-
 const ProductList = () => {
-    return (
-        <Routes>
-            <Route
-                index
-                element={<ProductListView products={products} categories={categories} />}
-            />
-            <Route
-                path="add"
-                element={<ProductForm categories={categories} />}
-            />
-            <Route
-                path="edit/:id"
-                element={<ProductEditView products={products} categories={categories} />}
-            />
-        </Routes>
-    );
-};
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [products, setProducts] = useState([]);
+    const [pagination, setPagination] = useState({});
+    
+    // Form state
+    const [searchForm, setSearchForm] = useState({
+        search: '',
+        minPrice: '',
+        maxPrice: '',
+        includeInactive: false
+    });
 
-// Main product list view with table
-const ProductListView = ({ products, categories }) => {
+    // API filters state
+    const [filters, setFilters] = useState({
+        search: '',
+        minPrice: '',
+        maxPrice: '',
+        includeInactive: false,
+        page: 1,
+        pageSize: 10,
+        sortBy: 'id',
+        sortOrder: 'asc'
+    });
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const response = await axiosInstance.get('/admin/products', { params: filters });
+            setProducts(response.data.products);
+            setPagination(response.data.pagination);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, [filters]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        setFilters(prev => ({
+            ...prev,
+            ...searchForm,
+            page: 1
+        }));
+    };
+
+    const updateFormField = (field, value) => {
+        setSearchForm(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    if (loading) return <div className={styles.loadingContainer}>Loading...</div>;
+    if (error) return <div className={styles.errorContainer}>{error}</div>;
+
     return (
         <div className={styles.container}>
+            <div className="space-y-4 mb-6">
+                <div className="flex justify-between mb-4">
+                    <h1 className="text-2xl font-bold">Products</h1>
+                    <Button onClick={() => navigate('/admin/products/add')}>Add Product</Button>
+                </div>
+                
+                <form onSubmit={handleSearch} className="flex gap-4 flex-wrap">
+                    <div className="flex-1">
+                        <Input
+                            placeholder="Search products..."
+                            value={searchForm.search}
+                            onChange={(e) => updateFormField('search', e.target.value)}
+                            className="max-w-xs"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            type="number"
+                            placeholder="Min price"
+                            value={searchForm.minPrice}
+                            onChange={(e) => updateFormField('minPrice', e.target.value)}
+                            className="w-24"
+                        />
+                        <span>-</span>
+                        <Input
+                            type="number"
+                            placeholder="Max price"
+                            value={searchForm.maxPrice}
+                            onChange={(e) => updateFormField('maxPrice', e.target.value)}
+                            className="w-24"
+                        />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                id="inactive"
+                                checked={searchForm.includeInactive}
+                                onCheckedChange={(checked) => updateFormField('includeInactive', checked)}
+                            />
+                            <Label htmlFor="inactive">Show inactive</Label>
+                        </div>
+                        <Button type="submit">
+                            <Search className="h-4 w-4 mr-2" />
+                            Search
+                        </Button>
+                    </div>
+                </form>
+            </div>
+
             <ProductTable
                 products={products}
-                categories={categories}
+                pagination={pagination}
+                onPageChange={(page) => setFilters(prev => ({ ...prev, page }))}
+                onSort={(sortBy, sortOrder) => setFilters(prev => ({ ...prev, sortBy, sortOrder }))}
+                currentSort={{
+                    sortBy: filters.sortBy,
+                    sortOrder: filters.sortOrder
+                }}
             />
         </div>
-    );
-};
-
-// Edit view that fetches product data and passes to form
-const ProductEditView = ({ products, categories }) => {
-    const { id } = useParams();
-    const product = products.find(p => p.id === parseInt(id));
-
-    if (!product) {
-        return <div>Product not found</div>;
-    }
-
-    return (
-        <ProductForm
-            initialData={product}
-            categories={categories}
-        />
     );
 };
 

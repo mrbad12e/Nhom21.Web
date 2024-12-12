@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ProductImageUpload } from '../ProductImageUpload';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+import ProductImageUpload from '../ProductImageUpload/ProductImageUpload';
 import { Save, X, Loader2 } from 'lucide-react';
+import * as z from 'zod';
 import styles from './ProductForm.module.css';
 
-// Form validation schema
 const productSchema = z.object({
     name: z
         .string()
@@ -23,71 +22,52 @@ const productSchema = z.object({
     price: z
         .string()
         .regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format')
-        .refine((val) => parseFloat(val) >= 0, 'Price cannot be negative'),
+        .transform((val) => parseFloat(val))
+        .refine((val) => val >= 0, 'Price cannot be negative'),
     stock: z
         .string()
         .regex(/^\d+$/, 'Stock must be a whole number')
         .transform((val) => parseInt(val)),
-    category_id: z
+    categoryId: z
         .string()
         .min(1, 'Category is required')
         .transform((val) => parseInt(val)),
 });
 
-const ProductForm = ({ initialData = null, categories = [] }) => {
+export default function ProductForm({ initialData = null, categories = [], onSuccess }) {
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [images, setImages] = useState(
-        initialData?.image_urls?.map((url, index) => ({
-            id: index,
-            preview: url,
-            name: `Image ${index + 1}`,
-        })) || []
-    );
+    const [images, setImages] = useState([]);
 
-    // Initialize form with react-hook-form
     const form = useForm({
         resolver: zodResolver(productSchema),
         defaultValues: {
-            name: initialData?.name || '',
-            description: initialData?.description || '',
-            price: initialData?.price?.toString() || '',
-            stock: initialData?.stock?.toString() || '0',
-            category_id: initialData?.category_id?.toString() || '',
+            name: initialData?.product_name || '',
+            description: initialData?.product_description || '',
+            price: initialData?.product_price?.toString() || '',
+            stock: initialData?.product_stock?.toString() || '0',
+            categoryId: initialData?.category_id?.toString() || '',
         },
     });
 
     const handleSubmit = async (values) => {
         try {
             setIsSubmitting(true);
-
-            // Transform the form data
-            const productData = {
+            const data = {
                 ...values,
-                price: parseFloat(values.price),
-                stock: parseInt(values.stock),
-                image_urls: images.map((img) => img.preview),
+                images: images // Array of base64 strings
             };
-
-            // Here you would make an API call to save the product
-            console.log('Saving product:', productData);
-
-            // Simulate API delay
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            // Navigate back to products list
-            navigate('/admin/products');
+            
+            await onSuccess(data);
         } catch (error) {
-            console.error('Error saving product:', error);
+            console.error('Form submission error:', error);
         } finally {
             setIsSubmitting(false);
         }
-    };
+    };    
 
-    const handleCancel = () => {
-        if (window.confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-            navigate('/admin/products');
-        }
+    const handleImageChange = (base64Images) => {
+        setImages(base64Images);
     };
 
     return (
@@ -100,7 +80,7 @@ const ProductForm = ({ initialData = null, categories = [] }) => {
                     </p>
                 </div>
                 <div className={styles.actions}>
-                    <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+                    <Button variant="outline" onClick={() => navigate('/admin/products')} disabled={isSubmitting}>
                         <X className="mr-2 h-4 w-4" />
                         Cancel
                     </Button>
@@ -116,8 +96,8 @@ const ProductForm = ({ initialData = null, categories = [] }) => {
             </div>
 
             <Form {...form}>
-                <form className={styles.form} onSubmit={form.handleSubmit(handleSubmit)}>
-                    <Card className="mb-6">
+                <form onSubmit={form.handleSubmit(handleSubmit)} className={styles.form}>
+                    <Card>
                         <CardHeader>
                             <CardTitle>Product Information</CardTitle>
                         </CardHeader>
@@ -131,7 +111,6 @@ const ProductForm = ({ initialData = null, categories = [] }) => {
                                         <FormControl>
                                             <Input {...field} placeholder="Enter product name" />
                                         </FormControl>
-                                        <FormDescription>Maximum 255 characters</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -193,7 +172,7 @@ const ProductForm = ({ initialData = null, categories = [] }) => {
 
                             <FormField
                                 control={form.control}
-                                name="category_id"
+                                name="categoryId"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Category</FormLabel>
@@ -223,13 +202,14 @@ const ProductForm = ({ initialData = null, categories = [] }) => {
                             <CardTitle>Product Images</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <ProductImageUpload onChange={setImages} initialImages={images} />
+                            <ProductImageUpload
+                                onChange={handleImageChange}
+                                initialImages={initialData?.product_image_urls}
+                            />
                         </CardContent>
                     </Card>
                 </form>
             </Form>
         </div>
     );
-};
-
-export default ProductForm;
+}
