@@ -1,5 +1,5 @@
 .container {
-    @apply w-full mx-auto p-6 space-y-6 bg-background min-h-screen;
+    @apply w-full mx-auto space-y-6 bg-background;
 }
 
 .header {
@@ -14,42 +14,10 @@
     @apply text-sm;
 }
 
-.headerCard {
-    @apply bg-card/50 border-muted;
+.errorAlert {
+    @apply mt-4;
 }
 
 .formSection {
-    @apply grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6;
-}
-
-.formContainer {
-    @apply lg:col-span-2;
-}
-
-.sidePanel {
-    @apply space-y-6;
-}
-
-.tipsList {
-    @apply space-y-2 list-disc list-inside text-sm text-muted-foreground;
-}
-
-.tipsList li {
-    @apply hover:text-foreground transition-colors;
-}
-
-.quickActions {
-    @apply space-y-2;
-}
-
-.draft {
-    @apply text-amber-600 bg-amber-50 border-amber-200;
-}
-
-.published {
-    @apply text-green-600 bg-green-50 border-green-200;
-}
-
-.error {
-    @apply text-red-600 bg-red-50 border-red-200;
+    @apply mt-6;
 }

@@ -13,18 +13,94 @@ exports.get = async (req, res, next) => {
 };
 
 exports.addProduct = async (req, res, next) => {
+    const tempDir = path.join(__dirname, '../../../uploads');
     try {
-        if (!req.files || req.files.length === 0) {
-            throw new Error('No file found');
-        } //ignore if no file uploads
+        const { images, ...productData } = req.body;
+        let imageUrls = null;
 
-        const result = await ProductService.addProductImageService(req);
+        if (images?.length) {
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir, { recursive: true });
+            }
 
-        imageUrls = result.map((result) => result.url);
+            const uploadedUrls = [];
 
-        const productData = { ...req.body, imageUrls: `{${imageUrls}}` };
+            const auth = new google.auth.GoogleAuth({
+                credentials: {
+                    type: process.env.GCP_TYPE,
+                    project_id: process.env.GCP_PROJECT_ID,
+                    private_key_id: process.env.GCP_PRIVATE_KEY_ID,
+                    private_key: process.env.GCP_PRIVATE_KEY,
+                    client_email: process.env.GCP_CLIENT_EMAIL,
+                    client_id: process.env.GCP_CLIENT_ID,
+                    auth_uri: process.env.GCP_AUTH_URI,
+                    token_uri: process.env.GCP_TOKEN_URI,
+                    auth_provider_x509_cert_url: process.env.GCP_AUTH_PROVIDER_CERT_URL,
+                    client_x509_cert_url: process.env.GCP_CLIENT_CERT_URL,
+                    universe_domain: process.env.GCP_UNIVERSE_DOMAIN,
+                },
+                scopes: ['https://www.googleapis.com/auth/drive.file'],
+            });
 
-        const { id, name, price } = await ProductService.addNewProductService(productData);
+            const drive = google.drive({ version: 'v3', auth });
+            const folder = await drive.files.create({
+                requestBody: {
+                    name: `Product/${productData.name}`,
+                    mimeType: 'application/vnd.google-apps.folder',
+                    parents: [process.env.BASE_FOLDER_ID],
+                },
+                fields: 'id',
+            });
+
+            for (let chunk of images) {
+                try {
+                    if (typeof chunk === 'string' && chunk.includes(';base64,')) {
+                        const [header, base64Data] = chunk.split(';base64,');
+                        const mimeType = header.replace('data:', '');
+                        const buffer = Buffer.from(base64Data, 'base64');
+                        const filePath = path.join(tempDir, `temp_${Date.now()}.jpg`);
+
+                        await fs.promises.writeFile(filePath, buffer);
+
+                        const response = await drive.files.create({
+                            requestBody: {
+                                name: `product_${Date.now()}.jpg`,
+                                parents: [folder.data.id],
+                            },
+                            media: {
+                                mimeType,
+                                body: fs.createReadStream(filePath),
+                            },
+                            fields: 'id, webViewLink',
+                        });
+
+                        await drive.permissions.create({
+                            fileId: response.data.id,
+                            requestBody: {
+                                role: 'reader',
+                                type: 'anyone'
+                            }
+                        });
+
+                        fs.unlinkSync(filePath);
+                        uploadedUrls.push(response.data.webViewLink);
+                    }
+                } catch (chunkError) {
+                    console.error('Error processing chunk:', chunkError);
+                }
+            }
+
+            if (uploadedUrls.length) {
+                imageUrls = `{${uploadedUrls.join(',')}}`;
+            }
+        }
+
+        const addedProduct = {
+            ...productData,
+            ...(imageUrls && { imageUrls }),
+        };
+
+        const { id, name, price } = await ProductService.addNewProductService(addedProduct);
         return res.status(200).json({
             message: `Added new product named ${name} !`,
         });

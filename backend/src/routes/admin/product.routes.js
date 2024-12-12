@@ -6,7 +6,7 @@ const { checkFileUpload } = require('../../middleware/upload.middleware');
 
 route.get('/', authorizeAdmin, adminProductController.get);
 
-route.post('/add', authorizeAdmin, checkFileUpload, adminProductController.addProduct);
+route.post('/add', authorizeAdmin, adminProductController.addProduct);
 
 route.put('/edit/:id', authorizeAdmin, adminProductController.editProduct);
 

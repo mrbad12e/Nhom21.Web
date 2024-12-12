@@ -12,7 +12,7 @@ exports.login = async (req, res, next) => {
         }
 
         const profile = await userService.getUserByIdService(admin.id);
-        const fieldsToExclude = ['password', 'is_active', 'role', 'created_at'];
+        const fieldsToExclude = ['password', 'is_active', 'created_at'];
         const filteredProfile = Object.fromEntries(
             Object.entries(profile).filter(([key]) => !fieldsToExclude.includes(key))
         );

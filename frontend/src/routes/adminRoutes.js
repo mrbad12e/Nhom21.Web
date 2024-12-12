@@ -2,6 +2,7 @@
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { Dashboard } from '@/pages/admin/Dashboard';
 import { Navigate, Outlet } from 'react-router-dom';
+import { ProtectedRoute } from './protectedRoute';
 import { OrderDetails } from '@/pages/admin/Orders/OrderDetails';
 import { ProductList } from '@/pages/admin/Products/ProductList';
 import { AddProduct } from '@/pages/admin/Products/AddProduct';
@@ -13,7 +14,13 @@ import { OrderList } from '@/pages/admin/Orders/OrderList';
 const adminRoutes = [
     {
         path: '/admin',
-        element: <AdminLayout><Outlet /></AdminLayout>,
+        element: (
+            <ProtectedRoute roles={['ADMIN']}>
+                <AdminLayout>
+                    <Outlet />
+                </AdminLayout>
+            </ProtectedRoute>
+        ),
         children: [
             {
                 path: '',
