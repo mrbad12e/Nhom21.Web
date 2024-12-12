@@ -14,7 +14,7 @@ import { useCart } from "@/components/features/cart/CartContext/CartContext"; //
 import avatar from "@/assets/images/HomePage/user.png";
 
 const Header = () => {
-  const { cartItems } = useCart(); // Lấy cartItems từ CartContext
+  const { cartItems } = useCart(); // Get cartItems from CartContext
   const [menuOpen, setMenuOpen] = useState(false);
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
   const [isCartPopupOpen, setIsCartPopupOpen] = useState(false);
@@ -72,30 +72,10 @@ const Header = () => {
             menuOpen ? "flex" : "hidden md:flex"
           } absolute md:relative top-16 md:top-0 left-0 md:left-auto w-full md:w-auto bg-black md:bg-transparent z-50 flex-col md:flex-row gap-4 md:gap-8 text-base font-medium items-center md:items-end p-4 md:p-0`}
         >
-          <Link
-            to="/"
-            className="hover:text-rose-500 transition duration-200"
-          >
-            Home
-          </Link>
-          <Link
-            to="/shop"
-            className="hover:text-rose-500 transition duration-200"
-          >
-            Shop
-          </Link>
-          <Link
-            to="/contact"
-            className="hover:text-rose-500 transition duration-200"
-          >
-            Contact
-          </Link>
-          <Link
-            to="/about"
-            className="hover:text-rose-500 transition duration-200"
-          >
-            About
-          </Link>
+          <Link to="/" className="hover:text-rose-500 transition duration-200">Home</Link>
+          <Link to="/shop" className="hover:text-rose-500 transition duration-200">Shop</Link>
+          <Link to="/contact" className="hover:text-rose-500 transition duration-200">Contact</Link>
+          <Link to="/about" className="hover:text-rose-500 transition duration-200">About</Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-6">
@@ -112,7 +92,7 @@ const Header = () => {
             {/* Cart Icon */}
             <div className="relative cursor-pointer" onClick={toggleCartPopup}>
               <FaShoppingCart className="text-2xl" />
-              {cartItems.length > 0 && (
+              {cartItems && cartItems.length > 0 && ( // Check if cartItems is defined before accessing length
                 <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
                   {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
                 </span>
@@ -122,7 +102,7 @@ const Header = () => {
             {/* Notifications */}
             <div className="relative cursor-pointer" onClick={toggleNotiPopup}>
               <FaBell className="text-2xl" />
-              {notifications.length > 0 && (
+              {notifications && notifications.length > 0 && ( // Check if notifications is defined before accessing length
                 <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs rounded-full px-2 py-0.5">
                   {notifications.length}
                 </span>

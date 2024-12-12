@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/services/api';
-import { API_URL } from '@/utils/constants';
 
 export default function LoginForm({ switchToRegister, switchToForgotPassword }) {
     const navigate = useNavigate();

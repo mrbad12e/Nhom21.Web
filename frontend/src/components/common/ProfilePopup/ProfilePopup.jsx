@@ -1,11 +1,18 @@
 import React from "react";
 import { FaUser, FaBox, FaTimesCircle, FaStar, FaSignOutAlt } from "react-icons/fa"; // Import các icon từ react-icons
 import { useProfilePopupLogic } from "@/components/common/ProfilePopup/index";
+import { useAuth } from "@/context/AuthContext";
 
 const ProfilePopup = ({ onClose }) => {
 
   const { handleNavigateToProfile, handleNavigateToOrders, handleNavigateToCancellations, handleLogout } = useProfilePopupLogic();
+  const { logout } = useAuth();
 
+  const handleLogoutClick = async () => {
+    await handleLogout();
+    logout(); // Đảm bảo logout khỏi context
+  };
+  
   return (
     <div className="absolute top-16 right-4 bg-gradient-to-b from-black from-10% via-zinc-700 to-neutral-700 text-white rounded-lg shadow-lg w-64 p-4 z-50">
       <div className="flex flex-col gap-4">

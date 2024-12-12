@@ -28,5 +28,6 @@ router.use('/client/cart', clientCartRoutes);
 router.use('/client/orders', clientOrderRoutes);
 router.use('/categories', clientCategoryRoutes);
 router.use('/products', clientProductRoutes);
+router.use('/categories', clientCategoryRoutes);
 
 module.exports = router;
