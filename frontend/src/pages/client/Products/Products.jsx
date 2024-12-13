@@ -10,8 +10,6 @@ const Products = () => {
     const { id } = useParams(); // Get the product ID from URL parameters
     const { product, loading, error } = useProductsById(id); // Fetch product by ID
 
-    // Log fetched product for debugging
-    console.log("Fetched Product:", product);
 
     // State for quantity
     const [quantity, setQuantity] = useState(1);

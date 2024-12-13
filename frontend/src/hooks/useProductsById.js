@@ -15,17 +15,13 @@ const useProductsById = (id) => {
 
             try {
                 // Fetch product by ID using query parameter
-                const response = await axiosInstance.get(`/products`, { params: { id } });
-                console.log("Fetched Product Response:", response.data); // Log the response
+                const response = await axiosInstance.get(`/products?id=${id}`);
+                console.log("Fetched Product Response:", response); // Log the response
                 setProduct(response.data[0]); // Assuming the API returns an array of products
             } catch (err) {
-                if (axiosInstance.isAxiosError(err)) {
-                    console.error("Axios error:", err.response ? err.response.data : err.message);
-                    setError(err.response?.data?.message || "Failed to fetch product. Please try again.");
-                } else {
-                    console.error("Unexpected error:", err);
-                    setError("An unexpected error occurred. Please try again later.");
-                }
+                console.error("Unexpected error:", err);
+                setError("An unexpected error occurred. Please try again later.");
+                
             } finally {
                 setLoading(false);
             }
