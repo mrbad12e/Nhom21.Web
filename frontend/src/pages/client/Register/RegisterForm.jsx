@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-const BACKEND_URL = import.meta.env.BACKEND_URL || 'http://localhost:5000';
+import axiosInstance from '@/services/api';
 
 export default function RegisterForm({ onSwitchToSignIn }) {
     const navigate = useNavigate();
@@ -30,14 +28,9 @@ export default function RegisterForm({ onSwitchToSignIn }) {
         setIsLoading(true);
 
         try {
-            const response = await axios.post(`${BACKEND_URL}/client/signup`, formData);
+            await axiosInstance.post('/client/signup', formData);
 
-            if (response.data.token) {
-                localStorage.setItem('token', response.data.token);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-            }
-
-            navigate('/');
+            navigate('/login');
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'An error occurred during registration');
         } finally {
@@ -188,10 +181,16 @@ export default function RegisterForm({ onSwitchToSignIn }) {
                         <button
                             type="button"
                             className="text-violet-500 ml-2 text-base font-medium hover:underline"
-                            onClick={onSwitchToSignIn}
+                            onClick={() => navigate('/login')}
                         >
                             Sign In
                         </button>
+                    </p>
+                </div>
+
+                <div className="flex mt-8 justify-center items-center">
+                    <p className="font-medium text-base">
+                        This is a demo project. Please do not use real credentials.
                     </p>
                 </div>
             </div>

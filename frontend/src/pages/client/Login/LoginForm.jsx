@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/services/api';
 
-export default function LoginForm({ switchToRegister, switchToForgotPassword }) {
+export default function LoginForm() {
     const navigate = useNavigate();
     const [selectedRole, setSelectedRole] = useState('CUSTOMER');
     const [formData, setFormData] = useState({
@@ -175,13 +175,6 @@ export default function LoginForm({ switchToRegister, switchToForgotPassword }) 
                                 Remember me
                             </label>
                         </div>
-                        <button
-                            type="button"
-                            onClick={switchToForgotPassword}
-                            className="text-base font-medium text-violet-500 max-[574px]:text-sm"
-                        >
-                            Forgot password?
-                        </button>
                     </div>
 
                     <div className="mt-8">
@@ -200,6 +193,15 @@ export default function LoginForm({ switchToRegister, switchToForgotPassword }) 
                                 : `Login as ${selectedRole === 'CUSTOMER' ? 'Customer' : 'Admin'}`}
                         </button>
                     </div>
+
+                    <div className="flex justify-between items-center mt-4">
+                        <p className="font-medium text-base">
+                            This is a demo project. Use the following credentials to login:
+                        </p>
+                    </div>
+                    <div className="flex justify-between items-center mt-4">
+                        <p className='font-medium text-base'>Admin: adminnghia / admin</p>
+                    </div>
                 </div>
             </form>
 
@@ -208,7 +210,7 @@ export default function LoginForm({ switchToRegister, switchToForgotPassword }) 
                     Don't have an account?
                     <button
                         type="button"
-                        onClick={switchToRegister}
+                        onClick={() => navigate('/register')}
                         className="text-violet-500 pl-1 font-medium hover:underline"
                     >
                         Register

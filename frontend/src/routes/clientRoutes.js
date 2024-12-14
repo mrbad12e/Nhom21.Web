@@ -5,13 +5,13 @@ import Login from '@/pages/client/Login';
 import About from '@/pages/client/About';
 import Contact from '@/pages/client/Contact';
 import Shop from '@/pages/client/Shop';
-import Products from '@/pages/client/Products';
 import Cart from '@/pages/client/Cart';
 import Checkout from '@/pages/client/Checkout';
 import Account from '@/pages/client/Account';
 import NotFound from '@/pages/client/NotFound';
 import { Outlet } from 'react-router-dom';
 import ProductDetail from '@/pages/client/Products';
+import Register from '@/pages/client/Register';
 
 const clientRoutes = [
     {
@@ -34,12 +34,16 @@ const clientRoutes = [
                 element: <Shop />,
             },
             {
-                path: '/products/id',
+                path: '/products/:id',
                 element: <ProductDetail />,
             },
             {
                 path: '/login',
                 element: <Login />,
+            },
+            {
+                path: '/register',
+                element: <Register />,
             },
             {
                 // element: <ProtectedRoute roles={['ADMIN', 'CUSTOMER']}/>,
