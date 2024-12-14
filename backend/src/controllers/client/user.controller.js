@@ -7,12 +7,11 @@ class UserController {
             const { username, password } = req.body;
             const { token, filteredProfile } = await UserService.signIn(username, password);            
             res.cookie('auth', token, {
-                httpOnly: true,
-                secure: true,
+                httpOnly: process.env.NODE_ENV === 'production',
+                secure: process.env.NODE_ENV === 'production', // for HTTPS
                 sameSite: 'lax',
                 maxAge: 24 * 60 * 60 * 1000, // 24 hours
-                path: '/',
-                domain: '.onrender.com'
+                path: '/'
             });
             res.status(200).json({ message: 'Login successful', profile: filteredProfile, token: token });
         } catch (error) {

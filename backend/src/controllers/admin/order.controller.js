@@ -2,7 +2,7 @@ const OrderService = require('../../services/order.service');
 
 exports.getAllOrders = async (req, res, next) => {
     try {
-        const id = req.user.id; //get admin Id from previous authorize middleware
+        const id = req.user.userId; //get admin Id from previous authorize middleware
         const { offset = 0, limit = 20, status } = req.query;
         const option = {
             id: id,
@@ -17,7 +17,7 @@ exports.getAllOrders = async (req, res, next) => {
 };
 exports.getOrderById = async (req, res, next) => {
     try {
-        const id = req.user.id;
+        const id = req.user.userId;
         const order_id = req.params.id;
         const result = await OrderService.getOrderById(id, order_id);
         return res.status(200).json({
@@ -31,7 +31,7 @@ exports.getOrderById = async (req, res, next) => {
 
 exports.updateOrderStatus = async (req, res, next) => {
     try {
-        const id = req.user.id; //still get admin id from the  token decoded
+        const id = req.user.userId; //still get admin id from the  token decoded
         const order_id = req.params.id;
         const status = req.body.status;
         result = await OrderService.updateOrderStatusService(order_id, status, id);

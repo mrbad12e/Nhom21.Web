@@ -43,7 +43,7 @@ try:
             address=fake.address().replace('\n', ', '),
             image=f"https://randomuser.me/api/portraits/{'men' if random.random() > 0.5 else 'women'}/{random.randint(1, 99)}.jpg"
         )
-        print(f"Created user: {user['username']} ({user['email']})")
+        # print(f"Created user: {user['username']} ({user['email']})")
 finally:
     user_manager.close()
 

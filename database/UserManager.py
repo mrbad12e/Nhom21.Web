@@ -24,32 +24,16 @@ class UserManager:
                 cur.execute(
                     """
                     SELECT create_account(
-                        %s, %s, %s, %s, %s, %s::public.user_role, %s, %s, %s
+                        %s, %s, %s, %s, %s
                     )
                     """,
-                    (username, password, email, first_name, last_name, 
-                     role, phone, address, image)
+                    (username, password, email, first_name, last_name)
                 )
                 self.conn.commit()
-
-                # Fetch created user
-                cur.execute(
-                    "SELECT * FROM view_profile(%s)",
-                    (username,)
-                )
-                return cur.fetchone()
                 
         except psycopg2.Error as e:
             self.conn.rollback()
             raise Exception(f"Failed to create user: {str(e)}")
-
-    def get_user(self, username: str) -> Dict:
-        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(
-                "SELECT * FROM view_profile(%s)",
-                (username,)
-            )
-            return cur.fetchone()
     
     def close(self):
         self.conn.close()

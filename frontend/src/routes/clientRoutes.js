@@ -1,6 +1,7 @@
-// src/routes/clientRoutes.js
-import React from 'react';
-import Home from '@/pages/client/Home';
+import { ProtectedRoute } from './protectedRoute';
+import DefaultLayout from '@/components/layout/DefaultLayout';
+import Home from '@/pages/client/Home/Home';
+import Login from '@/pages/client/Login';
 import About from '@/pages/client/About';
 import Contact from '@/pages/client/Contact';
 import Shop from '@/pages/client/Shop';
@@ -9,56 +10,60 @@ import Cart from '@/pages/client/Cart';
 import Checkout from '@/pages/client/Checkout';
 import Account from '@/pages/client/Account';
 import NotFound from '@/pages/client/NotFound';
-import ProtectedRoute from '@/routes/protectedRoute';
+import { Outlet } from 'react-router-dom';
+import ProductDetail from '@/pages/client/Products';
 
 const clientRoutes = [
     {
-        path: '/',
-        element: <Home />,
-        exact: true, // Home page
-    },
-    {
-        path: '/about',
-        element: <About />,
-    },
-    {
-        path: '/contact',
-        element: <Contact />,
-    },
-    {
-        path: '/shop',
-        element: <Shop />,
-    },
-    {
-        path: '/products/:id',
-        element: <Products />,
-    },
-    {
-        path: '/cart',
-        element: (
-                <Cart />
-        ),
-    },
-    {
-        path: '/checkout',
-        element: (
-            <ProtectedRoute>
-                <Checkout />
-            </ProtectedRoute>
-        ),
-    },
-    {
-        path: '/account/*',
-        element: (
-            <ProtectedRoute>
-                <Account />
-            </ProtectedRoute>
-        ),
-    },
-    {
-        path: '*',
-        element: <NotFound />, // Handle 404
+        element: <DefaultLayout />,
+        children: [
+            {
+                path: '/',
+                element: <Home />,
+            },
+            {
+                path: '/about',
+                element: <About />,
+            },
+            {
+                path: '/contact',
+                element: <Contact />,
+            },
+            {
+                path: '/shop',
+                element: <Shop />,
+            },
+            {
+                path: '/products/id',
+                element: <ProductDetail />,
+            },
+            {
+                path: '/login',
+                element: <Login />,
+            },
+            {
+                // element: <ProtectedRoute roles={['ADMIN', 'CUSTOMER']}/>,
+                element: <ProtectedRoute roles={['ADMIN', 'CUSTOMER']}><Outlet/></ProtectedRoute>,
+                children: [
+                    {
+                        path: '/cart',
+                        element: <Cart />,
+                    },
+                    {
+                        path: '/checkout',
+                        element: <Checkout />,
+                    },
+                    {
+                        path: '/account',
+                        element: <Account />,
+                    },
+                ],
+            },
+            {
+                path: '*',
+                element: <NotFound />,
+            },
+        ],
     },
 ];
-
 export default clientRoutes;

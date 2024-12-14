@@ -1,4 +1,3 @@
-const CartService = require('../../services/cart.service');
 const Cart = require('../../models/Cart');
 class CartController {
   // Lấy danh sách sản phẩm trong giỏ hàng
@@ -17,7 +16,6 @@ class CartController {
     try {
       const userId = req.user.userId;
       const { productId, quantity } = req.body;
-      console.log(userId);
       await Cart.addProductToCart(userId, productId, quantity);
       res.status(200).json({ message: 'Product added to cart successfully' });
     } catch (err) {
@@ -41,7 +39,7 @@ class CartController {
   static async removeProduct(req, res) {
     try {
       const { productId } = req.body;
-      const userId = req.user.userId;
+      const userId = req.user.userId;      
       await Cart.removeProductFromCart( userId,productId);
       res.status(200).json({ message: 'Product removed from cart successfully' });
     } catch (err) {

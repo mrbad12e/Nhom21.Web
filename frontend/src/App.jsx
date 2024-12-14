@@ -1,42 +1,38 @@
-// src/App.jsx
-import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import DefaultLayout from '@/components/layout/DefaultLayout';
-import Login from '@/pages/client/Login';
-import adminRoutes from '@/routes/adminRoutes';
-import clientRoutes from '@/routes/clientRoutes';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
+import clientRoutes from './routes/clientRoutes';
+import adminRoutes from './routes/adminRoutes';
 
-const App = () => {
+const queryClient = new QueryClient();
+
+function App() {
     const renderRoutes = (routes) => {
-        return routes.map((route) => (
-            <Route
-                key={route.path}
-                path={route.path}
-                element={route.element}
-                exact={route.exact}
-            />
+        return routes.map((route, index) => (
+            <Route key={index} path={route.path} element={route.element}>
+                {route.children &&
+                    route.children.map((childRoute) => (
+                        <Route
+                            key={childRoute.path || 'index'}
+                            index={childRoute.index}
+                            path={childRoute.path}
+                            element={childRoute.element}
+                        >
+                            {childRoute.children && renderRoutes(childRoute.children)}
+                        </Route>
+                    ))}
+            </Route>
         ));
     };
-
     return (
-        <AuthProvider>
+        <QueryClientProvider client={queryClient}>
             <BrowserRouter>
                 <Routes>
-                    {/* Client routes wrapped by DefaultLayout */}
-                    <Route path="/" element={<DefaultLayout />}>
-                        {renderRoutes(clientRoutes)}
-                    </Route>
-
-                    {/* Login route */}
-                    <Route path="/login" element={<Login />} />
-
-                    {/* Admin routes */}
+                    {renderRoutes(clientRoutes)}
                     {renderRoutes(adminRoutes)}
                 </Routes>
             </BrowserRouter>
-        </AuthProvider>
+        </QueryClientProvider>
     );
-};
+}
 
 export default App;

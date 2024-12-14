@@ -51,7 +51,7 @@ const AdminSidebar = () => {
                         'flex items-center space-x-2', 
                         isCollapsed && 'justify-center'
                     )}
-                    onClick={() => navigate('/admin/dashboard')}
+                    onClick={() => navigate('/')}
                     style={{ cursor: 'pointer' }}
                 >
                     {!isCollapsed && <h1 className="text-xl font-bold">Admin Panel</h1>}

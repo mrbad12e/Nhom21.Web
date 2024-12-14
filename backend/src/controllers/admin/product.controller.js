@@ -2,7 +2,6 @@ const ProductService = require('../../services/product.service');
 const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
-const { log } = require('console');
 exports.get = async (req, res, next) => {
     //logic idk
     try {

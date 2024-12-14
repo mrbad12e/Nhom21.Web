@@ -273,7 +273,7 @@ $$ language plpgsql;
 -- Order
 create or replace function public.get_order(
     p_user_id varchar(255),
-    p_order_id char(16), 
+    p_order_id char(16)
 ) 
 returns table (
     id char(16),
