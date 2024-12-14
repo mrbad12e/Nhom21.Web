@@ -44,7 +44,7 @@ BEGIN
     END IF;
 
     -- So sánh mật khẩu nhập vào với mật khẩu đã mã hóa trong cơ sở dữ liệu
-    IF NOT crypt(input_password, stored_password) = stored_password THEN
+    IF NOT md5(input_password) = stored_password THEN
         RAISE NOTICE 'Sai mật khẩu';
         RETURN NULL;
     END IF;
@@ -53,9 +53,6 @@ BEGIN
     RETURN user_id;
 END;
 $$ LANGUAGE plpgsql;
-
---Test hàm đăng nhập
-SELECT signIn('nghia03', '123456');
 
 -- Hàm xem profile một người theo username
 CREATE OR REPLACE FUNCTION view_profile(
@@ -176,14 +173,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-
--- Tìm theo email người dùng có email 'nghiaaa2003@gmail.com'
-SELECT * FROM find_by_email('nghiaaa2003@gmail.com');
-
--- Xem thông tin của tất cả
-SELECT * FROM view_all_profiles()
-
 -- Hàm update_profile đơn giản chỉ cập nhật thông tin người dùng
 CREATE OR REPLACE FUNCTION update_profile(
     input_user_id varchar,
@@ -289,9 +278,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Test hàm create_account
-SELECT create_account('nghia2003', 'admin', 'nghia2003@gmail.com', 'Nghia', 'Tran','CUSTOMER');
-SELECT * FROM public.users where username ='nghia2003';
 
 -- Tạo hàm đổi password
 CREATE OR REPLACE FUNCTION update_password(
@@ -352,28 +338,6 @@ ALTER COLUMN id TYPE varchar(32);
 ALTER TABLE public.cart_items
 ALTER COLUMN cart_id TYPE varchar(32);
 
--- Test hàm tạo cart
-SELECT * FROM carts;
-UPDATE users SET is_active=true WHERE username ='nghia2003';
-SELECT * FROM carts;
-SELECT c.*
-FROM public.users u
-JOIN public.carts c ON u.id = c.customer_id
-WHERE u.username = 'nghia2003';
-
-INSERT INTO public.orders (
-    id, customer_id, total_price, shipping_address, order_status, payment_status, created_at
-) VALUES (
-    lower(encode(gen_random_bytes(8), 'hex')), -- Sử dụng chuỗi hex ngẫu nhiên để tạo id
-    'b1987ef0ab7923d255dd3ecc2f51aeff',         -- customer_id
-    100.00,                                     -- total_price
-    '123 Test Street, Test City',               -- shipping_address
-    'PENDING',                                  -- order_status
-    'PENDING',                                  -- payment_status
-    now()                                       -- created_at
-);
-
-SELECT * from carts
 
 -- Hàm remove user
 CREATE OR REPLACE FUNCTION remove_user(v_user_id varchar) RETURNS varchar AS $$
@@ -413,8 +377,3 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
-
--- Test hàm remove user
-SELECT remove_user('b1987ef0ab7923d255dd3ecc2f51aeff');
-
-

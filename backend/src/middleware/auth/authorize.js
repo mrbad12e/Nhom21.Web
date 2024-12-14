@@ -11,7 +11,7 @@ async function authorizeAdmin(req, res, next) {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        const [user] = await db.query('SELECT id, role FROM users WHERE id = $1', [decoded.id]);
+        const [user] = await db.query('SELECT id, role FROM users WHERE id = $1', [decoded.userId]);
         
         if (!user) {
             return res.status(401).json({ message: 'User not found' });

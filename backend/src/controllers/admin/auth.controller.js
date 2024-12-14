@@ -1,6 +1,6 @@
 const authService = require('../../services/auth.service');
 const userService = require('../../services/user.service');
-
+require('dotenv').config();
 exports.login = async (req, res, next) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -18,12 +18,11 @@ exports.login = async (req, res, next) => {
         );
         const accessToken = authService.generateAccessToken(admin);
         res.cookie('auth', accessToken, {
-            httpOnly: true,
-            secure: true, // for HTTPS
+            httpOnly: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'production', // for HTTPS
             sameSite: 'lax', // for local development
             maxAge: 24 * 60 * 60 * 1000,
-            path: '/',
-            domain: '.onrender.com', // for deployment
+            path: '/'
         });
         return res.status(200).json({
             message: 'Login successful',

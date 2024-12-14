@@ -25,4 +25,4 @@ export const useProductLogic = () => {
   };
 };
 
-export { default } from '@/pages/client/Products/Products';
+export { default } from '@/pages/client/Products/ProductDetail';

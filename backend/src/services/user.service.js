@@ -15,7 +15,7 @@ class UserService {
             const filteredProfile = Object.fromEntries(
                 Object.entries(profile).filter(([key]) => !fieldsToExclude.includes(key))
             );
-            const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1d' });
+            const token = jwt.sign({ userId: userId }, JWT_SECRET, { expiresIn: '1d' });
             return { token, filteredProfile };
         } catch (err) {
             throw new Error(err.message);

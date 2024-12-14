@@ -1,22 +1,14 @@
-import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import DefaultLayout from '@/components/layout/DefaultLayout';
-import Home from '@/pages/client/Home';
-import About from '@/pages/client/About';
-import Login from '@/pages/client/Login';
-import NotFound from '@/pages/client/NotFound';
-import Contact from '@/pages/client/Contact';
-import Shop from '@/pages/client/Shop';
-import Products from '@/pages/client/Products';
-import Cart from "@/pages/client/Cart";
-import Checkout from "@/pages/client/Checkout";
-import Account from "@/pages/client/Account";
+import clientRoutes from './routes/clientRoutes';
 import adminRoutes from './routes/adminRoutes';
 
-const App = () => {
+const queryClient = new QueryClient();
+
+function App() {
     const renderRoutes = (routes) => {
-        return routes.map((route) => (
-            <Route key={route.path} path={route.path} element={route.element}>
+        return routes.map((route, index) => (
+            <Route key={index} path={route.path} element={route.element}>
                 {route.children &&
                     route.children.map((childRoute) => (
                         <Route
@@ -31,27 +23,16 @@ const App = () => {
             </Route>
         ));
     };
-
     return (
-        <BrowserRouter>
-            <Routes>
-                {/* Routes bọc bởi DefaultLayout */}
-                <Route path="/" element={<DefaultLayout />}>
-                    <Route index element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/products/:id" element={<Products />} />
-                    <Route path="*" element={<NotFound />} />
-                    <Route path="/shop" element={<Shop />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/account/*" element={<Account />} />
-                </Route>
-                <Route path="/login" element={<Login />} />
-                {renderRoutes(adminRoutes)}
-            </Routes>
-        </BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+                <Routes>
+                    {renderRoutes(clientRoutes)}
+                    {renderRoutes(adminRoutes)}
+                </Routes>
+            </BrowserRouter>
+        </QueryClientProvider>
     );
-};
+}
 
 export default App;
